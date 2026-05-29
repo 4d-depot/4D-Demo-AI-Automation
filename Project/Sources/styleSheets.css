@@ -1,0 +1,447 @@
+/* ==========================================================================
+   Event Pulse — Design System CSS
+   Supports light/dark themes following OS preference.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   BUTTONS
+   -------------------------------------------------------------------------- */
+
+/* Primary action button (e.g. "Analyze with AI", "Open Events") */
+.btnPrimary {
+    fill: #3B5FCC;
+    stroke: #FFFFFF;
+    fontSize: 12;
+    fontWeight: bold;
+    borderStyle: none;
+    borderRadius: 10;
+    textAlign: center;
+}
+
+/* Filter button — active state */
+.btnFilterActive {
+    fill: #3B5FCC;
+    stroke: #FFFFFF;
+    fontSize: 12;
+    borderStyle: none;
+    borderRadius: 6;
+    textAlign: center;
+}
+
+/* Filter button — inactive state */
+.btnFilterInactive {
+    fill: #2D2D2D;
+    stroke: #AAAAAA;
+    fontSize: 12;
+    borderStyle: none;
+    borderRadius: 6;
+    textAlign: center;
+}
+
+/* Secondary/cancel button */
+.btnSecondary {
+    fill: #2D2D2D;
+    stroke: #888888;
+    fontSize: 12;
+    borderStyle: none;
+    borderRadius: 10;
+    textAlign: center;
+}
+
+/* Back navigation button */
+.btnBack {
+    fill: #2D2D2D;
+    stroke: #888888;
+    fontSize: 12;
+    borderStyle: none;
+    borderRadius: 6;
+    textAlign: center;
+}
+
+/* Template/scenario button — green tint */
+.btnTemplateGreen {
+    fill: #1F2D1F;
+    stroke: #FFFFFF;
+    fontSize: 11;
+    borderStyle: none;
+    borderRadius: 8;
+    textAlign: center;
+}
+
+/* Template/scenario button — red tint */
+.btnTemplateRed {
+    fill: #2D1F1F;
+    stroke: #FFFFFF;
+    fontSize: 11;
+    borderStyle: none;
+    borderRadius: 8;
+    textAlign: center;
+}
+
+/* Template/scenario button — blue tint */
+.btnTemplateBlue {
+    fill: #1F1F2D;
+    stroke: #FFFFFF;
+    fontSize: 11;
+    borderStyle: none;
+    borderRadius: 8;
+    textAlign: center;
+}
+
+/* Template/scenario button — amber tint */
+.btnTemplateAmber {
+    fill: #2D2A1F;
+    stroke: #FFFFFF;
+    fontSize: 11;
+    borderStyle: none;
+    borderRadius: 8;
+    textAlign: center;
+}
+
+/* Refresh Weather button */
+.btnRefresh {
+    fill: #1F3A5C;
+    stroke: #FFFFFF;
+    fontSize: 12;
+    fontWeight: bold;
+    borderStyle: none;
+    borderRadius: 8;
+    textAlign: center;
+}
+
+/* --------------------------------------------------------------------------
+   BACKGROUNDS & PANELS
+   -------------------------------------------------------------------------- */
+
+/* Full form background */
+.bgForm {
+    fill: #0D0D0D;
+    stroke: transparent;
+    borderStyle: none;
+}
+
+/* Header bar */
+.bgHeader {
+    fill: #131313;
+    stroke: transparent;
+    borderStyle: none;
+}
+
+/* Filter toolbar */
+.bgToolbar {
+    fill: #111111;
+    stroke: transparent;
+    borderStyle: none;
+}
+
+/* Card / content panel */
+.bgCard {
+    fill: #1A1A1A;
+    stroke: #2D2D2D;
+    borderStyle: solid;
+    borderRadius: 12;
+}
+
+/* Section panel (AI section, etc.) */
+.bgSection {
+    fill: #111111;
+    stroke: #1E1E1E;
+    borderStyle: solid;
+}
+
+/* Status badge (e.g. "AI Connected") */
+.bgStatusBadge {
+    fill: #1A3320;
+    stroke: #2D6E41;
+    borderStyle: solid;
+    borderRadius: 15;
+}
+
+/* Inline content area */
+.bgContent {
+    fill: #2D2D2D;
+    stroke: transparent;
+    borderStyle: none;
+}
+
+/* --------------------------------------------------------------------------
+   TEXT
+   -------------------------------------------------------------------------- */
+
+/* Page title */
+.textTitle {
+    stroke: #FFFFFF;
+    fontSize: 18;
+    fontWeight: bold;
+}
+
+/* Section title */
+.textSection {
+    stroke: #FFFFFF;
+    fontSize: 14;
+    fontWeight: bold;
+}
+
+/* Body text */
+.textBody {
+    stroke: #CCCCCC;
+    fontSize: 12;
+}
+
+/* Muted/secondary text */
+.textMuted {
+    stroke: #888888;
+    fontSize: 12;
+}
+
+/* Label text (form field labels) */
+.textLabel {
+    stroke: #666666;
+    fontSize: 10;
+    fontWeight: bold;
+}
+
+/* Success text */
+.textSuccess {
+    stroke: #4CAF50;
+    fontSize: 12;
+}
+
+/* Warning text */
+.textWarning {
+    stroke: #FF9F0A;
+    fontSize: 12;
+}
+
+/* Accent text (counts, links) */
+.textAccent {
+    stroke: #3B5FCC;
+    fontSize: 12;
+}
+
+/* Footer text */
+.textFooter {
+    stroke: #444444;
+    fontSize: 10;
+}
+
+/* --------------------------------------------------------------------------
+   INPUTS
+   -------------------------------------------------------------------------- */
+
+/* Standard text input */
+.inputField {
+    fill: #1A1A1A;
+    stroke: #FFFFFF;
+    borderStyle: solid;
+    borderRadius: 8;
+    fontSize: 12;
+}
+
+/* Readonly / display input */
+.inputReadonly {
+    fill: #1A1A1A;
+    stroke: #CCCCCC;
+    borderStyle: none;
+    fontSize: 12;
+}
+
+/* --------------------------------------------------------------------------
+   LISTBOX
+   -------------------------------------------------------------------------- */
+
+/* Standard listbox */
+.listbox {
+    fill: #0D0D0D;
+    alternateFill: #111111;
+    borderStyle: none;
+    verticalAlign: middle;
+}
+
+/* Listbox inside a card */
+.listboxCard {
+    fill: #1A1A1A;
+    alternateFill: #151515;
+    stroke: #2D2D2D;
+    borderStyle: solid;
+    borderRadius: 12;
+    verticalAlign: middle;
+}
+
+/* Listbox column — primary text (bold, high contrast) */
+.colPrimary {
+    stroke: #FFFFFF;
+    fontWeight: bold;
+}
+
+/* Listbox column — default text */
+.colDefault {
+    stroke: #CCCCCC;
+}
+
+/* Listbox column — muted text */
+.colMuted {
+    stroke: #888888;
+}
+
+/* --------------------------------------------------------------------------
+   LIGHT THEME OVERRIDES
+   -------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: light) {
+
+    /* Buttons */
+    .btnPrimary {
+        fill: #3B5FCC;
+        stroke: #FFFFFF;
+    }
+
+    .btnFilterActive {
+        fill: #3B5FCC;
+        stroke: #FFFFFF;
+    }
+
+    .btnFilterInactive {
+        fill: #E8E8E8;
+        stroke: #333333;
+    }
+
+    .btnSecondary {
+        fill: #E8E8E8;
+        stroke: #333333;
+    }
+
+    .btnBack {
+        fill: #E8E8E8;
+        stroke: #333333;
+    }
+
+    .btnTemplateGreen {
+        fill: #E8F5E9;
+        stroke: #2E7D32;
+    }
+
+    .btnTemplateRed {
+        fill: #FFEBEE;
+        stroke: #C62828;
+    }
+
+    .btnTemplateBlue {
+        fill: #E3F2FD;
+        stroke: #1565C0;
+    }
+
+    .btnTemplateAmber {
+        fill: #FFF8E1;
+        stroke: #F57F17;
+    }
+
+    .btnRefresh {
+        fill: #E3F2FD;
+        stroke: #1565C0;
+    }
+
+    /* Backgrounds */
+    .bgForm {
+        fill: #F5F5F5;
+    }
+
+    .bgHeader {
+        fill: #FFFFFF;
+    }
+
+    .bgToolbar {
+        fill: #FAFAFA;
+    }
+
+    .bgCard {
+        fill: #FFFFFF;
+        stroke: #E0E0E0;
+    }
+
+    .bgSection {
+        fill: #FAFAFA;
+        stroke: #E0E0E0;
+    }
+
+    .bgStatusBadge {
+        fill: #E8F5E9;
+        stroke: #4CAF50;
+    }
+
+    .bgContent {
+        fill: #F0F0F0;
+    }
+
+    /* Text */
+    .textTitle {
+        stroke: #1A1A1A;
+    }
+
+    .textSection {
+        stroke: #1A1A1A;
+    }
+
+    .textBody {
+        stroke: #333333;
+    }
+
+    .textMuted {
+        stroke: #666666;
+    }
+
+    .textLabel {
+        stroke: #888888;
+    }
+
+    .textSuccess {
+        stroke: #2E7D32;
+    }
+
+    .textWarning {
+        stroke: #E65100;
+    }
+
+    .textAccent {
+        stroke: #3B5FCC;
+    }
+
+    .textFooter {
+        stroke: #AAAAAA;
+    }
+
+    /* Inputs */
+    .inputField {
+        fill: #FFFFFF;
+        stroke: #333333;
+    }
+
+    .inputReadonly {
+        fill: #FAFAFA;
+        stroke: #333333;
+    }
+
+    /* Listbox */
+    .listbox {
+        fill: #FFFFFF;
+        alternateFill: #F5F5F5;
+    }
+
+    .listboxCard {
+        fill: #FFFFFF;
+        alternateFill: #F8F8F8;
+        stroke: #E0E0E0;
+    }
+
+    .colPrimary {
+        stroke: #1A1A1A;
+    }
+
+    .colDefault {
+        stroke: #333333;
+    }
+
+    .colMuted {
+        stroke: #666666;
+    }
+}

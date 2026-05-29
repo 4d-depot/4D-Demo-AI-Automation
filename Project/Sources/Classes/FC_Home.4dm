@@ -1,0 +1,81 @@
+// FC_Home.4dm
+// Contrôleur du formulaire Home – hub de navigation vers les 3 modules
+
+property statusText : Text
+
+Class constructor()
+	This.statusText:="● AI Connected"
+
+//MARK: - Form & form objects event handlers
+Function formEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Load)
+			This._onLoad()
+	End case 
+
+Function btnEventsEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._openEvents()
+	End case 
+
+Function btnInboxEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._openInbox()
+	End case 
+
+Function btnSimulateEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._openSimulate()
+	End case 
+
+Function btnRegenerateEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._regenerateData()
+	End case 
+
+Function btnResetAllEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._resetAll()
+	End case 
+
+//MARK: - Private
+Function _onLoad()
+	var $providers : Object:=cs.AIKit.OpenAIProviders.new()
+	If ($providers.list().length=0)
+		This.statusText:="⚠ No AI Provider configured"
+	End if 
+	OBJECT SET TITLE(*; "text_status"; This.statusText)
+
+Function _openEvents()
+	var $w : Integer:=Open form window("EventList"; Plain form window)
+	DIALOG("EventList")
+	CLOSE WINDOW($w)
+
+Function _openInbox()
+	var $w : Integer:=Open form window("EmailInbox"; Plain form window)
+	DIALOG("EmailInbox")
+	CLOSE WINDOW($w)
+
+Function _openSimulate()
+	var $w : Integer:=Open form window("DemoSendEmail"; Plain form window)
+	DIALOG("DemoSendEmail")
+	CLOSE WINDOW($w)
+
+Function _regenerateData()
+	cs.DataSeeder.me.regenerateEvents()
+	ALERT("Events regenerated!\n300 events created with relative dates.\nWeather alerts: 2 pre-assigned.")
+
+Function _resetAll()
+	CONFIRM("Reset ALL data?\n\nThis will delete all records and re-import everything from JSON files, including re-building service embeddings.")
+	If (OK=1)
+		var $progress : cs.FC_Progress:=cs.FC_Progress.new("Rebuilding all data…"; Formula(_resetAllWorkerJob))
+		var $w : Integer:=Open form window("Progress"; Pop up form window; Horizontally centered; Vertically centered)
+		DIALOG("Progress"; $progress)
+		CLOSE WINDOW($w)
+		ALERT("All data has been reset and rebuilt!\nService embeddings have been regenerated.")
+	End if 

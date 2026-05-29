@@ -1,0 +1,56 @@
+{
+  "rightMargin": 0,
+  "bottomMargin": 0,
+  "windowSizingX": "fixed",
+  "windowSizingY": "fixed",
+  "windowMinWidth": 320,
+  "windowMinHeight": 120,
+  "pages": [
+    null,
+    {
+      "objects": {
+        "rect_bg": {
+          "type": "rectangle",
+          "left": 0,
+          "top": 0,
+          "width": 320,
+          "height": 120,
+          "class": "bgCard"
+        },
+        "text_spinner": {
+          "type": "text",
+          "left": 30,
+          "top": 30,
+          "width": 40,
+          "height": 40,
+          "text": "⏳",
+          "fontSize": 28,
+          "textAlign": "center"
+        },
+        "text_message": {
+          "type": "text",
+          "left": 80,
+          "top": 36,
+          "width": 220,
+          "height": 20,
+          "text": "Please wait…",
+          "class": "textSection"
+        },
+        "text_detail": {
+          "type": "text",
+          "left": 80,
+          "top": 60,
+          "width": 220,
+          "height": 18,
+          "text": "",
+          "class": "textMuted"
+        }
+      }
+    }
+  ],
+  "events": [
+    "onLoad",
+    "onTimer"
+  ],
+  "method": "method.4dm"
+}

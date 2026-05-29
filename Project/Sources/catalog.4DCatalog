@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE base SYSTEM "http://www.4d.com/dtd/2007/base.dtd" >
+<base name="4D-Demo-AI-Automation" uuid="900788C384E5496386569683E54F0FBC" collation_locale="fr">
+	<schema name="DEFAULT_SCHEMA"/>
+	<table name="Client" uuid="433E86D7BA884286816A15C85BE2FCF2" id="1">
+		<field name="ID" uuid="A7EDB3CFD0BB41C88C2B321CC586C268" type="10" unique="true" autogenerate="true" store_as_UUID="true" not_null="true" id="1"/>
+		<field name="companyName" uuid="6A391CE25BB74B228CAF944CDB7D0C38" type="10" limiting_length="255" never_null="true" id="2"/>
+		<field name="contactName" uuid="1F7366FFE52E4EC9ABB42523F52C2B23" type="10" limiting_length="255" id="3"/>
+		<field name="email" uuid="0746678FF2A041FF997A976AC8D761B3" type="10" limiting_length="255" id="4"/>
+		<field name="phone" uuid="CC09CCBB6E58495E84B33B45EE4F0CFB" type="10" limiting_length="50" id="5"/>
+		<field name="country" uuid="ECEBC2E59C8B428C9C133EF0C214DF8C" type="10" limiting_length="100" id="6"/>
+		<primary_key field_name="ID" field_uuid="A7EDB3CFD0BB41C88C2B321CC586C268"/>
+	</table>
+	<table name="Venue" uuid="A791205939074B80BE71CA7D330DFEF7" id="2">
+		<field name="ID" uuid="9A4671A1E30642F2BF75B30ADB31089F" type="10" unique="true" autogenerate="true" store_as_UUID="true" not_null="true" id="1"/>
+		<field name="name" uuid="A9D1AA5CA03D4C478E8EC6A62D4241DA" type="10" limiting_length="255" never_null="true" id="2"/>
+		<field name="address" uuid="8D1902E4CB6945B8B415424B4F0C1240" type="10" limiting_length="500" id="3"/>
+		<field name="city" uuid="C9C6EBD11F9F43D5AA8F54B127AEBD69" type="10" limiting_length="100" id="4"/>
+		<field name="country" uuid="4070A769DFF24BBDAECD6075272198D1" type="10" limiting_length="100" id="5"/>
+		<field name="latitude" uuid="91762384752B454299AEF1614083C49E" type="6" id="6"/>
+		<field name="longitude" uuid="825CE36EABF647988E8474760AD9D59A" type="6" id="7"/>
+		<field name="venueType" uuid="9B5558C7DB7740728858586DC13C32E1" type="10" limiting_length="20" id="8"/>
+		<field name="capacity" uuid="A324B6D7B31243F8BDADD0983F38AB36" type="4" id="9"/>
+		<field name="timezone" uuid="457B4A4DE4914C8AB8EC61D6423B9C4A" type="10" limiting_length="50" id="10"/>
+		<field name="indoorOption" uuid="530E7A0145CE453FA51EBA3396F32D61" type="21" blob_switch_size="2147483647" id="11"/>
+		<field name="outdoorOption" uuid="A8AB0D5ED8BB423298191EA78D510B03" type="21" blob_switch_size="2147483647" id="12"/>
+		<primary_key field_name="ID" field_uuid="9A4671A1E30642F2BF75B30ADB31089F"/>
+	</table>
+	<table name="Service" uuid="92FB3495B27B423583AD5B4699DD5D81" id="3">
+		<field name="ID" uuid="1510B46AC4D9491ABCC0837F40C2969E" type="10" unique="true" autogenerate="true" store_as_UUID="true" not_null="true" id="1"/>
+		<field name="category" uuid="30013476E515460DBB40513E76DFFCDA" type="10" limiting_length="100" never_null="true" id="2"/>
+		<field name="label" uuid="403BDD19D18E4CE8862370AC05DC6B3C" type="10" limiting_length="255" never_null="true" id="3"/>
+		<field name="unit" uuid="B57281BB2DD240FE863EC7CC5240212B" type="10" limiting_length="50" id="4"/>
+		<field name="unitPrice" uuid="8EB6FB424240437E8E2A3C7F99497B36" type="6" never_null="true" id="5"/>
+		<field name="available" uuid="87BD845EEE42456CB51C98ACA0AC4A4E" type="1" never_null="true" id="6"/>
+		<field name="embedding" uuid="A3C9CE0134D84BC8B9EAAC4DC5DA0BE0" type="21" blob_switch_size="2147483647" id="7">
+			<field_extra class_id="4D.Vector"/>
+		</field>
+		<primary_key field_name="ID" field_uuid="1510B46AC4D9491ABCC0837F40C2969E"/>
+	</table>
+	<table name="Event" uuid="9683EE9F3D2C40E9B97F3AA1C0C6E670" id="4">
+		<field name="ID" uuid="1B68F94B329D4D24BD6DC8C3FD3D13EF" type="10" unique="true" autogenerate="true" store_as_UUID="true" not_null="true" id="1"/>
+		<field name="clientID" uuid="4B68C043243945899F222B79F246E41C" type="10" store_as_UUID="true" id="2"/>
+		<field name="venueID" uuid="508258CD9FCE470F96FD9D34642FB6BC" type="10" store_as_UUID="true" id="3"/>
+		<field name="eventDate" uuid="8F9A813AFDA94F2D84E20BAFEC736D39" type="8" id="4"/>
+		<field name="status" uuid="CAEED1D416C442F4B5814F5B991432CC" type="10" limiting_length="20" never_null="true" id="5"/>
+		<field name="guestCount" uuid="1953BB7872C64052B50C63C419F86271" type="4" id="6"/>
+		<field name="contractRef" uuid="5B9D1244AF59444D92AF6F5C8B22D1DE" type="10" limiting_length="50" id="7"/>
+		<field name="notes" uuid="95B0CF61EE8E4F25A225CDE8D171CB7C" type="10" id="8"/>
+		<field name="weatherAlertLevel" uuid="571494C2B99B46F0A80F8533E4DB09E5" type="10" limiting_length="10" id="9"/>
+		<field name="weatherAlertJson" uuid="0E6C564A893A45E6897A9F193682010E" type="21" blob_switch_size="2147483647" id="10"/>
+		<field name="createdAt" uuid="3E47950ED2D44F5CBC71EF867510086C" type="8" id="11"/>
+		<field name="weatherSetup" uuid="0E4F9D3649AE482AAFD679E6DEE7A97E" type="21" blob_switch_size="2147483647" id="12"/>
+		<field name="venueOption" uuid="FC4333A429D6452C85587EA9DDD0328B" type="10" limiting_length="20" id="13"/>
+		<field name="venueRentalPrice" uuid="8B2CA3C4EF6240F3801D7DDF8C941C36" type="6" id="14"/>
+		<field name="weatherForecast" uuid="C62E890E3D4643AF9A5ED5ECC45B2212" type="21" blob_switch_size="2147483647" id="15"/>
+		<primary_key field_name="ID" field_uuid="1B68F94B329D4D24BD6DC8C3FD3D13EF"/>
+	</table>
+	<table name="EventLine" uuid="E7F8F2AEA9FC4D3881B6D35643F0952A" id="5">
+		<field name="ID" uuid="4295F64250F242C6AC27E9C6FF92FEEA" type="10" unique="true" autogenerate="true" store_as_UUID="true" not_null="true" id="1"/>
+		<field name="eventID" uuid="7D6626445C474CFEB13AA1FE9995C9CD" type="10" store_as_UUID="true" id="2"/>
+		<field name="serviceID" uuid="EDB8FBA406DD4F2397196D18879351A3" type="10" store_as_UUID="true" id="3"/>
+		<field name="quantity" uuid="997A350EFD4943BDB73491C541008964" type="6" never_null="true" id="4"/>
+		<field name="unitPrice" uuid="9EC9F249A8BE47699981594D013656CA" type="6" never_null="true" id="5"/>
+		<field name="lineStatus" uuid="C76B41519C024850A5D6A692244D514D" type="10" limiting_length="20" never_null="true" id="6"/>
+		<primary_key field_name="ID" field_uuid="4295F64250F242C6AC27E9C6FF92FEEA"/>
+	</table>
+	<table name="Email" uuid="0F632CBC61C84F0D9C04A86888FCEC1F" id="6">
+		<field name="ID" uuid="1D285A70155B47839B168D33F1EA25F7" type="10" unique="true" autogenerate="true" store_as_UUID="true" not_null="true" id="1"/>
+		<field name="sender" uuid="7419FC2933CA49C0B97E2AE6E1557312" type="10" limiting_length="255" id="2"/>
+		<field name="senderEmail" uuid="8CC5CE5C4348496089DD68B2A97C320E" type="10" limiting_length="255" id="3"/>
+		<field name="subject" uuid="AAD79574FB77476BB6C4020CEDA58F37" type="10" limiting_length="500" id="4"/>
+		<field name="body" uuid="684D041BE6A4492991D6E39FFA0024D7" type="10" id="5"/>
+		<field name="receivedAt" uuid="7F0A24204DB34B5696C755986E627F50" type="8" id="6"/>
+		<field name="emailStatus" uuid="183B48F72ABA421990E9E18A01E9FDD5" type="10" limiting_length="20" never_null="true" id="7"/>
+		<field name="emailType" uuid="BB028DA331194BE69D33CA38673962D6" type="10" limiting_length="20" id="8"/>
+		<field name="aiAnalysisJson" uuid="BA49ED2540E7450689E6DD9D2B7BACA6" type="21" blob_switch_size="2147483647" id="9"/>
+		<field name="linkedEventID" uuid="3EC99030C84C4096B1087E304987764F" type="10" store_as_UUID="true" id="10"/>
+		<primary_key field_name="ID" field_uuid="1D285A70155B47839B168D33F1EA25F7"/>
+	</table>
+	<relation uuid="22ED3BD975DD48E19E1A772AF3CB12E9" name_Nto1="client" name_1toN="events" state="1">
+		<related_field kind="source">
+			<field_ref uuid="4B68C043243945899F222B79F246E41C" name="clientID">
+				<table_ref uuid="9683EE9F3D2C40E9B97F3AA1C0C6E670" name="Event"/>
+			</field_ref>
+		</related_field>
+		<related_field kind="destination">
+			<field_ref uuid="A7EDB3CFD0BB41C88C2B321CC586C268" name="ID">
+				<table_ref uuid="433E86D7BA884286816A15C85BE2FCF2" name="Client"/>
+			</field_ref>
+		</related_field>
+	</relation>
+	<relation uuid="3D51F84542BA47E3A7171AAE77B9065D" name_Nto1="venue" name_1toN="events" state="1">
+		<related_field kind="source">
+			<field_ref uuid="508258CD9FCE470F96FD9D34642FB6BC" name="venueID">
+				<table_ref uuid="9683EE9F3D2C40E9B97F3AA1C0C6E670" name="Event"/>
+			</field_ref>
+		</related_field>
+		<related_field kind="destination">
+			<field_ref uuid="9A4671A1E30642F2BF75B30ADB31089F" name="ID">
+				<table_ref uuid="A791205939074B80BE71CA7D330DFEF7" name="Venue"/>
+			</field_ref>
+		</related_field>
+	</relation>
+	<relation uuid="0B77FAD2655B4311A4395B331D224000" name_Nto1="event" name_1toN="lines" state="1">
+		<related_field kind="source">
+			<field_ref uuid="7D6626445C474CFEB13AA1FE9995C9CD" name="eventID">
+				<table_ref uuid="E7F8F2AEA9FC4D3881B6D35643F0952A" name="EventLine"/>
+			</field_ref>
+		</related_field>
+		<related_field kind="destination">
+			<field_ref uuid="1B68F94B329D4D24BD6DC8C3FD3D13EF" name="ID">
+				<table_ref uuid="9683EE9F3D2C40E9B97F3AA1C0C6E670" name="Event"/>
+			</field_ref>
+		</related_field>
+	</relation>
+	<relation uuid="5BA12A5D25E44E2C8FDF6C0A3E1574B2" name_Nto1="service" name_1toN="eventLines" state="1">
+		<related_field kind="source">
+			<field_ref uuid="EDB8FBA406DD4F2397196D18879351A3" name="serviceID">
+				<table_ref uuid="E7F8F2AEA9FC4D3881B6D35643F0952A" name="EventLine"/>
+			</field_ref>
+		</related_field>
+		<related_field kind="destination">
+			<field_ref uuid="1510B46AC4D9491ABCC0837F40C2969E" name="ID">
+				<table_ref uuid="92FB3495B27B423583AD5B4699DD5D81" name="Service"/>
+			</field_ref>
+		</related_field>
+	</relation>
+	<relation uuid="B9D2410C289047A6BD525784B65116EB" name_Nto1="linkedEvent" name_1toN="emails" state="1">
+		<related_field kind="source">
+			<field_ref uuid="3EC99030C84C4096B1087E304987764F" name="linkedEventID">
+				<table_ref uuid="0F632CBC61C84F0D9C04A86888FCEC1F" name="Email"/>
+			</field_ref>
+		</related_field>
+		<related_field kind="destination">
+			<field_ref uuid="1B68F94B329D4D24BD6DC8C3FD3D13EF" name="ID">
+				<table_ref uuid="9683EE9F3D2C40E9B97F3AA1C0C6E670" name="Event"/>
+			</field_ref>
+		</related_field>
+	</relation>
+	<index kind="regular" unique_keys="true" uuid="046F371067A0430D9787A0E864FF0EC9" type="7">
+		<field_ref uuid="1D285A70155B47839B168D33F1EA25F7" name="ID">
+			<table_ref uuid="0F632CBC61C84F0D9C04A86888FCEC1F" name="Email"/>
+		</field_ref>
+	</index>
+	<index kind="regular" uuid="0E1D5A61EF57445A9229951C374FFBE3" type="7">
+		<field_ref uuid="4B68C043243945899F222B79F246E41C" name="clientID">
+			<table_ref uuid="9683EE9F3D2C40E9B97F3AA1C0C6E670" name="Event"/>
+		</field_ref>
+	</index>
+	<index kind="regular" unique_keys="true" uuid="10873A31808442C1A6BA8DB6276C0AB1" type="7">
+		<field_ref uuid="4295F64250F242C6AC27E9C6FF92FEEA" name="ID">
+			<table_ref uuid="E7F8F2AEA9FC4D3881B6D35643F0952A" name="EventLine"/>
+		</field_ref>
+	</index>
+	<index kind="regular" unique_keys="true" uuid="4C5321289E6542E8ACAC783F6BA674EB" type="7">
+		<field_ref uuid="A7EDB3CFD0BB41C88C2B321CC586C268" name="ID">
+			<table_ref uuid="433E86D7BA884286816A15C85BE2FCF2" name="Client"/>
+		</field_ref>
+	</index>
+	<index kind="regular" unique_keys="true" uuid="650A7FBC010C4091934D978224DD13B1" type="7">
+		<field_ref uuid="9A4671A1E30642F2BF75B30ADB31089F" name="ID">
+			<table_ref uuid="A791205939074B80BE71CA7D330DFEF7" name="Venue"/>
+		</field_ref>
+	</index>
+	<index kind="regular" uuid="86D42F53A2F04D5F8947FC338C56B3A4" type="7">
+		<field_ref uuid="3EC99030C84C4096B1087E304987764F" name="linkedEventID">
+			<table_ref uuid="0F632CBC61C84F0D9C04A86888FCEC1F" name="Email"/>
+		</field_ref>
+	</index>
+	<index kind="regular" uuid="8E7208B1D76A4A489058FB4CC2599538" type="7">
+		<field_ref uuid="7D6626445C474CFEB13AA1FE9995C9CD" name="eventID">
+			<table_ref uuid="E7F8F2AEA9FC4D3881B6D35643F0952A" name="EventLine"/>
+		</field_ref>
+	</index>
+	<index kind="regular" unique_keys="true" uuid="C0B6EDB9FCB5449C85443A8F08CEB063" type="7">
+		<field_ref uuid="1B68F94B329D4D24BD6DC8C3FD3D13EF" name="ID">
+			<table_ref uuid="9683EE9F3D2C40E9B97F3AA1C0C6E670" name="Event"/>
+		</field_ref>
+	</index>
+	<index kind="regular" unique_keys="true" uuid="DBF4E8ECC6BC4341AA8472097B6CB37D" type="7">
+		<field_ref uuid="1510B46AC4D9491ABCC0837F40C2969E" name="ID">
+			<table_ref uuid="92FB3495B27B423583AD5B4699DD5D81" name="Service"/>
+		</field_ref>
+	</index>
+	<index kind="regular" uuid="F738F1C1514247889E84A6E0C0083CD3" type="7">
+		<field_ref uuid="508258CD9FCE470F96FD9D34642FB6BC" name="venueID">
+			<table_ref uuid="9683EE9F3D2C40E9B97F3AA1C0C6E670" name="Event"/>
+		</field_ref>
+	</index>
+	<index kind="regular" uuid="F7E9ED5B6CE54D55BFED20BD3F9A28F3" type="7">
+		<field_ref uuid="EDB8FBA406DD4F2397196D18879351A3" name="serviceID">
+			<table_ref uuid="E7F8F2AEA9FC4D3881B6D35643F0952A" name="EventLine"/>
+		</field_ref>
+	</index>
+	<base_extra>
+		<journal_file journal_file_enabled="true"/>
+	</base_extra>
+</base>

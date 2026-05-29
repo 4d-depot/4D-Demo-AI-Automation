@@ -1,0 +1,416 @@
+// FC_EventDetail.4dm
+// Scénario 2 : Alerte météo + panneau IA avec actions contextuelles
+
+property event : cs.EventEntity
+property eventLines : Collection
+property aiActions : Collection
+property running : Boolean
+property _eventIDs : Collection
+property _currentIndex : Integer
+
+Class constructor($event : cs.EventEntity; $eventIDs : Collection)
+	This.event:=$event
+	This.eventLines:=[]
+	This.aiActions:=[]
+	This.running:=False
+	If ($eventIDs#Null)
+		This._eventIDs:=$eventIDs
+	Else 
+		This._eventIDs:=[]
+	End if 
+	This._currentIndex:=This._eventIDs.indexOf($event.ID)
+
+//MARK: - Form & form objects event handlers
+Function formEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Load)
+			This._onLoad()
+	End case 
+
+Function btnBackEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			CANCEL
+	End case 
+
+Function btnPrevEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._navigate(-1)
+	End case 
+
+Function btnNextEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._navigate(1)
+	End case 
+
+Function btnAiAnalyzeEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._runWeatherAnalysis()
+	End case 
+
+Function btnAiAction1EventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._executeAction(0)
+	End case 
+
+Function btnAiAction2EventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._executeAction(1)
+	End case 
+
+Function btnAiAction3EventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._executeAction(2)
+	End case 
+
+Function btnAiAction4EventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._executeAction(3)
+	End case 
+
+//MARK: - Private
+Function _onLoad()
+	This._populateHeader()
+	This._loadEventLines()
+	This._renderAIPanel(Null)
+	This._updateNavButtons()
+	This._applyReadOnlyIfDone()
+
+Function _populateHeader()
+	var $evt : cs.EventEntity:=This.event
+	var $client : cs.ClientEntity:=$evt.client
+	var $venue : cs.VenueEntity:=$evt.venue
+
+	OBJECT SET TITLE(*; "text_title"; "Event Detail")
+	OBJECT SET TITLE(*; "text_ref"; $evt.contractRef)
+	OBJECT SET TITLE(*; "text_client_val"; Choose($client#Null; $client.companyName; "—"))
+	OBJECT SET TITLE(*; "text_contact_val"; Choose($client#Null; $client.contactName+" · "+$client.email; ""))
+	OBJECT SET TITLE(*; "text_date_val"; String($evt.eventDate; "EEEE dd MMMM yyyy"))
+	OBJECT SET TITLE(*; "text_guests_val"; String($evt.guestCount)+" guests")
+
+	// Venue with indoor/outdoor indicator
+	var $venueLabel : Text:=Choose($venue#Null; $venue.name+" – "+$venue.city+", "+$venue.country; "—")
+	var $optionLabel : Text:=Choose($evt.venueOption="indoor"; " 🏢"; " 🌳")
+	OBJECT SET TITLE(*; "text_venue_val"; $venueLabel+$optionLabel)
+	OBJECT SET TITLE(*; "text_status_val"; This._statusLabel($evt.status))
+	OBJECT SET TITLE(*; "text_weather_badge"; This._weatherBadge($evt.weatherAlertLevel))
+
+Function _loadEventLines()
+	var $selection : cs.EventLineSelection:=ds.EventLine.query("eventID = :1"; This.event.ID)
+	var $total : Real:=0
+	This.eventLines:=[]
+	var $line : cs.EventLineEntity
+	var $service : cs.ServiceEntity
+	var $lineTotal : Real
+	For each ($line; $selection)
+		$service:=$line.service
+		$lineTotal:=$line.quantity*$line.unitPrice
+		$total:=$total+$lineTotal
+		This.eventLines.push({ \
+			serviceLabel: Choose($service#Null; $service.label; "—"); \
+			category: Choose($service#Null; $service.category; "—"); \
+			quantity: $line.quantity; \
+			unitPrice: $line.unitPrice; \
+			quantityStr: String($line.quantity); \
+			unitPriceStr: String($line.unitPrice; "### ### ##0 €"); \
+			totalStr: String($lineTotal; "### ### ##0 €") \
+		})
+	End for each 
+
+	// Add venue rental cost
+	var $rentalPrice : Real:=This.event.venueRentalPrice
+	If ($rentalPrice>0)
+		$total:=$total+$rentalPrice
+		OBJECT SET TITLE(*; "text_rental_val"; "Venue rental: "+String($rentalPrice; "### ### ##0 €"))
+	Else 
+		OBJECT SET TITLE(*; "text_rental_val"; "")
+	End if 
+	OBJECT SET TITLE(*; "text_total_val"; String($total; "### ### ##0 €"))
+
+Function _renderAIPanel($weatherResult : Object)
+	cs.UIHelpers.me.resetActionButtons()
+	OBJECT SET TITLE(*; "text_ai_setup"; "")
+	OBJECT SET TITLE(*; "text_ai_explanation"; "")
+
+	// Show contracted and forecast weather
+	var $setup : Object:=This.event.weatherSetup
+	var $forecast : Object:=This.event.weatherForecast
+	var $setupStr : Text:=""
+	var $forecastStr : Text:=""
+	If ($setup#Null)
+		$setupStr:="Planned: "+This._setupLabel($setup)
+	End if 
+	If ($forecast#Null)
+		$forecastStr:=" | Forecast: "+This._setupLabel($forecast)
+	End if 
+	OBJECT SET TITLE(*; "text_ai_setup"; $setupStr+$forecastStr) 
+
+	If ($weatherResult=Null)
+		var $level : Text:=This.event.weatherAlertLevel
+		If (($level="none") || ($level=""))
+			OBJECT SET TITLE(*; "text_ai_status"; "No weather alerts detected.")
+			OBJECT SET TITLE(*; "text_ai_context"; "Click 'Run AI Weather Analysis' to analyze forecast for this event's venue.")
+		Else 
+			OBJECT SET TITLE(*; "text_ai_status"; "⚠ Weather alert: "+$level)
+			OBJECT SET TITLE(*; "text_ai_context"; "Click 'Run AI Weather Analysis' to get AI-recommended actions.")
+		End if 
+		return 
+	End if 
+
+	If (Not($weatherResult.success))
+		OBJECT SET TITLE(*; "text_ai_status"; "⚠ Analysis failed")
+		OBJECT SET TITLE(*; "text_ai_context"; $weatherResult.validationError)
+		return 
+	End if 
+
+	var $wa : Object:=$weatherResult.weatherActions
+	OBJECT SET TITLE(*; "text_ai_status"; This._riskLabel($wa.riskLevel))
+	OBJECT SET TITLE(*; "text_ai_context"; $wa.weatherSummary)
+
+	// Afficher l'explication IA
+	If (($wa.explanation#Null) && ($wa.explanation#""))
+		OBJECT SET TITLE(*; "text_ai_explanation"; $wa.explanation)
+	End if 
+
+	OBJECT SET TITLE(*; "text_ai_validation_badge"; "✓ JSON Validate: schema_weather_actions OK")
+
+	var $actions : Collection:=$wa.actions
+	cs.UIHelpers.me.showActionButtons($actions)
+	This.aiActions:=$actions
+
+Function _runWeatherAnalysis()
+	This.running:=True
+	OBJECT SET TITLE(*; "btn_ai_analyze"; "⏳ Analyzing...")
+	OBJECT SET TITLE(*; "text_ai_status"; "Fetching weather data...")
+
+	var $weather : cs.WeatherService:=cs.WeatherService.me
+	var $weatherFetch : Object:=$weather.fetchForEvent(This.event)
+
+	// Store rationalized forecast and compute alert by comparison
+	If ($weatherFetch.success)
+		This.event.weatherForecast:=$weatherFetch.rationalized
+		This.event.weatherAlertLevel:=$weather.compareWeather(This.event.weatherSetup; $weatherFetch.rationalized; This.event.venueOption)
+		This.event.weatherAlertJson:=JSON Parse(JSON Stringify($weatherFetch))
+	Else 
+		This.event.weatherAlertLevel:="none"
+	End if 
+	This.event.save()
+
+	OBJECT SET TITLE(*; "text_ai_status"; "Asking AI for recommendations...")
+
+	var $advisor : cs.AIAdvisor:=cs.AIAdvisor.new()
+	var $self : Object:=This
+	var $wf : Object:=$weatherFetch
+	$advisor.analyzeWeatherRiskAsync(This.event; $weatherFetch.weatherData; This.eventLines; Formula($self._onWeatherAnalysisDone($1; $wf)))
+
+// ─── Callbacks async ─────────────────────────────────────────────────────────
+Function _onWeatherAnalysisDone($aiResult : Object; $weatherFetch : Object)
+	If (Form=Null)
+		return 
+	End if 
+	OBJECT SET TITLE(*; "text_weather_badge"; This._weatherBadge($weatherFetch.riskLevel))
+	This.running:=False
+	OBJECT SET TITLE(*; "btn_ai_analyze"; "⚡ Run AI Weather Analysis")
+	This._renderAIPanel($aiResult)
+
+Function _executeAction($index : Integer)
+	If ($index>=This.aiActions.length)
+		return 
+	End if 
+	var $action : Object:=This.aiActions[$index]
+	var $type : Text:=$action.actionType
+
+	// Si l'action a un hiddenPrompt, utiliser le Temps 2 (tool calling)
+	If (($action.hiddenPrompt#Null) && ($action.hiddenPrompt#""))
+		This._executeWithToolCalling($action)
+		return 
+	End if 
+
+	// Fallback pour les actions sans hiddenPrompt
+	Case of 
+		: ($type="notify_client")
+			var $draft : Text:=Choose(($action.description#Null); $action.description; "")
+			ALERT("Draft message to client:\n\n"+$draft)
+		: ($type="monitor")
+			ALERT("Monitoring set. Weather will be re-checked automatically.")
+		Else 
+			ALERT("Action: "+$action.label+"\n\n"+Choose(($action.description#Null); $action.description; ""))
+	End case 
+
+// ─── Temps 2 : Exécution avec tool calling + dialogue confirmation ───────────
+Function _executeWithToolCalling($action : Object)
+	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Searching services...")
+
+	// Contexte de l'événement
+	var $context : Object:={ \
+		eventID: This.event.ID; \
+		eventDate: String(This.event.eventDate; "yyyy-MM-dd"); \
+		guestCount: This.event.guestCount; \
+		venueName: This.event.venue.name \
+	}
+
+	// Lignes existantes
+	$context.existingLines:=[]
+	var $line : Object
+	For each ($line; This.eventLines)
+		$context.existingLines.push({ \
+			serviceLabel: $line.serviceLabel; \
+			quantity: $line.quantity; \
+			unitPrice: $line.unitPrice \
+		})
+	End for each 
+
+	var $advisor : cs.AIAdvisor:=cs.AIAdvisor.new()
+	var $self : Object:=This
+	var $act : Object:=$action
+	$advisor.executeActionAsync($action.hiddenPrompt; $context; Formula($self._onExecutionDone($1; $act)))
+
+Function _onExecutionDone($execResult : Object; $action : Object)
+	If (Form=Null)
+		return 
+	End if 
+
+	If (Not($execResult.success))
+		OBJECT SET TITLE(*; "text_ai_status"; "❌ "+$execResult.error)
+		return 
+	End if 
+
+	If (($execResult.proposedLines=Null) || ($execResult.proposedLines.length=0))
+		OBJECT SET TITLE(*; "text_ai_status"; "No services proposed.")
+		return 
+	End if 
+
+	OBJECT SET TITLE(*; "text_ai_status"; "")
+
+	// Calculer le total actuel
+	var $currentTotal : Real:=cs.EventLineService.me.calculateTotal(This.eventLines)
+
+	// Ouvrir le dialogue de confirmation
+	var $fc : cs.FC_ActionConfirm:=cs.FC_ActionConfirm.new( \
+		$action.label; \
+		$execResult.summary; \
+		$execResult.proposedLines; \
+		$currentTotal \
+	)
+	DIALOG("ActionConfirm"; $fc)
+
+	If (Not($fc.confirmed))
+		OBJECT SET TITLE(*; "text_ai_status"; "Action annulée.")
+		return 
+	End if 
+
+	// Appliquer les modifications en base
+	cs.EventLineService.me.applyProposedChanges(This.event.ID; $execResult.proposedLines)
+
+	// Rafraîchir les données de l'événement
+	This._loadEventLines()
+	OBJECT SET TITLE(*; "text_ai_status"; "✅ Action appliquée avec succès.")
+
+//MARK: - Helpers
+Function _weatherBadge($level : Text) : Text
+	Case of 
+		: ($level="critical")
+			return "🚨 CRITICAL WEATHER"
+		: ($level="warning")
+			return "⛈ Weather Warning"
+		: ($level="watch")
+			return "🌧 Weather Watch"
+		Else 
+			return "☀ Clear forecast"
+	End case 
+
+Function _riskLabel($level : Text) : Text
+	Case of 
+		: ($level="critical")
+			return "🚨 Critical risk – action required"
+		: ($level="warning")
+			return "⛈ Weather warning for event day"
+		: ($level="watch")
+			return "🌧 Weather watch – monitor closely"
+		Else 
+			return "☀ No significant weather risk"
+	End case 
+
+Function _statusLabel($status : Text) : Text
+	Case of 
+		: ($status="confirmed")
+			return "✅ Confirmed"
+		: ($status="quote")
+			return "💬 Quote"
+		: ($status="completed")
+			return "✔ Completed"
+		: ($status="cancelled")
+			return "❌ Cancelled"
+		Else 
+			return $status
+	End case 
+
+Function _setupLabel($setup : Object) : Text
+	var $cond : Text
+	Case of 
+		: ($setup.conditions="indifferent")
+			$cond:="🏢 Indoor"
+		: ($setup.conditions="rain")
+			$cond:="🌧 Rain-ready"
+		: ($setup.conditions="sunny")
+			$cond:="☀ Fair weather"
+		Else 
+			$cond:=$setup.conditions
+	End case 
+	var $temp : Text
+	Case of 
+		: ($setup.temperature="cold")
+			$temp:="❄ Cold"
+		: ($setup.temperature="hot")
+			$temp:="🔥 Hot"
+		Else 
+			$temp:="🌡 Normal temp"
+	End case 
+	return $cond+" · "+$temp
+
+Function _navigate($direction : Integer)
+	If (This._eventIDs.length=0)
+		return 
+	End if 
+	var $newIndex : Integer:=This._currentIndex+$direction
+	If (($newIndex<0) || ($newIndex>=This._eventIDs.length))
+		return 
+	End if 
+	var $newEvent : cs.EventEntity:=ds.Event.get(This._eventIDs[$newIndex])
+	If ($newEvent=Null)
+		return 
+	End if 
+	This.event:=$newEvent
+	This._currentIndex:=$newIndex
+	This.aiActions:=[]
+	This._populateHeader()
+	This._loadEventLines()
+	This._renderAIPanel(Null)
+	This._updateNavButtons()
+	This._applyReadOnlyIfDone()
+
+Function _updateNavButtons()
+	var $lastIndex : Integer:=This._eventIDs.length-1
+	var $hasPrev : Boolean:=(This._currentIndex>0)
+	var $hasNext : Boolean:=(This._currentIndex<$lastIndex)
+	OBJECT SET ENABLED(*; "btn_prev"; $hasPrev)
+	OBJECT SET ENABLED(*; "btn_next"; $hasNext)
+
+Function _applyReadOnlyIfDone()
+	var $isDone : Boolean:=((This.event.status="completed") || (This.event.status="cancelled"))
+	OBJECT SET ENABLED(*; "btn_ai_analyze"; Not($isDone))
+	OBJECT SET ENABLED(*; "btn_ai_action1"; Not($isDone))
+	OBJECT SET ENABLED(*; "btn_ai_action2"; Not($isDone))
+	OBJECT SET ENABLED(*; "btn_ai_action3"; Not($isDone))
+	OBJECT SET ENABLED(*; "btn_ai_action4"; Not($isDone))
+	If ($isDone)
+		OBJECT SET TITLE(*; "text_ai_status"; "This event is "+This.event.status+" and cannot be modified.")
+		OBJECT SET TITLE(*; "text_ai_context"; "")
+	End if 

@@ -1,0 +1,366 @@
+// DataSeeder.4dm
+// Amorce la base avec les données JSON si elle est vide
+// Appelé au démarrage de l'application (On Startup / Home form On Load)
+
+singleton Class constructor()
+
+// ─── Point d'entrée principal ─────────────────────────────────────────────────
+Function seedIfEmpty()
+	If (ds.Client.all().length=0)
+		This._seedClients()
+	End if 
+	If (ds.Venue.all().length=0)
+		This._seedVenues()
+	End if 
+	If (ds.Service.all().length=0)
+		This._seedServices()
+	End if 
+	If (ds.Event.all().length=0)
+		This._seedEventsAndLines()
+	End if 
+	If (ds.Email.all().length=0)
+		This._seedEmails()
+	End if 
+
+	// Générer les embeddings vectoriels pour les services (si absents)
+	This._buildServiceEmbeddings()
+
+// ─── Reset complet : vide tout et ré-importe ─────────────────────────────────
+Function resetAll()
+	// Supprimer dans l'ordre (enfants d'abord)
+	ds.EventLine.all().drop()
+	ds.Event.all().drop()
+	ds.Email.all().drop()
+	ds.Service.all().drop()
+	ds.Venue.all().drop()
+	ds.Client.all().drop()
+
+	// Ré-importer tout depuis les JSON
+	This._seedClients()
+	This._seedVenues()
+	This._seedServices()
+	This._seedEventsAndLines()
+	This._seedEmails()
+
+	// Recalculer les embeddings (forcé car les services sont neufs)
+	This._buildServiceEmbeddings()
+
+// ─── Clients ──────────────────────────────────────────────────────────────────
+Function _seedClients()
+	var $file : 4D.File:=Folder(fk resources folder).file("data/clients.json")
+	var $data : Collection:=JSON Parse($file.getText())
+	var $item : Object
+	var $e : cs.ClientEntity
+	For each ($item; $data)
+		$e:=ds.Client.new()
+		$e.companyName:=$item.companyName
+		$e.contactName:=$item.contactName
+		$e.email:=$item.email
+		$e.phone:=$item.phone
+		$e.country:=$item.country
+		$e.save()
+	End for each
+
+// ─── Venues ───────────────────────────────────────────────────────────────────
+Function _seedVenues()
+	var $file : 4D.File:=Folder(fk resources folder).file("data/venues.json")
+	var $data : Collection:=JSON Parse($file.getText())
+	var $item : Object
+	var $e : cs.VenueEntity
+	For each ($item; $data)
+		$e:=ds.Venue.new()
+		$e.name:=$item.name
+		$e.address:=$item.address
+		$e.city:=$item.city
+		$e.country:=$item.country
+		$e.latitude:=$item.latitude
+		$e.longitude:=$item.longitude
+		$e.venueType:=$item.venueType
+		$e.capacity:=$item.capacity
+		$e.timezone:=$item.timezone
+		If ($item.indoorOption#Null)
+			$e.indoorOption:=$item.indoorOption
+		End if 
+		If ($item.outdoorOption#Null)
+			$e.outdoorOption:=$item.outdoorOption
+		End if 
+		$e.save()
+	End for each
+
+// ─── Services ─────────────────────────────────────────────────────────────────
+Function _seedServices()
+	var $file : 4D.File:=Folder(fk resources folder).file("data/services.json")
+	var $data : Collection:=JSON Parse($file.getText())
+	var $item : Object
+	var $e : cs.ServiceEntity
+	For each ($item; $data)
+		$e:=ds.Service.new()
+		$e.category:=$item.category
+		$e.label:=$item.label
+		$e.unit:=$item.unit
+		$e.unitPrice:=$item.unitPrice
+		$e.available:=$item.available
+		$e.save()
+	End for each
+
+// ─── Events + EventLines ──────────────────────────────────────────────────────
+Function _seedEventsAndLines()
+	// Délègue à regenerateEvents() qui charge events.json avec dates relatives
+	This.regenerateEvents()
+
+// ─── Génère des lignes réalistes pour un événement ────────────────────────────
+Function _generateEventLines($evt : cs.EventEntity; $item : Object; $svcByCategory : Object)
+	var $guestCount : Integer:=$item.guestCount
+	var $status : Text:=$item.status
+	var $lineStatus : Text:=Choose($status="confirmed"; "confirmed"; "pending")
+
+	// Always add catering
+	This._addRandomService($evt; $svcByCategory; "Catering"; $guestCount; $lineStatus)
+	// Always add Sound & AV
+	This._addRandomService($evt; $svcByCategory; "Sound & AV"; 1; $lineStatus)
+	// 70% chance: add Lighting
+	If (Random%10<7)
+		This._addRandomService($evt; $svcByCategory; "Lighting"; 1; $lineStatus)
+	End if
+	// 60% chance: add Photography
+	If (Random%10<6)
+		This._addRandomService($evt; $svcByCategory; "Photography & Film"; 1; $lineStatus)
+	End if
+	// 50% chance: add Security
+	If (Random%10<5)
+		This._addRandomService($evt; $svcByCategory; "Security"; 1+($guestCount/100); $lineStatus)
+	End if
+	// 40% chance: add Structures (for outdoor events)
+	If ((Random%10<4) && ($evt.venueOption="outdoor"))
+		This._addRandomService($evt; $svcByCategory; "Structures"; 1; $lineStatus)
+	End if
+
+	// Weather-coherent services based on weatherSetup
+	var $setup : Object:=$evt.weatherSetup
+	If ($setup#Null)
+		// Rain-planned events: add rain protection
+		If ($setup.conditions="rain")
+			This._addRandomService($evt; $svcByCategory; "Structures"; 1; $lineStatus)
+			This._addServiceByLabel($evt; $svcByCategory; "Furniture & Decor"; "Parapluie personnalisé événement"; $guestCount/2; $lineStatus)
+			This._addServiceByLabel($evt; $svcByCategory; "Furniture & Decor"; "Poncho pluie jetable (lot de 50)"; ($guestCount/50)+1; $lineStatus)
+		End if 
+		// Hot-planned events: add cooling
+		If ($setup.temperature="hot")
+			This._addServiceByLabel($evt; $svcByCategory; "Technical"; "Climatisation mobile (unité)"; 1+($guestCount/200); $lineStatus)
+			This._addServiceByLabel($evt; $svcByCategory; "Furniture & Decor"; "Parasol chauffant extérieur"; 0; $lineStatus)
+		End if 
+		// Cold-planned events: add heating
+		If ($setup.temperature="cold")
+			This._addServiceByLabel($evt; $svcByCategory; "Technical"; "Chauffage air chaud (tente)"; 1+($guestCount/300); $lineStatus)
+		End if 
+	End if
+
+// ─── Ajoute un service aléatoire d'une catégorie donnée ──────────────────────
+Function _addRandomService($evt : cs.EventEntity; $svcByCategory : Object; $category : Text; $qty : Integer; $lineStatus : Text)
+	var $list : Collection:=$svcByCategory[$category]
+	If (($list#Null) && ($list.length>0))
+		This._addLine($evt; $list[Random%$list.length]; $qty; $lineStatus)
+	End if
+
+// ─── Ajoute un service spécifique par son label ───────────────────────────────
+Function _addServiceByLabel($evt : cs.EventEntity; $svcByCategory : Object; $category : Text; $label : Text; $qty : Integer; $lineStatus : Text)
+	var $list : Collection:=$svcByCategory[$category]
+	If (($list=Null) || ($list.length=0))
+		return 
+	End if 
+	var $svc : Object:=$list.query("label = :1"; $label).first()
+	If ($svc#Null)
+		If ($qty>0)
+			This._addLine($evt; $svc; $qty; $lineStatus)
+		End if 
+	End if
+
+// ─── Ajoute une ligne de commande ─────────────────────────────────────────────
+Function _addLine($evt : cs.EventEntity; $svc : Object; $qty : Integer; $status : Text)
+	var $line : cs.EventLineEntity:=ds.EventLine.new()
+	$line.eventID:=$evt.ID
+	$line.serviceID:=$svc.id
+	$line.quantity:=$qty
+	$line.unitPrice:=$svc.unitPrice
+	$line.lineStatus:=$status
+	$line.save()
+
+// ─── Emails ───────────────────────────────────────────────────────────────────
+Function _seedEmails()
+	var $file : 4D.File:=Folder(fk resources folder).file("data/emails.json")
+	var $data : Collection:=JSON Parse($file.getText())
+	var $item : Object
+	var $e : cs.EmailEntity
+	For each ($item; $data)
+		$e:=ds.Email.new()
+		$e.sender:=$item.sender
+		$e.senderEmail:=$item.senderEmail
+		$e.subject:=$item.subject
+		$e.body:=$item.body
+		$e.receivedAt:=Date($item.receivedAt)
+		$e.emailStatus:=$item.emailStatus
+		$e.emailType:=$item.emailType
+		// linkedEventIndex → résoudre vers ID si non null
+		// Pour la démo, on laisse null — l'EmailAnalyzer le découvrira
+		$e.linkedEventID:=""
+		$e.save()
+	End for each
+
+// ─── Régénération des events avec dates relatives ─────────────────────────────
+// Supprime tous les events + eventlines, puis recharge events.json avec des
+// dates calculées relativement à la date courante.
+// Seuls 1-2 events proches reçoivent une fausse alerte météo.
+Function regenerateEvents()
+	// Supprimer les données existantes
+	ds.EventLine.all().drop()
+	ds.Event.all().drop()
+
+	// Charger les templates depuis events.json
+	var $file : 4D.File:=Folder(fk resources folder).file("data/events.json")
+	var $templates : Collection:=JSON Parse($file.getText())
+	var $total : Integer:=$templates.length
+
+	// Charger les références en base
+	var $clients : cs.ClientSelection:=ds.Client.all().orderBy("companyName ASC")
+	var $venues : cs.VenueSelection:=ds.Venue.all().orderBy("name ASC")
+	var $services : cs.ServiceSelection:=ds.Service.all()
+
+	// Cache services by category
+	var $svcByCategory : Object:={}
+	var $svc : cs.ServiceEntity
+	var $cat : Text
+	For each ($svc; $services)
+		$cat:=$svc.category
+		If ($svcByCategory[$cat]=Null)
+			$svcByCategory[$cat]:=[]
+		End if
+		$svcByCategory[$cat].push({id: $svc.ID; label: $svc.label; unitPrice: $svc.unitPrice})
+	End for each
+
+	var $today : Date:=Current date
+
+	// ── Distribution des dates relatives ──────────────────────────────────────
+	// 300 events répartis :
+	//   [0..39]     → completed  (-1 à -180j)
+	//   [40..49]    → cancelled  (-1 à -90j)
+	//   [50..119]   → confirmed  (+1 à +30j)   ← sweet spot démo / météo
+	//   [120..219]  → confirmed  (+31 à +180j)
+	//   [220..279]  → quote      (+5 à +150j)
+	//   [280..299]  → confirmed  (+181 à +365j)
+	var $i : Integer
+	var $item : Object
+	var $evt : cs.EventEntity
+	var $clientEnt : cs.ClientEntity
+	var $venueEnt : cs.VenueEntity
+	var $daysOffset : Integer
+	var $status : Text
+
+	For ($i; 0; $total-1)
+		$item:=$templates[$i]
+
+		// Determine status and relative date based on slot
+		Case of 
+			: ($i<40)
+				$status:="completed"
+				$daysOffset:=-(Random%180+1)
+			: ($i<50)
+				$status:="cancelled"
+				$daysOffset:=-(Random%90+1)
+			: ($i<120)
+				$status:="confirmed"
+				$daysOffset:=(Random%30+1)
+			: ($i<220)
+				$status:="confirmed"
+				$daysOffset:=(Random%150+31)
+			: ($i<280)
+				$status:="quote"
+				$daysOffset:=(Random%150+5)
+			Else 
+				$status:="confirmed"
+				$daysOffset:=(Random%185+181)
+		End case 
+
+		// Resolve client & venue
+		$clientEnt:=$clients[$item.clientIndex%$clients.length]
+		$venueEnt:=$venues[$item.venueIndex%$venues.length]
+
+		$evt:=ds.Event.new()
+		$evt.clientID:=$clientEnt.ID
+		$evt.venueID:=$venueEnt.ID
+		$evt.eventDate:=$today+$daysOffset
+		$evt.status:=$status
+		$evt.guestCount:=$item.guestCount
+		$evt.contractRef:="CTR-"+String(Year of($today+$daysOffset))+"-"+String(100+$i)
+		$evt.notes:=$item.notes
+		$evt.createdAt:=Current date
+
+		// Determine venue option (indoor/outdoor) based on venue capabilities
+		var $venueOption : Text
+		If ($venueEnt.venueType="indoor")
+			$venueOption:="indoor"
+		Else 
+			If ($venueEnt.venueType="outdoor")
+				$venueOption:="outdoor"
+			Else 
+				// Mixed: 50/50
+				$venueOption:=Choose(Random%2=0; "indoor"; "outdoor")
+			End if 
+		End if 
+		$evt.venueOption:=$venueOption
+
+		// Assign rental price from venue option
+		If ($venueOption="indoor")
+			If ($venueEnt.indoorOption#Null)
+				$evt.venueRentalPrice:=$venueEnt.indoorOption.rentalPrice
+			Else 
+				$evt.venueRentalPrice:=2000
+			End if 
+		Else 
+			If ($venueEnt.outdoorOption#Null)
+				$evt.venueRentalPrice:=$venueEnt.outdoorOption.rentalPrice
+			Else 
+				$evt.venueRentalPrice:=1500
+			End if 
+		End if 
+
+		// Assigner le weatherSetup en fonction du type choisi
+		$evt.weatherSetup:=This._assignWeatherSetup($venueOption)
+
+		// Les alertes météo seront calculées par le WeatherService
+		$evt.weatherAlertLevel:="none"
+
+		$evt.save()
+
+		// Generate event lines
+		var $fakeItem : Object:={guestCount: $evt.guestCount; status: $status}
+		This._generateEventLines($evt; $fakeItem; $svcByCategory)
+	End for
+
+// ─── Embeddings vectoriels des services ───────────────────────────────────────
+Function _buildServiceEmbeddings()
+	// Vérifie si au moins un service n'a pas d'embedding
+	var $missing : cs.ServiceSelection:=ds.Service.query("embedding = null")
+	If ($missing.length=0)
+		return 
+	End if 
+	var $matcher : cs.ServiceMatcher:=cs.ServiceMatcher.new()
+	$matcher.buildEmbeddings()
+
+// ─── Attribution du weatherSetup en fonction du choix indoor/outdoor ──────────
+Function _assignWeatherSetup($venueOption : Text) : Object
+	var $conditions : Text
+	var $temperature : Text
+	var $r : Integer:=Random%10
+
+	Case of 
+		: ($venueOption="indoor")
+			// Indoor: weather-indifferent
+			$conditions:="indifferent"
+			$temperature:="normal"
+		Else 
+			// Outdoor: mainly fair weather
+			$conditions:=Choose($r<7; "sunny"; "rain")
+			$temperature:=Choose($r<3; "hot"; Choose($r<8; "normal"; "cold"))
+	End case 
+
+	return {conditions: $conditions; temperature: $temperature}

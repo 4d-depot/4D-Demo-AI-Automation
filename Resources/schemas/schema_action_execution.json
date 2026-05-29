@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "required": ["proposedLines", "summary", "totalImpact"],
+  "additionalProperties": false,
+  "properties": {
+    "proposedLines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["serviceID", "label", "category", "quantity", "unitPrice", "delta"],
+        "additionalProperties": false,
+        "properties": {
+          "serviceID": {
+            "type": "string",
+            "description": "ID exact du service tel que retourné par search_services."
+          },
+          "label": {
+            "type": "string",
+            "description": "Libellé du service."
+          },
+          "category": {
+            "type": "string",
+            "description": "Catégorie du service."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantité proposée."
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Prix unitaire du service."
+          },
+          "delta": {
+            "type": "string",
+            "enum": ["add", "remove", "update"],
+            "description": "Type de modification : add = nouvelle ligne, remove = suppression, update = changement de quantité."
+          }
+        }
+      },
+      "description": "Lignes de services proposées à ajouter, retirer ou modifier."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Résumé en langage naturel de ce qui est proposé."
+    },
+    "totalImpact": {
+      "type": "number",
+      "description": "Impact financier total en euros (positif = surcoût, négatif = économie)."
+    }
+  }
+}

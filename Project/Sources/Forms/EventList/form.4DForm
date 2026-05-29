@@ -1,0 +1,301 @@
+{
+  "rightMargin": 0,
+  "bottomMargin": 0,
+  "windowSizingX": "fixed",
+  "windowSizingY": "fixed",
+  "windowMinWidth": 1000,
+  "windowMinHeight": 640,
+  "pages": [
+    null,
+    {
+      "objects": {
+        "rect_bg": {
+          "type": "rectangle",
+          "left": 0,
+          "top": 0,
+          "width": 1000,
+          "height": 640,
+          "class": "bgForm"
+        },
+        "rect_header": {
+          "type": "rectangle",
+          "left": 0,
+          "top": 0,
+          "width": 1000,
+          "height": 64,
+          "class": "bgHeader"
+        },
+        "text_title": {
+          "type": "text",
+          "left": 24,
+          "top": 18,
+          "width": 200,
+          "height": 28,
+          "text": "📅 Events",
+          "class": "textTitle"
+        },
+        "rect_filter_bar": {
+          "type": "rectangle",
+          "left": 0,
+          "top": 64,
+          "width": 1000,
+          "height": 52,
+          "class": "bgToolbar"
+        },
+        "text_event_count": {
+          "type": "text",
+          "left": 800,
+          "top": 80,
+          "width": 180,
+          "height": 20,
+          "text": "150 events",
+          "textAlign": "right",
+          "class": "textMuted"
+        },
+        "listbox_events": {
+          "type": "listbox",
+          "left": 0,
+          "top": 116,
+          "width": 1000,
+          "height": 524,
+          "listboxType": "collection",
+          "dataSource": "Form.events",
+          "headerHeight": "30px",
+          "showHeaders": true,
+          "rowHeight": "52px",
+          "events": [
+            "onClick",
+            "onDoubleClick"
+          ],
+          "columns": [
+            {
+              "header": {
+                "text": ""
+              },
+              "dataSource": "This.weatherIcon",
+              "name": "col_weather",
+              "width": 30,
+              "fontSize": 16,
+              "textAlign": "center",
+              "verticalAlign": "middle"
+            },
+            {
+              "header": {
+                "text": ""
+              },
+              "dataSource": "This.venueOption",
+              "name": "col_venue_option",
+              "width": 28,
+              "fontSize": 14,
+              "textAlign": "center",
+              "verticalAlign": "middle"
+            },
+            {
+              "header": {
+                "text": "DATE"
+              },
+              "dataSource": "This.eventDateStr",
+              "name": "col_date",
+              "width": 85,
+              "fontSize": 12,
+              "verticalAlign": "middle",
+              "class": "colDefault"
+            },
+            {
+              "header": {
+                "text": "CLIENT"
+              },
+              "dataSource": "This.clientName",
+              "name": "col_client",
+              "width": 155,
+              "fontSize": 13,
+              "verticalAlign": "middle",
+              "class": "colPrimary"
+            },
+            {
+              "header": {
+                "text": "VENUE"
+              },
+              "dataSource": "This.venueName",
+              "name": "col_venue",
+              "width": 185,
+              "fontSize": 12,
+              "verticalAlign": "middle",
+              "class": "colDefault"
+            },
+            {
+              "header": {
+                "text": "CITY"
+              },
+              "dataSource": "This.venueCity",
+              "name": "col_city",
+              "width": 85,
+              "fontSize": 12,
+              "verticalAlign": "middle",
+              "class": "colMuted"
+            },
+            {
+              "header": {
+                "text": "GUESTS"
+              },
+              "dataSource": "This.guestCountStr",
+              "name": "col_guests",
+              "width": 55,
+              "fontSize": 12,
+              "textAlign": "right",
+              "verticalAlign": "middle",
+              "class": "colDefault"
+            },
+            {
+              "header": {
+                "text": "PLANNED"
+              },
+              "dataSource": "This.plannedWeather",
+              "name": "col_planned",
+              "width": 65,
+              "fontSize": 13,
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "class": "colDefault"
+            },
+            {
+              "header": {
+                "text": "FORECAST"
+              },
+              "dataSource": "This.forecastWeather",
+              "name": "col_forecast",
+              "width": 65,
+              "fontSize": 13,
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "class": "colDefault"
+            },
+            {
+              "header": {
+                "text": "STATUS"
+              },
+              "dataSource": "This.statusBadge",
+              "name": "col_status",
+              "width": 80,
+              "fontSize": 12,
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "class": "colPrimary"
+            },
+            {
+              "header": {
+                "text": "CONTRACT"
+              },
+              "dataSource": "This.contractRef",
+              "name": "col_ref",
+              "width": 100,
+              "fontSize": 11,
+              "verticalAlign": "middle",
+              "class": "colMuted"
+            }
+          ],
+          "currentItemSource": "Form.currentEvent",
+          "verticalAlign": "middle",
+          "class": "listbox"
+        },
+        "btn_refresh": {
+          "type": "button",
+          "left": 800,
+          "top": 16,
+          "width": 160,
+          "height": 34,
+          "text": "🌤 Refresh Weather",
+          "events": [
+            "onClick"
+          ],
+          "focusable": true,
+          "method": "objbtn_refresh.4dm",
+          "class": "btnRefresh",
+          "style": "flat"
+        },
+        "btn_filter_all": {
+          "type": "button",
+          "left": 24,
+          "top": 76,
+          "width": 100,
+          "height": 28,
+          "text": "All",
+          "events": [
+            "onClick"
+          ],
+          "focusable": true,
+          "method": "objbtn_filter_all.4dm",
+          "class": "btnFilterActive",
+          "style": "flat"
+        },
+        "btn_filter_confirmed": {
+          "type": "button",
+          "left": 132,
+          "top": 76,
+          "width": 130,
+          "height": 28,
+          "text": "Confirmed",
+          "events": [
+            "onClick"
+          ],
+          "focusable": true,
+          "method": "objbtn_filter_confirmed.4dm",
+          "class": "btnFilterInactive",
+          "style": "flat"
+        },
+        "btn_filter_quote": {
+          "type": "button",
+          "left": 270,
+          "top": 76,
+          "width": 110,
+          "height": 28,
+          "text": "Quotes",
+          "events": [
+            "onClick"
+          ],
+          "focusable": true,
+          "method": "objbtn_filter_quote.4dm",
+          "class": "btnFilterInactive",
+          "style": "flat"
+        },
+        "btn_filter_weather": {
+          "type": "button",
+          "left": 388,
+          "top": 76,
+          "width": 150,
+          "height": 28,
+          "text": "⚠ Weather Alerts",
+          "events": [
+            "onClick"
+          ],
+          "focusable": true,
+          "method": "objbtn_filter_weather.4dm",
+          "class": "btnFilterInactive",
+          "style": "flat"
+        },
+        "btn_toggle_past": {
+          "type": "button",
+          "left": 560,
+          "top": 76,
+          "width": 110,
+          "height": 28,
+          "text": "Show Past",
+          "events": [
+            "onClick"
+          ],
+          "focusable": true,
+          "method": "objbtn_toggle_past.4dm",
+          "class": "btnFilterInactive",
+          "style": "flat"
+        }
+      }
+    }
+  ],
+  "events": [
+    "onLoad",
+    "onClick",
+    "onDoubleClick"
+  ],
+  "formClass": "FC_EventList",
+  "method": "method.4dm"
+}

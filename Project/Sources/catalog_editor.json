@@ -1,0 +1,100 @@
+{
+	"tables": {
+		"Email": {
+			"color": {
+				"red": 255,
+				"green": 255,
+				"blue": 255,
+				"alpha": 0
+			},
+			"coordinates": {
+				"left": 753.23046875,
+				"top": 194.7265625,
+				"width": 266.6796875,
+				"height": 262.32421875
+			},
+			"displayable_fields_count": 10,
+			"fields_ordering": 1
+		},
+		"EventLine": {
+			"color": {
+				"red": 255,
+				"green": 255,
+				"blue": 255,
+				"alpha": 0
+			},
+			"coordinates": {
+				"left": 829.84375,
+				"top": 0,
+				"width": 269.0546875,
+				"height": 172.171875
+			},
+			"displayable_fields_count": 6,
+			"fields_ordering": 1
+		},
+		"Event": {
+			"color": {
+				"red": 255,
+				"green": 255,
+				"blue": 255,
+				"alpha": 0
+			},
+			"coordinates": {
+				"left": 330.4296875,
+				"top": 77.44921875,
+				"width": 262.1328125,
+				"height": 301.66015625
+			},
+			"displayable_fields_count": 12,
+			"fields_ordering": 1
+		},
+		"Service": {
+			"color": {
+				"red": 255,
+				"green": 255,
+				"blue": 255,
+				"alpha": 0
+			},
+			"coordinates": {
+				"left": 1176.60546875,
+				"top": 161.95703125,
+				"width": 255.06640625,
+				"height": 194.296875
+			},
+			"displayable_fields_count": 7,
+			"fields_ordering": 1
+		},
+		"Venue": {
+			"color": {
+				"red": 255,
+				"green": 255,
+				"blue": 255,
+				"alpha": 0
+			},
+			"coordinates": {
+				"left": 647.67578125,
+				"top": 501.7734375,
+				"width": 279.34375,
+				"height": 273.01953125
+			},
+			"displayable_fields_count": 11,
+			"fields_ordering": 1
+		},
+		"Client": {
+			"color": {
+				"red": 255,
+				"green": 255,
+				"blue": 255,
+				"alpha": 0
+			},
+			"coordinates": {
+				"left": 55.43359375,
+				"top": 97.796875,
+				"width": 220.625,
+				"height": 194.0078125
+			},
+			"displayable_fields_count": 7,
+			"fields_ordering": 1
+		}
+	}
+}
