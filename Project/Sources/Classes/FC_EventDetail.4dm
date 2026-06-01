@@ -147,7 +147,7 @@ Function _renderAIPanel($weatherResult : Object)
 		$setupStr:="Planned: "+This._setupLabel($setup)
 	End if 
 	If ($forecast#Null)
-		$setupStr:=$setupStr+"\nForecast: "+This._setupLabel($forecast)
+		$setupStr:=$setupStr+"\nForecast: "+This._forecastLabel($forecast)
 	End if 
 	OBJECT SET TITLE(*; "text_ai_setup"; $setupStr) 
 
@@ -368,6 +368,29 @@ Function _setupLabel($setup : Object) : Text
 		: ($setup.temperature="cold")
 			$temp:="❄ Cold"
 		: ($setup.temperature="hot")
+			$temp:="🔥 Hot"
+		Else 
+			$temp:="🌡 Normal temp"
+	End case 
+	return $cond+" · "+$temp
+
+Function _forecastLabel($forecast : Object) : Text
+	var $cond : Text
+	Case of 
+		: ($forecast.conditions="rain")
+			$cond:="🌧 Rain expected"
+		: ($forecast.conditions="sunny")
+			$cond:="☀ Sunny"
+		: ($forecast.conditions="indifferent")
+			$cond:="🏢 Indoor"
+		Else 
+			$cond:=$forecast.conditions
+	End case 
+	var $temp : Text
+	Case of 
+		: ($forecast.temperature="cold")
+			$temp:="❄ Cold"
+		: ($forecast.temperature="hot")
 			$temp:="🔥 Hot"
 		Else 
 			$temp:="🌡 Normal temp"
