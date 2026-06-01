@@ -483,6 +483,161 @@
           "method": "objbtn_next.4dm",
           "class": "btnBack",
           "style": "flat"
+        },
+        "rect_confirm_sep": {
+          "type": "rectangle",
+          "left": 1100,
+          "top": 64,
+          "width": 2,
+          "height": 736,
+          "class": "bgContent"
+        },
+        "rect_confirm_bg": {
+          "type": "rectangle",
+          "left": 1102,
+          "top": 64,
+          "width": 358,
+          "height": 736,
+          "class": "bgCard"
+        },
+        "text_confirm_header": {
+          "type": "text",
+          "left": 1118,
+          "top": 80,
+          "width": 324,
+          "height": 14,
+          "text": "PROPOSED CHANGES",
+          "class": "textLabel"
+        },
+        "text_confirm_title": {
+          "type": "text",
+          "left": 1118,
+          "top": 100,
+          "width": 324,
+          "height": 24,
+          "text": "",
+          "class": "textSection"
+        },
+        "text_confirm_summary": {
+          "type": "text",
+          "left": 1118,
+          "top": 130,
+          "width": 324,
+          "height": 36,
+          "text": "",
+          "class": "textMuted"
+        },
+        "listbox_confirm": {
+          "type": "listbox",
+          "left": 1118,
+          "top": 178,
+          "width": 324,
+          "height": 300,
+          "listboxType": "collection",
+          "dataSource": "Form.confirmLines",
+          "class": "lbStandard",
+          "movableRows": false,
+          "sortable": false,
+          "selectionMode": "none",
+          "events": [],
+          "columns": [
+            {
+              "header": { "text": "", "class": "lbHeaderCell" },
+              "name": "col_confirm_delta",
+              "width": 28,
+              "dataSource": "This.deltaIcon",
+              "class": "lbCell"
+            },
+            {
+              "header": { "text": "Service", "class": "lbHeaderCell" },
+              "name": "col_confirm_label",
+              "width": 160,
+              "dataSource": "This.label",
+              "class": "lbCell"
+            },
+            {
+              "header": { "text": "Qté", "class": "lbHeaderCell" },
+              "name": "col_confirm_qty",
+              "width": 36,
+              "dataSource": "This.quantity",
+              "class": "lbCellRight"
+            },
+            {
+              "header": { "text": "Total", "class": "lbHeaderCell" },
+              "name": "col_confirm_total",
+              "width": 100,
+              "dataSource": "This.lineTotalDisplay",
+              "class": "lbCellRight"
+            }
+          ]
+        },
+        "rect_confirm_footer_sep": {
+          "type": "rectangle",
+          "left": 1102,
+          "top": 490,
+          "width": 358,
+          "height": 1,
+          "class": "bgContent"
+        },
+        "text_confirm_impact_lbl": {
+          "type": "text",
+          "left": 1118,
+          "top": 506,
+          "width": 120,
+          "height": 20,
+          "text": "Impact total :",
+          "class": "textLabel"
+        },
+        "text_confirm_impact_val": {
+          "type": "text",
+          "left": 1242,
+          "top": 506,
+          "width": 200,
+          "height": 20,
+          "text": "",
+          "class": "textSection"
+        },
+        "text_confirm_newtotal_lbl": {
+          "type": "text",
+          "left": 1118,
+          "top": 532,
+          "width": 120,
+          "height": 20,
+          "text": "Nouveau total :",
+          "class": "textLabel"
+        },
+        "text_confirm_newtotal_val": {
+          "type": "text",
+          "left": 1242,
+          "top": 532,
+          "width": 200,
+          "height": 20,
+          "text": "",
+          "class": "textSection"
+        },
+        "btn_cancel_confirm": {
+          "type": "button",
+          "left": 1118,
+          "top": 570,
+          "width": 148,
+          "height": 36,
+          "text": "Annuler",
+          "events": [ "onClick" ],
+          "focusable": true,
+          "method": "objbtn_cancel_confirm.4dm"
+        },
+        "btn_confirm_action": {
+          "type": "button",
+          "left": 1274,
+          "top": 570,
+          "width": 168,
+          "height": 36,
+          "text": "✓ Confirmer",
+          "style": "flat",
+          "class": "btnPrimary",
+          "events": [ "onClick" ],
+          "focusable": true,
+          "method": "objbtn_confirm_action.4dm"
         }
       }
     }

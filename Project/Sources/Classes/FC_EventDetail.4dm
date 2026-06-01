@@ -4,15 +4,21 @@
 property event : cs.EventEntity
 property eventLines : Collection
 property aiActions : Collection
+property confirmLines : Collection
 property running : Boolean
 property _eventIDs : Collection
 property _currentIndex : Integer
+property _pendingExecResult : Object
+property _pendingAction : Object
 
 Class constructor($event : cs.EventEntity; $eventIDs : Collection)
 	This.event:=$event
 	This.eventLines:=[]
 	This.aiActions:=[]
+	This.confirmLines:=[]
 	This.running:=False
+	This._pendingExecResult:=Null
+	This._pendingAction:=Null
 	If ($eventIDs#Null)
 		This._eventIDs:=$eventIDs
 	Else 
@@ -287,32 +293,69 @@ Function _onExecutionDone($execResult : Object; $action : Object)
 	End if 
 
 	OBJECT SET TITLE(*; "text_ai_status"; "")
+	This._showConfirmPanel($action; $execResult)
 
-	// Calculer le total actuel
+Function _showConfirmPanel($action : Object; $execResult : Object)
+	This._pendingAction:=$action
+	This._pendingExecResult:=$execResult
+
 	var $currentTotal : Real:=cs.EventLineService.me.calculateTotal(This.eventLines)
+	This.confirmLines:=[]
+	var $impact : Real:=0
+	var $line : Object
+	For each ($line; $execResult.proposedLines)
+		var $lineTotal : Real:=$line.quantity*$line.unitPrice
+		var $deltaIcon : Text
+		Case of 
+			: ($line.delta="add")
+				$deltaIcon:="+"
+				$impact:=$impact+$lineTotal
+			: ($line.delta="remove")
+				$deltaIcon:="—"
+				$impact:=$impact-$lineTotal
+				$lineTotal:=-$lineTotal
+			: ($line.delta="update")
+				$deltaIcon:="✏"
+				$impact:=$impact+$lineTotal
+		End case 
+		This.confirmLines.push({ \
+			label: $line.label; \
+			quantity: $line.quantity; \
+			deltaIcon: $deltaIcon; \
+			lineTotalDisplay: String(Abs($lineTotal); "### ### ##0 €") \
+		})
+	End for each 
 
-	// Ouvrir le dialogue de confirmation
-	var $fc : cs.FC_ActionConfirm:=cs.FC_ActionConfirm.new( \
-		$action.label; \
-		$execResult.summary; \
-		$execResult.proposedLines; \
-		$currentTotal \
-	)
-	var $w : Integer:=Open form window("ActionConfirm"; Plain form window; Horizontally centered; Vertically centered)
-	DIALOG("ActionConfirm"; $fc)
-	CLOSE WINDOW($w)
+	var $prefix : Text:=Choose($impact>=0; "+"; "")
+	OBJECT SET TITLE(*; "text_confirm_title"; $action.label)
+	OBJECT SET TITLE(*; "text_confirm_summary"; $execResult.summary)
+	OBJECT SET TITLE(*; "text_confirm_impact_val"; $prefix+String($impact; "### ### ##0 €"))
+	OBJECT SET TITLE(*; "text_confirm_newtotal_val"; String($currentTotal+$impact; "### ### ##0 €"))
+	RESIZE FORM WINDOW(1460; 800)
 
-	If (Not($fc.confirmed))
-		OBJECT SET TITLE(*; "text_ai_status"; "Action annulée.")
-		return 
-	End if 
+Function _hideConfirmPanel()
+	RESIZE FORM WINDOW(1100; 800)
+	This._pendingExecResult:=Null
+	This._pendingAction:=Null
 
-	// Appliquer les modifications en base
-	cs.EventLineService.me.applyProposedChanges(This.event.ID; $execResult.proposedLines)
+Function btnConfirmActionEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			If (This._pendingExecResult=Null)
+				return 
+			End if 
+			cs.EventLineService.me.applyProposedChanges(This.event.ID; This._pendingExecResult.proposedLines)
+			This._hideConfirmPanel()
+			This._loadEventLines()
+			OBJECT SET TITLE(*; "text_ai_status"; "✅ Action applied successfully.")
+	End case 
 
-	// Rafraîchir les données de l'événement
-	This._loadEventLines()
-	OBJECT SET TITLE(*; "text_ai_status"; "✅ Action appliquée avec succès.")
+Function btnCancelConfirmEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._hideConfirmPanel()
+			OBJECT SET TITLE(*; "text_ai_status"; "Action cancelled.")
+	End case 
 
 //MARK: - Helpers
 Function _weatherBadge($level : Text) : Text
@@ -414,6 +457,9 @@ Function _navigate($direction : Integer)
 	This.event:=$newEvent
 	This._currentIndex:=$newIndex
 	This.aiActions:=[]
+	If (This._pendingExecResult#Null)
+		This._hideConfirmPanel()
+	End if 
 	This._populateHeader()
 	This._loadEventLines()
 	This._renderAIPanel(Null)
