@@ -303,6 +303,11 @@ Function _onExecutionChatDone($chatResult : Object; $callback : 4D.Function)
 	End if 
 	var $result : Object:={success: False; proposedLines: Null; summary: ""; totalImpact: 0; error: ""}
 	var $parsed : Object:=This._extractParsedResponse($chatResult)
+
+	// Debug: log full parsed result
+	var $logFile : 4D.File:=Folder(fk logs folder).file("execution_result.json")
+	$logFile.setText(JSON Stringify({parsed: $parsed; choice: $chatResult.choice}; *))
+
 	If ($parsed=Null)
 		$result.error:=This._extractError($chatResult)
 		$callback.call(Null; $result)
