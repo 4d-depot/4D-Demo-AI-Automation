@@ -310,7 +310,9 @@ Function _onExecutionDone($execResult : Object; $action : Object; $context : Obj
 		$execResult.proposedLines; \
 		$currentTotal \
 	)
+	var $w : Integer:=Open form window("ActionConfirm"; Plain form window; Horizontally centered; Vertically centered)
 	DIALOG("ActionConfirm"; $fc)
+	CLOSE WINDOW($w)
 
 	If (Not($fc.confirmed))
 		OBJECT SET TITLE(*; "text_ai_status"; "Action annulée.")
