@@ -133,6 +133,9 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object;
 	$system:=$system+"7) If the event is outdoor and an indoor alternative is available at the same venue, propose 'switch_venue' as one action\n\n"
 	$system:=$system+"For each action, include a 'hiddenPrompt' describing what contingency services to search for, quantities needed, and weather-specific requirements. "
 	$system:=$system+"Example hiddenPrompt: 'Search for weather protection structures: large tent or pagoda for 150 guests, waterproof flooring, portable heating units x2.'\n"
+	$system:=$system+"CRITICAL for 'replace_services' actions: the hiddenPrompt MUST contain two explicit sections:\n"
+	$system:=$system+"  Section REMOVE: list exact labels of existing services to remove (copy them verbatim from the event's services list), e.g. 'REMOVE: Poncho pluie jetable (lot de 50) x3, Parapluie personnalisé événement x43'\n"
+	$system:=$system+"  Section SEARCH: describe what replacement services to search in the catalog, e.g. 'SEARCH: outdoor lounge furniture for 86 guests, comfort seating'\n"
 	$system:=$system+"Respond ONLY with a valid JSON object matching the weather_actions schema. No markdown, no explanation."
 
 	var $user : Text:="Event ID: "+$event.ID+"\n"
@@ -246,7 +249,13 @@ Function _onModificationChatDone($chatResult : Object; $callback : 4D.Function)
 Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback : 4D.Function)
 	var $system : Text:="You are an event planning execution assistant for Event Pulse. "
 	$system:=$system+"You have access to a search_services tool to find services in our catalog. "
-	$system:=$system+"Based on the task description, search for appropriate services, then return a structured JSON with the proposed service lines.\n\n"
+	$system:=$system+"Based on the task description, build the list of proposed service changes for this event.\n\n"
+	$system:=$system+"The 'delta' field on each line controls what happens:\n"
+	$system:=$system+"- 'add': a new service found via search_services to add to the event\n"
+	$system:=$system+"- 'remove': an EXISTING service to remove — do NOT search for it, take label/quantity/unitPrice directly from the existing services list in context\n"
+	$system:=$system+"- 'update': change the quantity of an existing service\n\n"
+	$system:=$system+"For 'replace_services' tasks: you must produce BOTH 'remove' lines (for existing services listed under REMOVE:) AND 'add' lines (found via search_services for items listed under SEARCH:). "
+	$system:=$system+"Do NOT search for services that are listed under REMOVE — just emit them with delta:'remove'.\n\n"
 	$system:=$system+"Context:\n"
 	If ($context.eventID#Null)
 		$system:=$system+"- Event ID: "+$context.eventID+"\n"
@@ -267,9 +276,10 @@ Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback :
 			$system:=$system+"- "+$el.serviceLabel+" × "+String($el.quantity)+" @ "+String($el.unitPrice)+"€\n"
 		End for each 
 	End if 
-	$system:=$system+"\nIMPORTANT: Use the search_services tool to find real services from our catalog. "
-	$system:=$system+"Only propose services that were returned by the tool. "
-	$system:=$system+"Return a JSON with: proposedLines (array of {serviceID, label, category, quantity, unitPrice, delta}), summary (text), totalImpact (number in euros)."
+	$system:=$system+"\nFor 'add' lines: ONLY propose services that were actually returned by the search_services tool. "
+	$system:=$system+"For 'remove' lines: use the exact label and unitPrice from the existing services list above — do NOT search for them. "
+	$system:=$system+"Return a JSON with: proposedLines (array of {serviceID, label, category, quantity, unitPrice, delta}), summary (text), totalImpact (number in euros). "
+	$system:=$system+"For 'remove' lines, serviceID may be empty string. totalImpact = sum of add lines minus sum of remove lines."
 
 	var $execSchema : Object:=This._loadSchema("schema_action_execution.json")
 	var $self : Object:=This
