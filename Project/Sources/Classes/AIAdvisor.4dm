@@ -275,15 +275,15 @@ Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback :
 		$system:=$system+"\nExisting services on this event:\n"
 		var $el : Object
 		For each ($el; $context.existingLines)
-			$system:=$system+"- "+$el.serviceLabel+" × "+String($el.quantity)+" @ "+String($el.unitPrice)+"€\n"
+			$system:=$system+"- [ID:"+String($el.serviceID)+"] "+$el.serviceLabel+" × "+String($el.quantity)+" @ "+String($el.unitPrice)+"€\n"
 		End for each 
 	End if 
 	$system:=$system+"\nFor 'add' lines: ONLY propose services that were actually returned by the search_services tool. "
 	$system:=$system+"CRITICAL: If search_services returns no results for the requested service, return an EMPTY proposedLines array. "
 	$system:=$system+"NEVER emit 'remove' lines for an 'add_services' task — only emit removes for 'remove_services' or 'replace_services' tasks. "
-	$system:=$system+"For 'remove' lines: use the exact label and unitPrice from the existing services list above — do NOT search for them. "
+	$system:=$system+"For 'remove' lines: use the exact label, serviceID and unitPrice from the existing services list above — do NOT search for them. The serviceID for removes MUST be the [ID:xxx] value from the existing services list. "
 	$system:=$system+"Return a JSON with: proposedLines (array of {serviceID, label, category, quantity, unitPrice, delta}), summary (text), totalImpact (number in euros). "
-	$system:=$system+"For 'remove' lines, serviceID may be empty string. totalImpact = sum of add lines minus sum of remove lines."
+	$system:=$system+"totalImpact = sum of add lines minus sum of remove lines."
 
 	var $execSchema : Object:=This._loadSchema("schema_action_execution.json")
 	var $self : Object:=This

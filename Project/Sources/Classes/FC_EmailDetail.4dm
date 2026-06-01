@@ -329,6 +329,7 @@ Function _executeWithToolCalling($action : Object)
 		var $el : Object
 		For each ($el; This.eventLines)
 			$context.existingLines.push({ \
+				serviceID: $el.serviceID; \
 				serviceLabel: $el.serviceLabel; \
 				quantity: $el.quantity; \
 				unitPrice: $el.unitPrice \

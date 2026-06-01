@@ -90,6 +90,6 @@ Function buildEventLinesCollection($eventID : Text) : Collection
 	var $service : cs.ServiceEntity
 	For each ($line; $selection)
 		$service:=$line.service
-		$lines.push({serviceLabel: (Choose($service#Null; $service.label; "Inconnu")); quantity: $line.quantity; unitPrice: $line.unitPrice})
+		$lines.push({serviceID: $line.serviceID; serviceLabel: (Choose($service#Null; $service.label; "Inconnu")); quantity: $line.quantity; unitPrice: $line.unitPrice})
 	End for each
 	return $lines

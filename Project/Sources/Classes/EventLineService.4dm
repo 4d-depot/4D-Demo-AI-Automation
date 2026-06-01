@@ -23,8 +23,27 @@ Function applyProposedChanges($eventID : Text; $proposedLines : Collection)
 				$newLine.unitPrice:=$line.unitPrice
 				$newLine.save()
 			: ($line.delta="remove")
-				var $toRemove : cs.EventLineSelection:=ds.EventLine.query("eventID = :1 AND serviceID = :2"; $eventID; $line.serviceID)
-				$toRemove.drop()
+				var $sid : Text:=String($line.serviceID)
+				var $toRemove : cs.EventLineSelection
+				If ($sid#"")
+					$toRemove:=ds.EventLine.query("eventID = :1 AND serviceID = :2"; $eventID; $sid)
+				End if 
+				If (($toRemove=Null) || ($toRemove.length=0))
+					// Fallback: match by label (case-insensitive)
+					var $allLines : cs.EventLineSelection:=ds.EventLine.query("eventID = :1"; $eventID)
+					var $matchByLabel : cs.EventLineSelection:=ds.EventLine.newSelection(dk keep ordered)
+					var $el : cs.EventLineEntity
+					var $searchLabel : Text:=Lowercase(String($line.label))
+					For each ($el; $allLines)
+						If (Lowercase($el.service.label)=$searchLabel)
+							$matchByLabel.add($el)
+						End if 
+					End for each 
+					$toRemove:=$matchByLabel
+				End if 
+				If ($toRemove.length>0)
+					$toRemove.drop()
+				End if 
 			: ($line.delta="update")
 				var $toUpdate : cs.EventLineSelection:=ds.EventLine.query("eventID = :1 AND serviceID = :2"; $eventID; $line.serviceID)
 				If ($toUpdate.length>0)
