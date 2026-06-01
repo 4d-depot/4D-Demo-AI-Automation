@@ -11,19 +11,31 @@ Class constructor()
 // ─── Génère les embeddings pour tous les services du catalogue ────────────────
 // Appelé une seule fois au seed initial
 Function buildEmbeddings()
-	var $services : cs.ServiceSelection:=ds.Service.all()
+	var $services : cs.ServiceSelection:=ds.Service.query("embedding = null")
 	var $service : cs.ServiceEntity
 	var $count : Integer:=0
 
 	For each ($service; $services)
-		If ($service.embedding=Null)
-			var $text : Text:=$service.category+" | "+$service.label+" | "+$service.unit
-			var $result : Object:=This._client.embeddings.create($text; This._model)
-			If ($result.vector#Null)
-				$service.embedding:=$result.vector
-				$service.save()
-				$count:=$count+1
-			End if 
+		var $text : Text:=$service.category+" | "+$service.label+" | "+$service.unit
+		var $result : Object:=This._client.embeddings.create($text; This._model)
+		If ($result.vector#Null)
+			$service.embedding:=$result.vector
+			$service.save()
+			$count:=$count+1
+		End if 
+	End for each 
+
+// ─── Force la recalcul de tous les embeddings (après changement de labels) ────
+Function rebuildAllEmbeddings()
+	var $services : cs.ServiceSelection:=ds.Service.all()
+	var $service : cs.ServiceEntity
+
+	For each ($service; $services)
+		var $text : Text:=$service.category+" | "+$service.label+" | "+$service.unit
+		var $result : Object:=This._client.embeddings.create($text; This._model)
+		If ($result.vector#Null)
+			$service.embedding:=$result.vector
+			$service.save()
 		End if 
 	End for each 
 

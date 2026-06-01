@@ -43,6 +43,12 @@ Function btnResetAllEventHandler($formEventCode : Integer)
 			This._resetAll()
 	End case 
 
+Function btnRebuildEmbeddingsEventHandler($formEventCode : Integer)
+	Case of 
+		: ($formEventCode=On Clicked)
+			This._rebuildEmbeddings()
+	End case 
+
 //MARK: - Private
 Function _onLoad()
 	var $providers : Object:=cs.AIKit.OpenAIProviders.new()
@@ -78,4 +84,11 @@ Function _resetAll()
 		DIALOG("Progress"; $progress)
 		CLOSE WINDOW($w)
 		ALERT("All data has been reset and rebuilt!\nService embeddings have been regenerated.")
+	End if 
+
+Function _rebuildEmbeddings()
+	CONFIRM("Rebuild service embeddings?\n\nThis re-computes the AI search index for all services.\nUseful after translating or renaming service labels.\nMay take a minute.")
+	If (OK=1)
+		cs.DataSeeder.me.rebuildEmbeddings()
+		ALERT("Service embeddings rebuilt successfully!")
 	End if 

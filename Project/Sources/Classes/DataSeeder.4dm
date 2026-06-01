@@ -401,6 +401,11 @@ Function _buildServiceEmbeddings()
 	var $matcher : cs.ServiceMatcher:=cs.ServiceMatcher.new()
 	$matcher.buildEmbeddings()
 
+// ─── Force la reconstruction de tous les embeddings (après changement de labels) ──
+Function rebuildEmbeddings()
+	var $matcher : cs.ServiceMatcher:=cs.ServiceMatcher.new()
+	$matcher.rebuildAllEmbeddings()
+
 // ─── Attribution du weatherSetup en fonction du choix indoor/outdoor ──────────
 Function _assignWeatherSetup($venueOption : Text) : Object
 	var $conditions : Text
