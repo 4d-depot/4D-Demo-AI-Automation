@@ -42,7 +42,7 @@
         },
         "text_type_badge": {
           "type": "text",
-          "left": 110,
+          "left": 180,
           "top": 14,
           "width": 150,
           "height": 24,
@@ -51,7 +51,7 @@
         },
         "text_subject": {
           "type": "text",
-          "left": 110,
+          "left": 180,
           "top": 36,
           "width": 230,
           "height": 22,
@@ -736,7 +736,7 @@
         },
         "btn_prev": {
           "type": "button",
-          "left": 110,
+          "left": 104,
           "top": 16,
           "width": 32,
           "height": 32,
@@ -751,7 +751,7 @@
         },
         "btn_next": {
           "type": "button",
-          "left": 148,
+          "left": 140,
           "top": 16,
           "width": 32,
           "height": 32,
