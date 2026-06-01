@@ -413,7 +413,7 @@ Function btnConfirmActionEventHandler($formEventCode : Integer)
 			This._reassessEventSetup()
 			// 5. Remove the confirmed action button from the action list
 			If (($confirmedIndex>=0) && ($confirmedIndex<This.aiActions.length))
-				This.aiActions.splice($confirmedIndex; 1)
+				This.aiActions.remove($confirmedIndex; 1)
 			End if 
 			// 6. Re-render remaining action buttons
 			cs.UIHelpers.me.resetActionButtons()
