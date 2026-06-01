@@ -621,6 +621,8 @@ Function _navigate($direction : Integer)
 	This._resizeWindow(1100)
 
 Function _updateNavButtons()
-	var $hasList : Boolean:=(This._emailIDs.length>1)
-	OBJECT SET ENABLED(*; "btn_prev"; $hasList & (This._currentIndex>0))
-	OBJECT SET ENABLED(*; "btn_next"; $hasList & (This._currentIndex<This._emailIDs.length-1))
+	var $lastIndex : Integer:=This._emailIDs.length-1
+	var $hasPrev : Boolean:=(This._emailIDs.length>1) & (This._currentIndex>0)
+	var $hasNext : Boolean:=(This._emailIDs.length>1) & (This._currentIndex<$lastIndex)
+	OBJECT SET ENABLED(*; "btn_prev"; $hasPrev)
+	OBJECT SET ENABLED(*; "btn_next"; $hasNext)
