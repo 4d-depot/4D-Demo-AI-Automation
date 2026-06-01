@@ -376,14 +376,14 @@
           "left": 776,
           "top": 260,
           "width": 308,
-          "height": 110,
+          "height": 160,
           "text": "",
           "class": "textBody"
         },
         "btn_ai_action1": {
           "type": "button",
           "left": 776,
-          "top": 382,
+          "top": 432,
           "width": 308,
           "height": 48,
           "text": "",
@@ -399,7 +399,7 @@
         "btn_ai_action2": {
           "type": "button",
           "left": 776,
-          "top": 436,
+          "top": 486,
           "width": 308,
           "height": 48,
           "text": "",
@@ -415,7 +415,7 @@
         "btn_ai_action3": {
           "type": "button",
           "left": 776,
-          "top": 490,
+          "top": 540,
           "width": 308,
           "height": 48,
           "text": "",
@@ -431,7 +431,7 @@
         "btn_ai_action4": {
           "type": "button",
           "left": 776,
-          "top": 544,
+          "top": 594,
           "width": 308,
           "height": 48,
           "text": "",
@@ -447,7 +447,7 @@
         "text_ai_validation_badge": {
           "type": "text",
           "left": 776,
-          "top": 606,
+          "top": 656,
           "width": 308,
           "height": 30,
           "text": "",
