@@ -490,7 +490,8 @@
           "top": 64,
           "width": 2,
           "height": 736,
-          "class": "bgContent"
+          "class": "bgContent",
+          "visibility": "hidden"
         },
         "rect_confirm_bg": {
           "type": "rectangle",
@@ -498,7 +499,8 @@
           "top": 64,
           "width": 358,
           "height": 736,
-          "class": "bgCard"
+          "class": "bgCard",
+          "visibility": "hidden"
         },
         "text_confirm_header": {
           "type": "text",
@@ -507,7 +509,8 @@
           "width": 324,
           "height": 14,
           "text": "PROPOSED CHANGES",
-          "class": "textLabel"
+          "class": "textLabel",
+          "visibility": "hidden"
         },
         "text_confirm_title": {
           "type": "text",
@@ -516,7 +519,8 @@
           "width": 324,
           "height": 26,
           "text": "",
-          "class": "textSection"
+          "class": "textSection",
+          "visibility": "hidden"
         },
         "text_confirm_summary": {
           "type": "text",
@@ -525,7 +529,8 @@
           "width": 324,
           "height": 48,
           "text": "",
-          "class": "textMuted"
+          "class": "textMuted",
+          "visibility": "hidden"
         },
         "listbox_confirm": {
           "type": "listbox",
@@ -539,6 +544,7 @@
           "movableRows": false,
           "sortable": false,
           "selectionMode": "none",
+          "visibility": "hidden",
           "events": [],
           "columns": [
             {
@@ -577,7 +583,8 @@
           "top": 684,
           "width": 358,
           "height": 1,
-          "class": "bgContent"
+          "class": "bgContent",
+          "visibility": "hidden"
         },
         "text_confirm_impact_lbl": {
           "type": "text",
@@ -586,7 +593,8 @@
           "width": 120,
           "height": 20,
           "text": "Impact total :",
-          "class": "textLabel"
+          "class": "textLabel",
+          "visibility": "hidden"
         },
         "text_confirm_impact_val": {
           "type": "text",
@@ -595,7 +603,8 @@
           "width": 200,
           "height": 20,
           "text": "",
-          "class": "textSection"
+          "class": "textSection",
+          "visibility": "hidden"
         },
         "text_confirm_newtotal_lbl": {
           "type": "text",
@@ -604,7 +613,8 @@
           "width": 120,
           "height": 20,
           "text": "Nouveau total :",
-          "class": "textLabel"
+          "class": "textLabel",
+          "visibility": "hidden"
         },
         "text_confirm_newtotal_val": {
           "type": "text",
@@ -613,7 +623,8 @@
           "width": 200,
           "height": 20,
           "text": "",
-          "class": "textSection"
+          "class": "textSection",
+          "visibility": "hidden"
         },
         "btn_cancel_confirm": {
           "type": "button",
@@ -624,7 +635,8 @@
           "text": "Annuler",
           "events": [ "onClick" ],
           "focusable": true,
-          "method": "objbtn_cancel_confirm.4dm"
+          "method": "objbtn_cancel_confirm.4dm",
+          "visibility": "hidden"
         },
         "btn_confirm_action": {
           "type": "button",
@@ -637,7 +649,8 @@
           "class": "btnPrimary",
           "events": [ "onClick" ],
           "focusable": true,
-          "method": "objbtn_confirm_action.4dm"
+          "method": "objbtn_confirm_action.4dm",
+          "visibility": "hidden"
         }
       }
     }

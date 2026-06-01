@@ -332,12 +332,29 @@ Function _showConfirmPanel($action : Object; $execResult : Object)
 	OBJECT SET TITLE(*; "text_confirm_summary"; $execResult.summary)
 	OBJECT SET TITLE(*; "text_confirm_impact_val"; $prefix+String($impact; "### ### ##0 €"))
 	OBJECT SET TITLE(*; "text_confirm_newtotal_val"; String($currentTotal+$impact; "### ### ##0 €"))
+	This._setConfirmPanelVisible(True)
 	RESIZE FORM WINDOW(1460; 800)
 
 Function _hideConfirmPanel()
 	RESIZE FORM WINDOW(1100; 800)
+	This._setConfirmPanelVisible(False)
 	This._pendingExecResult:=Null
 	This._pendingAction:=Null
+
+Function _setConfirmPanelVisible($visible : Boolean)
+	OBJECT SET VISIBLE(*; "rect_confirm_sep"; $visible)
+	OBJECT SET VISIBLE(*; "rect_confirm_bg"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_header"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_title"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_summary"; $visible)
+	OBJECT SET VISIBLE(*; "listbox_confirm"; $visible)
+	OBJECT SET VISIBLE(*; "rect_confirm_footer_sep"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_impact_lbl"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_impact_val"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_newtotal_lbl"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_newtotal_val"; $visible)
+	OBJECT SET VISIBLE(*; "btn_cancel_confirm"; $visible)
+	OBJECT SET VISIBLE(*; "btn_confirm_action"; $visible)
 
 Function btnConfirmActionEventHandler($formEventCode : Integer)
 	Case of 
