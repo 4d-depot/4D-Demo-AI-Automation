@@ -4,7 +4,6 @@
 property event : cs.EventEntity
 property eventLines : Collection
 property aiActions : Collection
-property confirmLines : Collection
 property running : Boolean
 property _eventIDs : Collection
 property _currentIndex : Integer
@@ -14,19 +13,24 @@ property activeAdvisorTab : Text
 property linkedEmail : cs.EmailEntity
 property hasEmail : Boolean
 property tabControl : Object
+property _lastValidationData : Object
+property _actionMap : Collection
+property _emailImpacts : Object
 
 Class constructor($event : cs.EventEntity; $eventIDs : Collection)
 	This.event:=$event
 	This.eventLines:=[]
 	This.aiActions:=[]
-	This.confirmLines:=[]
 	This.running:=False
 	This._pendingExecResult:=Null
 	This._pendingAction:=Null
 	This.activeAdvisorTab:="weather"
 	This.linkedEmail:=Null
 	This.hasEmail:=False
-	This.tabControl:=New object("values"; New collection("⛅ Weather"; "✉ Email"); "index"; 0)
+	This.tabControl:=New object("values"; New collection("⛅ Weather"; "📧 Email"); "index"; 0)
+	This._lastValidationData:=Null
+	This._actionMap:=[-1; -1; -1; -1]
+	This._emailImpacts:=Null
 	If ($eventIDs#Null)
 		This._eventIDs:=$eventIDs
 	Else 
@@ -99,6 +103,21 @@ Function advisorTabsEventHandler($formEventCode : Integer)
 			End if 
 	End case 
 
+Function validationBadgeClicked()
+	If (This._lastValidationData=Null)
+		return 
+	End if 
+	var $d : Object:=This._lastValidationData
+	var $schemaFile : 4D.File:=Folder(fk resources folder).file("schemas/"+$d.schema)
+	var $schemaText : Text:=""
+	If ($schemaFile.exists)
+		$schemaText:=$schemaFile.getText()
+	End if 
+	var $msg : Text:="Schema: "+$d.schema
+	$msg:=$msg+"\n\n── Validated JSON ──\n"+JSON Stringify($d.json; *)
+	$msg:=$msg+"\n\n── Schema ──\n"+$schemaText
+	ALERT($msg)
+
 //MARK: - Private
 Function _onLoad()
 	This._resizeWindow(1100)
@@ -106,6 +125,7 @@ Function _onLoad()
 	This._loadEventLines()
 	This._checkLinkedEmail()
 	This._renderAIPanel(Null)
+	OBJECT SET TITLE(*; "text_email_ai_result"; "")
 	This._updateNavButtons()
 	This._applyReadOnlyIfDone()
 
@@ -126,7 +146,6 @@ Function _populateHeader()
 	var $optionLabel : Text:=Choose($evt.venueOption="indoor"; " 🏢"; " 🌳")
 	OBJECT SET TITLE(*; "text_venue_val"; $venueLabel+$optionLabel)
 	OBJECT SET TITLE(*; "text_status_val"; This._statusLabel($evt.status))
-	OBJECT SET TITLE(*; "text_weather_badge"; This._weatherBadge($evt.weatherAlertLevel))
 
 Function _loadEventLines()
 	var $selection : cs.EventLineSelection:=ds.EventLine.query("eventID = :1"; This.event.ID)
@@ -162,8 +181,9 @@ Function _loadEventLines()
 
 Function _renderAIPanel($weatherResult : Object)
 	cs.UIHelpers.me.resetActionButtons()
-	OBJECT SET TITLE(*; "text_ai_setup"; "")
-	OBJECT SET TITLE(*; "text_ai_explanation"; "")
+	OBJECT SET TITLE(*; "text_ai_context"; "")
+	OBJECT SET TITLE(*; "text_weather_ai_explanation"; "")
+	OBJECT SET VISIBLE(*; "text_ai_validation_badge"; False)
 
 	// Show contracted and forecast weather
 	var $setup : Object:=This.event.weatherSetup
@@ -175,39 +195,39 @@ Function _renderAIPanel($weatherResult : Object)
 	If ($forecast#Null)
 		$setupStr:=$setupStr+"\nForecast: "+This._forecastLabel($forecast)
 	End if 
-	OBJECT SET TITLE(*; "text_ai_setup"; $setupStr) 
+	OBJECT SET TITLE(*; "text_ai_context"; $setupStr) 
 
 	If ($weatherResult=Null)
 		var $level : Text:=This.event.weatherAlertLevel
 		If (($level="none") || ($level=""))
 			OBJECT SET TITLE(*; "text_ai_status"; "No weather alerts detected.")
-			OBJECT SET TITLE(*; "text_ai_context"; "Click 'Run AI Weather Analysis' to analyze forecast for this event's venue.")
 		Else 
 			OBJECT SET TITLE(*; "text_ai_status"; "⚠ Weather alert: "+$level)
-			OBJECT SET TITLE(*; "text_ai_context"; "Click 'Run AI Weather Analysis' to get AI-recommended actions.")
 		End if 
 		return 
 	End if 
 
 	If (Not($weatherResult.success))
-		OBJECT SET TITLE(*; "text_ai_status"; "⚠ Analysis failed")
-		OBJECT SET TITLE(*; "text_ai_context"; $weatherResult.validationError)
+		OBJECT SET TITLE(*; "text_ai_status"; "⚠ Analysis failed: "+$weatherResult.validationError)
 		return 
 	End if 
 
 	var $wa : Object:=$weatherResult.weatherActions
 	OBJECT SET TITLE(*; "text_ai_status"; This._riskLabel($wa.riskLevel))
-	OBJECT SET TITLE(*; "text_ai_context"; $wa.weatherSummary)
 
 	// Afficher l'explication IA
 	If (($wa.explanation#Null) && ($wa.explanation#""))
-		OBJECT SET TITLE(*; "text_ai_explanation"; $wa.explanation)
+		OBJECT SET TITLE(*; "text_weather_ai_explanation"; $wa.explanation)
 	End if 
 
 	OBJECT SET TITLE(*; "text_ai_validation_badge"; "✓ JSON Validate: schema_weather_actions OK")
+	OBJECT SET VISIBLE(*; "text_ai_validation_badge"; True)
+	This._lastValidationData:=New object(\
+		"schema"; "schema_weather_actions.json"; \
+		"json"; $weatherResult.weatherActions)
 
 	var $actions : Collection:=$wa.actions
-	cs.UIHelpers.me.showActionButtons($actions)
+	This._actionMap:=cs.UIHelpers.me.showActionButtons($actions)
 	This.aiActions:=$actions
 
 Function _runWeatherAnalysis()
@@ -240,7 +260,6 @@ Function _onWeatherAnalysisDone($aiResult : Object; $weatherFetch : Object)
 	If (Form=Null)
 		return 
 	End if 
-	OBJECT SET TITLE(*; "text_weather_badge"; This._weatherBadge($weatherFetch.riskLevel))
 	This.running:=False
 	OBJECT SET TITLE(*; "btn_ai_analyze"; "⚡ Run AI Weather Analysis")
 	This._renderAIPanel($aiResult)
@@ -260,14 +279,9 @@ Function _setAdvisorTab($tab : Text)
 
 	var $isWeather : Boolean:=($tab="weather")
 	// Weather tab controls
-	OBJECT SET VISIBLE(*; "text_ai_status"; $isWeather)
-	OBJECT SET VISIBLE(*; "text_ai_context"; $isWeather)
-	OBJECT SET VISIBLE(*; "text_ai_setup"; $isWeather)
-	OBJECT SET VISIBLE(*; "text_ai_explanation"; $isWeather)
+	OBJECT SET VISIBLE(*; "text_weather_ai_explanation"; $isWeather)
 	OBJECT SET VISIBLE(*; "btn_ai_analyze"; $isWeather)
-	OBJECT SET VISIBLE(*; "text_ai_validation_badge"; $isWeather)
 	// Email tab controls
-	OBJECT SET VISIBLE(*; "text_email_meta"; Not($isWeather))
 	OBJECT SET VISIBLE(*; "input_email_body"; Not($isWeather))
 	OBJECT SET VISIBLE(*; "text_email_ai_result"; Not($isWeather))
 	OBJECT SET VISIBLE(*; "btn_email_analyze"; Not($isWeather))
@@ -286,9 +300,10 @@ Function _loadEmailTab()
 		return 
 	End if 
 	var $meta : Text:="Subject: "+$e.subject+"\nFrom: "+$e.sender+" <"+$e.senderEmail+">\nReceived: "+String($e.receivedAt; "dd MMM yyyy")
-	OBJECT SET TITLE(*; "text_email_meta"; $meta)
+	OBJECT SET TITLE(*; "text_ai_context"; $meta)
 	OBJECT SET VALUE("input_email_body"; $e.body)
-	OBJECT SET TITLE(*; "text_email_ai_result"; "Click '📧 Analyze Email with AI' to process this request.")
+	OBJECT SET TITLE(*; "text_email_ai_result"; "")
+	OBJECT SET TITLE(*; "text_ai_status"; "📧 Email pending")
 
 // ─── Email AI analysis ────────────────────────────────────────────────────────
 Function btnEmailAnalyzeEventHandler($formEventCode : Integer)
@@ -303,7 +318,7 @@ Function _runEmailAnalysis()
 	End if 
 	This.running:=True
 	OBJECT SET TITLE(*; "btn_email_analyze"; "⏳ Analyzing...")
-	OBJECT SET TITLE(*; "text_email_ai_result"; "Analyzing modification request...")
+	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Analyzing modification request...")
 
 	var $evt : cs.EventEntity:=This.event
 	var $candidateEvents : Collection:=[{ \
@@ -326,40 +341,44 @@ Function _onEmailAnalysisDone($result : Object)
 	OBJECT SET TITLE(*; "btn_email_analyze"; "📧 Analyze Email with AI")
 
 	If (Not($result.success))
-		OBJECT SET TITLE(*; "text_email_ai_result"; "❌ "+Choose($result.validationError#Null; $result.validationError; "Analysis failed"))
+		OBJECT SET TITLE(*; "text_ai_status"; "❌ Email analysis failed")
+		OBJECT SET TITLE(*; "text_email_ai_result"; Choose($result.validationError#Null; $result.validationError; "Analysis failed"))
 		return 
 	End if 
 
 	var $impacts : Object:=$result.impacts
-	OBJECT SET TITLE(*; "text_email_ai_result"; "✓ Modification request analyzed")
+	This._emailImpacts:=$impacts
+	OBJECT SET TITLE(*; "text_ai_status"; "✓ Modification request analyzed")
 
 	var $summary : Text:=""
-	If (($impacts.summary#Null) && ($impacts.summary#""))
-		$summary:=$impacts.summary+"\n\n"
+	If (($impacts.modificationSummary#Null) && ($impacts.modificationSummary#""))
+		$summary:=$impacts.modificationSummary+"\n\n"
 	End if 
 	If (($impacts.impacts#Null) && ($impacts.impacts.length>0))
 		$summary:=$summary+"Service changes:\n"
 		var $imp : Object
 		For each ($imp; $impacts.impacts)
-			$summary:=$summary+"• "+String($imp.description)+"\n"
+			$summary:=$summary+"• "+String($imp.label)+"\n"
 		End for each 
 	End if 
 	OBJECT SET TITLE(*; "text_email_ai_result"; $summary)
 
 	If (($impacts.executionActions#Null) && ($impacts.executionActions.length>0))
-		cs.UIHelpers.me.showActionButtons($impacts.executionActions)
+		This._actionMap:=cs.UIHelpers.me.showActionButtons($impacts.executionActions)
 		This.aiActions:=$impacts.executionActions
 	End if 
 
-Function _executeAction($index : Integer)
-	If ($index>=This.aiActions.length)
+Function _executeAction($slot : Integer)
+	var $actionIdx : Integer:=This._actionMap[$slot]
+	If (($actionIdx<0) || ($actionIdx>=This.aiActions.length))
 		return 
 	End if 
-	var $action : Object:=This.aiActions[$index]
+	var $action : Object:=This.aiActions[$actionIdx]
 	var $type : Text:=$action.actionType
 
 	// Si l'action a un hiddenPrompt, utiliser le Temps 2 (tool calling)
 	If (($action.hiddenPrompt#Null) && ($action.hiddenPrompt#""))
+		OBJECT SET TITLE(*; "text_ai_status"; "⏳ "+$action.label+"...")
 		This._executeWithToolCalling($action)
 		return 
 	End if 
@@ -418,7 +437,7 @@ Function _onExecutionDone($execResult : Object; $action : Object)
 		return 
 	End if 
 
-	OBJECT SET TITLE(*; "text_ai_status"; "")
+	OBJECT SET TITLE(*; "text_ai_status"; "✓ Impact calculated")
 	This._showConfirmPanel($action; $execResult)
 
 Function _showConfirmPanel($action : Object; $execResult : Object)
@@ -426,37 +445,35 @@ Function _showConfirmPanel($action : Object; $execResult : Object)
 	This._pendingExecResult:=$execResult
 
 	var $currentTotal : Real:=cs.EventLineService.me.calculateTotal(This.eventLines)
-	This.confirmLines:=[]
 	var $impact : Real:=0
+	var $changesText : Text:=""
 	var $line : Object
 	For each ($line; $execResult.proposedLines)
 		var $lineTotal : Real:=$line.quantity*$line.unitPrice
-		var $deltaIcon : Text
 		Case of 
 			: ($line.delta="add")
-				$deltaIcon:="+"
+				$changesText:=$changesText+"+ "+$line.label+" x"+String($line.quantity)+" — "+String($lineTotal; "### ### ##0 €")+"\n"
 				$impact:=$impact+$lineTotal
 			: ($line.delta="remove")
-				$deltaIcon:="—"
+				$changesText:=$changesText+"— "+$line.label+" x"+String($line.quantity)+" — −"+String($lineTotal; "### ### ##0 €")+"\n"
 				$impact:=$impact-$lineTotal
-				$lineTotal:=-$lineTotal
 			: ($line.delta="update")
-				$deltaIcon:="✏"
+				$changesText:=$changesText+"✏ "+$line.label+" x"+String($line.quantity)+" — "+String($lineTotal; "### ### ##0 €")+"\n"
 				$impact:=$impact+$lineTotal
 		End case 
-		This.confirmLines.push({ \
-			label: $line.label; \
-			quantity: $line.quantity; \
-			deltaIcon: $deltaIcon; \
-			lineTotalDisplay: String(Abs($lineTotal); "### ### ##0 €") \
-		})
 	End for each 
 
 	var $prefix : Text:=Choose($impact>=0; "+"; "")
 	OBJECT SET TITLE(*; "text_confirm_title"; $action.label)
 	OBJECT SET TITLE(*; "text_confirm_summary"; $execResult.summary)
+	OBJECT SET TITLE(*; "input_confirm_draft"; $changesText)
+	OBJECT SET TITLE(*; "text_confirm_before_lbl"; "Before:")
+	OBJECT SET TITLE(*; "text_confirm_before_val"; String($currentTotal; "### ### ##0 €"))
+	OBJECT SET TITLE(*; "text_confirm_impact_lbl"; "Impact:")
 	OBJECT SET TITLE(*; "text_confirm_impact_val"; $prefix+String($impact; "### ### ##0 €"))
+	OBJECT SET TITLE(*; "text_confirm_newtotal_lbl"; "New total:")
 	OBJECT SET TITLE(*; "text_confirm_newtotal_val"; String($currentTotal+$impact; "### ### ##0 €"))
+	OBJECT SET TITLE(*; "input_confirm_email_draft"; "")
 	This._setConfirmPanelVisible(True)
 	This._resizeWindow(1460)
 
@@ -508,12 +525,18 @@ Function _setConfirmPanelVisible($visible : Boolean)
 	OBJECT SET VISIBLE(*; "text_confirm_header"; $visible)
 	OBJECT SET VISIBLE(*; "text_confirm_title"; $visible)
 	OBJECT SET VISIBLE(*; "text_confirm_summary"; $visible)
-	OBJECT SET VISIBLE(*; "listbox_confirm"; $visible)
-	OBJECT SET VISIBLE(*; "rect_confirm_footer_sep"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_before_lbl"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_before_val"; $visible)
 	OBJECT SET VISIBLE(*; "text_confirm_impact_lbl"; $visible)
 	OBJECT SET VISIBLE(*; "text_confirm_impact_val"; $visible)
 	OBJECT SET VISIBLE(*; "text_confirm_newtotal_lbl"; $visible)
 	OBJECT SET VISIBLE(*; "text_confirm_newtotal_val"; $visible)
+	OBJECT SET VISIBLE(*; "input_confirm_draft"; $visible)
+	OBJECT SET VISIBLE(*; "rect_confirm_email_sep"; $visible)
+	OBJECT SET VISIBLE(*; "text_confirm_email_lbl"; $visible)
+	OBJECT SET VISIBLE(*; "input_confirm_email_draft"; $visible)
+	OBJECT SET VISIBLE(*; "btn_draft_email"; $visible)
+	OBJECT SET VISIBLE(*; "rect_confirm_footer_sep"; $visible)
 	OBJECT SET VISIBLE(*; "btn_cancel_confirm"; $visible)
 	OBJECT SET VISIBLE(*; "btn_confirm_action"; $visible)
 
@@ -536,19 +559,19 @@ Function btnCancelConfirmEventHandler($formEventCode : Integer)
 			OBJECT SET TITLE(*; "text_ai_status"; "Action cancelled.")
 	End case 
 
-//MARK: - Helpers
-Function _weatherBadge($level : Text) : Text
+Function btnDraftEmailEventHandler($formEventCode : Integer)
 	Case of 
-		: ($level="critical")
-			return "🚨 CRITICAL WEATHER"
-		: ($level="warning")
-			return "⛈ Weather Warning"
-		: ($level="watch")
-			return "🌧 Weather Watch"
-		Else 
-			return "☀ Clear forecast"
+		: ($formEventCode=On Clicked)
+			var $draft : Text
+			If ((This._emailImpacts#Null) && (This._emailImpacts.draftAvenantMessage#Null))
+				$draft:=This._emailImpacts.draftAvenantMessage
+			Else 
+				$draft:="(No draft email available — run email analysis first.)"
+			End if 
+			OBJECT SET TITLE(*; "input_confirm_email_draft"; $draft)
 	End case 
 
+//MARK: - Helpers
 Function _riskLabel($level : Text) : Text
 	Case of 
 		: ($level="critical")
@@ -661,5 +684,4 @@ Function _applyReadOnlyIfDone()
 	OBJECT SET ENABLED(*; "btn_ai_action4"; Not($isDone))
 	If ($isDone)
 		OBJECT SET TITLE(*; "text_ai_status"; "This event is "+This.event.status+" and cannot be modified.")
-		OBJECT SET TITLE(*; "text_ai_context"; "")
 	End if 

@@ -58,16 +58,6 @@
 					"text": "",
 					"class": "textLabel"
 				},
-				"text_weather_badge": {
-					"type": "text",
-					"left": 870,
-					"top": 18,
-					"width": 200,
-					"height": 28,
-					"text": "",
-					"fontSize": 14,
-					"textAlign": "right"
-				},
 				"rect_main": {
 					"type": "rectangle",
 					"left": 0,
@@ -363,7 +353,7 @@
 					"top": 136,
 					"width": 308,
 					"height": 20,
-					"text": "",
+					"text": "text_ai_status",
 					"class": "textMuted",
 					"textAlign": "left"
 				},
@@ -381,34 +371,6 @@
 					"method": "objbtn_ai_analyze.4dm",
 					"class": "btnPrimary",
 					"style": "flat"
-				},
-				"text_ai_context": {
-					"type": "text",
-					"left": 776,
-					"top": 204,
-					"width": 308,
-					"height": 44,
-					"text": "",
-					"class": "textMuted",
-					"visibility": "hidden"
-				},
-				"text_ai_setup": {
-					"type": "text",
-					"left": 776,
-					"top": 160,
-					"width": 308,
-					"height": 40,
-					"text": "",
-					"class": "textLabel"
-				},
-				"text_ai_explanation": {
-					"type": "text",
-					"left": 776,
-					"top": 252,
-					"width": 308,
-					"height": 316,
-					"text": "",
-					"class": "textBody"
 				},
 				"btn_ai_action1": {
 					"type": "button",
@@ -476,14 +438,18 @@
 				},
 				"text_ai_validation_badge": {
 					"type": "text",
-					"left": 776,
-					"top": 700,
-					"width": 308,
-					"height": 30,
+					"left": 876,
+					"top": 73,
+					"width": 208,
+					"height": 29,
 					"text": "",
 					"textAlign": "center",
 					"class": "textSuccess",
-					"visibility": "hidden"
+					"visibility": "hidden",
+					"method": "objvalidation_badge.4dm",
+					"events": [
+						"onClick"
+					]
 				},
 				"btn_prev": {
 					"type": "button",
@@ -515,18 +481,6 @@
 					"class": "btnBack",
 					"style": "flat"
 				},
-				"text_email_meta": {
-					"type": "text",
-					"left": 776,
-					"top": 158,
-					"width": 308,
-					"height": 48,
-					"text": "",
-					"class": "textLabel",
-					"visibility": "hidden",
-					"fontSize": 11,
-					"bold": false
-				},
 				"input_email_body": {
 					"type": "input",
 					"left": 776,
@@ -546,8 +500,8 @@
 					"left": 776,
 					"top": 318,
 					"width": 308,
-					"height": 330,
-					"text": "",
+					"height": 184,
+					"text": "Email analysis result...",
 					"class": "textBody",
 					"visibility": "hidden",
 					"wordwrap": true
@@ -620,7 +574,7 @@
 					"left": 1118,
 					"top": 126,
 					"width": 324,
-					"height": 142,
+					"height": 100,
 					"text": "",
 					"class": "textMuted",
 					"wordwrap": true,
@@ -752,6 +706,90 @@
 						"onClick"
 					],
 					"expressionType": "object"
+				},
+				"text_weather_ai_explanation": {
+					"type": "text",
+					"left": 776,
+					"top": 210,
+					"width": 308,
+					"height": 297,
+					"text": "text_ai_explanation",
+					"class": "textBody"
+				},
+				"text_ai_context": {
+					"type": "text",
+					"left": 776,
+					"top": 158,
+					"width": 308,
+					"height": 48,
+					"text": "Context...",
+					"class": "textLabel",
+					"visibility": "visible",
+					"fontSize": 11,
+					"bold": false
+				},
+				"text_confirm_before_lbl": {
+					"type": "text",
+					"left": 1118,
+					"top": 232,
+					"width": 120,
+					"height": 14,
+					"text": "Before:",
+					"class": "textMuted",
+					"visibility": "hidden"
+				},
+				"text_confirm_before_val": {
+					"type": "text",
+					"left": 1252,
+					"top": 232,
+					"width": 170,
+					"height": 14,
+					"text": "",
+					"class": "textMuted",
+					"textAlign": "right",
+					"visibility": "hidden"
+				},
+				"text_confirm_impact_lbl": {
+					"type": "text",
+					"left": 1118,
+					"top": 250,
+					"width": 120,
+					"height": 14,
+					"text": "Impact:",
+					"class": "textMuted",
+					"visibility": "hidden"
+				},
+				"text_confirm_impact_val": {
+					"type": "text",
+					"left": 1252,
+					"top": 250,
+					"width": 170,
+					"height": 14,
+					"text": "",
+					"class": "textMuted",
+					"textAlign": "right",
+					"visibility": "hidden"
+				},
+				"text_confirm_newtotal_lbl": {
+					"type": "text",
+					"left": 1118,
+					"top": 263,
+					"width": 120,
+					"height": 16,
+					"text": "New total:",
+					"class": "textSection",
+					"visibility": "hidden"
+				},
+				"text_confirm_newtotal_val": {
+					"type": "text",
+					"left": 1252,
+					"top": 263,
+					"width": 170,
+					"height": 16,
+					"text": "",
+					"class": "textSection",
+					"textAlign": "right",
+					"visibility": "hidden"
 				}
 			}
 		}
@@ -761,13 +799,13 @@
 		"onClick"
 	],
 	"method": "method.4dm",
-	"geometryStamp": 306,
+	"geometryStamp": 312,
 	"$4d": {
 		"version": "1",
 		"kind": "form"
 	},
 	"editor": {
-		"activeView": "Email",
+		"activeView": "Weather",
 		"defaultView": "default",
 		"views": {
 			"Email": {
@@ -777,7 +815,12 @@
 					"btn_email_analyze"
 				]
 			},
-			"Weather": {},
+			"Weather": {
+				"objects": [
+					"btn_ai_analyze",
+					"text_weather_ai_explanation"
+				]
+			},
 			"default": {}
 		}
 	}
