@@ -296,7 +296,7 @@ Function _onWeatherAnalysisDone($aiResult : Object; $weatherFetch : Object)
 	
 	// ─── Tab management ───────────────────────────────────────────────────────────
 Function _checkLinkedEmail()
-	var $emails : cs.EmailSelection:=ds.Email.query("linkedEventID = :1 AND emailStatus = :2"; String(This.event.ID); "unread")
+	var $emails : cs.EmailSelection:=ds.Email.query("linkedEventID = :1 AND emailStatus = :2"; String(This.event.ID); "pending")
 	If ($emails.length>0)
 		This.linkedEmail:=$emails.first()
 		This.hasEmail:=True
@@ -543,7 +543,7 @@ Function _dismissAfterActions()
 	If (This.activeAdvisorTab="email")
 		// Mark linked email as read so it disappears from the email queue
 		If (This.linkedEmail#Null)
-			This.linkedEmail.emailStatus:="read"
+			This.linkedEmail.emailStatus:="processed"
 			This.linkedEmail.save()
 		End if 
 		This.linkedEmail:=Null

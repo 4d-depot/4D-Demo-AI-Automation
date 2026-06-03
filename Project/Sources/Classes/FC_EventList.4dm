@@ -116,9 +116,9 @@ Function _loadEvents($filter : Text)
 			End if 
 		: ($filter="email")
 			If (This.showPast)
-				$selection:=ds.Event.query("emails.emailStatus = :1"; "unread").orderBy("eventDate ASC")
+				$selection:=ds.Event.query("emails.emailStatus = :1"; "pending").orderBy("eventDate ASC")
 			Else 
-				$selection:=ds.Event.query("emails.emailStatus = :1 AND eventDate >= :2"; "unread"; $today).orderBy("eventDate ASC")
+				$selection:=ds.Event.query("emails.emailStatus = :1 AND eventDate >= :2"; "pending"; $today).orderBy("eventDate ASC")
 			End if 
 		Else 
 			If (This.showPast)
@@ -145,13 +145,13 @@ Function _updateFilterCounts()
 		$confirmedCount:=ds.Event.query("status = :1"; "confirmed").length
 		$quoteCount:=ds.Event.query("status = :1"; "quote").length
 		$weatherCount:=ds.Event.query("weatherAlertLevel != :1"; "none").length
-		$emailCount:=ds.Event.query("emails.emailStatus = :1"; "unread").length
+		$emailCount:=ds.Event.query("emails.emailStatus = :1"; "pending").length
 	Else 
 		$allCount:=ds.Event.query("eventDate >= :1"; $today).length
 		$confirmedCount:=ds.Event.query("status = :1 AND eventDate >= :2"; "confirmed"; $today).length
 		$quoteCount:=ds.Event.query("status = :1 AND eventDate >= :2"; "quote"; $today).length
 		$weatherCount:=ds.Event.query("weatherAlertLevel != :1 AND eventDate >= :2"; "none"; $today).length
-		$emailCount:=ds.Event.query("emails.emailStatus = :1 AND eventDate >= :2"; "unread"; $today).length
+		$emailCount:=ds.Event.query("emails.emailStatus = :1 AND eventDate >= :2"; "pending"; $today).length
 	End if 
 
 	OBJECT SET TITLE(*; "btn_filter_all"; "All ("+String($allCount)+")")

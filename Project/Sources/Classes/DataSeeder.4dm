@@ -282,7 +282,7 @@ Function _seedEmails()
 		$e.subject:=$item.subject
 		$e.body:=$item.body
 		$e.receivedAt:=Date($item.receivedAt)
-		$e.emailStatus:="unread"
+		$e.emailStatus:="pending"
 		$e.emailType:="modification"
 		// Resolve linkedEventIndex → actual event by seedIndex lookup
 		var $linkedEvt : cs.EventEntity:=ds.Event.query("seedIndex = :1"; Num($item.linkedEventIndex)).first()

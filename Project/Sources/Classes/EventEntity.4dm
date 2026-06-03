@@ -100,7 +100,7 @@ Function get venueOptionIcon() : Text
 	return Choose(This.venueOption="indoor"; "🏢"; "🌳")
 
 Function get emailIcon() : Text
-	If (This.emails.query("emailStatus = :1"; "unread").length>0)
+	If (This.emails.query("emailStatus = :1"; "pending").length>0)
 		return "📧"
 	End if 
 	return ""
