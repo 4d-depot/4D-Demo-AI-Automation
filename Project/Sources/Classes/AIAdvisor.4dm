@@ -244,6 +244,27 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	This._chat:=This._createChat($system; $schemaImpacts; "modification_impacts"; Formula($self._onModificationChatDone($1; $cb)))
 	This._chat.prompt($user)
 
+Function _onModificationChatDone($chatResult : Object; $callback : 4D.Function)
+	If (($chatResult#Null) && (Not($chatResult.terminated)))
+		return 
+	End if 
+	var $result : Object:={success: False; ambiguous: False; impacts: Null; validationError: ""; validation: Null}
+	var $parsed : Object:=This._extractParsedResponse($chatResult)
+	If ($parsed=Null)
+		$result.validationError:="schema_modification_impacts: "+This._extractError($chatResult)
+		$callback.call(Null; $result)
+		return 
+	End if 
+	$result.validation:=This._validateResponse($parsed; "schema_modification_impacts.json")
+	If (Not($result.validation.success))
+		$result.validationError:="schema_modification_impacts: "+JSON Stringify($result.validation.errors)
+		$callback.call(Null; $result)
+		return 
+	End if 
+	$result.success:=True
+	$result.impacts:=$parsed
+	$callback.call(Null; $result)
+
 // ─── generateDraftEmail: confirmation email after applying an action ──────────
 // $callback receives {success; emailText; validationError}
 Function generateDraftEmailAsync($event : cs.EventEntity; $action : Object; $proposedLines : Collection; $callback : 4D.Function)
