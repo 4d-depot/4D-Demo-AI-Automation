@@ -23,6 +23,7 @@ property _lastValidationData : Object
 property _actionMap : Collection
 property _emailImpacts : Object
 property _listFC : Object
+property _currentIndex : Integer
 
 Class constructor($event : cs.EventEntity; $eventSelection : cs.EventSelection; $listFC : Object)
 	This.event:=$event
@@ -45,12 +46,21 @@ Class constructor($event : cs.EventEntity; $eventSelection : cs.EventSelection; 
 	This._lastValidationData:=Null
 	This._actionMap:=[-1; -1; -1; -1]
 	This._emailImpacts:=Null
+	This._currentIndex:=-1
 	If ($eventSelection#Null)
 		This._selection:=$eventSelection
 	Else 
 		This._selection:=ds.Event.newSelection()
 	End if 
 	This._listFC:=$listFC
+	// Find initial position of event in selection
+	var $i : Integer
+	For ($i; 0; This._selection.length-1)
+		If (This._selection[$i].ID=This.event.ID)
+			This._currentIndex:=$i
+			break
+		End if 
+	End for 
 	
 	//MARK: - Form & form objects event handlers
 Function formEventHandler($formEventCode : Integer)
@@ -684,16 +694,12 @@ Function _stopSpinner()
 	OBJECT SET VISIBLE(*; "text_ai_spinner"; False)
 	OBJECT SET TITLE(*; "text_ai_spinner"; "")
 Function _navigate($direction : Integer)
-	// Use indexOf + direct selection access to avoid previous()/next() which lazy-load entities
-	var $pos : Integer:=This._selection.indexOf(This.event)
-	If ($pos < 0)
-		return 
-	End if 
-	var $newPos : Integer:=$pos+$direction
+	var $newPos : Integer:=This._currentIndex+$direction
 	If (($newPos < 0) || ($newPos >= This._selection.length))
 		return 
 	End if 
 	var $newEvent : cs.EventEntity:=This._selection[$newPos]
+	This._currentIndex:=$newPos
 	This.event:=$newEvent
 	This.aiActions:=[]
 	If (This._pendingExecResult#Null)
@@ -709,14 +715,13 @@ Function _navigate($direction : Integer)
 	End if 
 	
 Function _updateNavButtons()
-	// Use indexOf to avoid lazy-loading adjacent entities (Object fields may be uninitialized)
-	var $pos : Integer:=This._selection.indexOf(This.event)
-	If ($pos < 0)
+	// Use _currentIndex (tracked without loading adjacent entities)
+	If (This._currentIndex < 0)
 		OBJECT SET ENABLED(*; "btn_prev"; False)
 		OBJECT SET ENABLED(*; "btn_next"; False)
 	Else 
-		OBJECT SET ENABLED(*; "btn_prev"; $pos > 0)
-		OBJECT SET ENABLED(*; "btn_next"; $pos < (This._selection.length - 1))
+		OBJECT SET ENABLED(*; "btn_prev"; This._currentIndex > 0)
+		OBJECT SET ENABLED(*; "btn_next"; This._currentIndex < (This._selection.length-1))
 	End if 
 	
 Function _linesAsCollection() : Collection
