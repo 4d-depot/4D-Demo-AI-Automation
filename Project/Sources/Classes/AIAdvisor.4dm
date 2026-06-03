@@ -1,19 +1,19 @@
 // AIAdvisor.4dm
-// Appel OpenAI via AIKit Chat Helper + JSON Validate (Draft 2020-12)
-// Utilise le Chat Helper pour la gestion automatique de l'historique et des tools
-// Toutes les méthodes publiques sont async (non-bloquantes via parameters.formula)
-// Provider et modèle configurés dans AIProviders.json (model alias "chat")
+// OpenAI call via AIKit Chat Helper + JSON Validate (Draft 2020-12)
+// Uses the Chat Helper for automatic history and tools management
+// All public methods are async (non-blocking via parameters.formula)
+// Provider and model configured in AIProviders.json (model alias "chat")
 
 property _client : Object
 property _model : Text
 property _chat : cs.AIKit.OpenAIChatHelper
 
 Class constructor()
-	This._model:="chat"  // model alias défini dans AIProviders.json
+	This._model:="chat"  // model alias defined in AIProviders.json
 	This._client:=cs.AIKit.OpenAI.new()
 
-// ─── Factory : crée un Chat Helper configuré ─────────────────────────────────
-// Les options sont passées à chat.create() pour initialisation correcte
+// ─── Factory: creates a configured Chat Helper ─────────────────────────────────
+// Options are passed to chat.create() for correct initialization
 Function _createChat($systemPrompt : Text; $schema : Object; $schemaName : Text; $formula : 4D.Function) : cs.AIKit.OpenAIChatHelper
 	var $options:=cs.AIKit.OpenAIChatCompletionsParameters.new()
 	$options.model:=This._model
@@ -31,13 +31,13 @@ Function _createChat($systemPrompt : Text; $schema : Object; $schemaName : Text;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ─── ASYNC API (Chat Helper + formula) ────────────────────────────────────────
-// Toutes les méthodes retournent immédiatement.
-// Le callback (4D.Function) est invoqué dans la boucle événement du formulaire.
+// All methods return immediately.
+// The callback (4D.Function) is invoked in the form event loop.
 // Pattern: $self:=This + Formula($self._onXxx($1; captured_params...))
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// ─── Scénario 1 : Analyse email = demande de devis ───────────────────────────
-// $callback reçoit {success; extraction; actions; validationError}
+// ─── Scenario 1: Email analysis = quote request ────────────────────────────────
+// $callback receives {success; extraction; actions; validationError}
 Function analyzeQuoteEmailAsync($email : cs.EmailEntity; $catalog : Collection; $callback : 4D.Function)
 	var $schemaCombined : Object:=This._loadSchema("schema_quote_combined.json")
 	If ($schemaCombined=Null)
@@ -83,7 +83,7 @@ Function _onQuoteChatDone($chatResult : Object; $callback : 4D.Function)
 		$callback.call(Null; $result)
 		return 
 	End if 
-	// JSON Validate côté 4D — filet de sécurité post-AI (blog pattern)
+	// JSON Validate on the 4D side — post-AI safety net (blog pattern)
 	$result.validation:=This._validateResponse($parsed; "schema_quote_combined.json")
 	If (Not($result.validation.success))
 		$result.validationError:="schema_quote_combined: "+JSON Stringify($result.validation.errors)
@@ -95,8 +95,8 @@ Function _onQuoteChatDone($chatResult : Object; $callback : 4D.Function)
 	$result.actions:=$parsed.actions
 	$callback.call(Null; $result)
 
-// ─── Scénario 2 : Alerte météo sur un événement ──────────────────────────────
-// $callback reçoit {success; weatherActions; validationError}
+// ─── Scenario 2: Weather alert on an event ─────────────────────────────────────
+// $callback receives {success; weatherActions; validationError}
 Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object; $eventLines : Collection; $callback : 4D.Function)
 	var $schemaWeather : Object:=This._loadSchema("schema_weather_actions.json")
 	If ($schemaWeather=Null)
@@ -107,7 +107,7 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object;
 	var $servicesSnippet : Text:=""
 	var $line : Object
 	For each ($line; $eventLines)
-		$servicesSnippet:=$servicesSnippet+"- "+$line.serviceLabel+" (qté: "+String($line.quantity)+")\n"
+		$servicesSnippet:=$servicesSnippet+"- "+$line.serviceLabel+" (qty: "+String($line.quantity)+")\n"
 	End for each 
 
 	var $venue : cs.VenueEntity:=$event.venue
@@ -153,7 +153,7 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object;
 	$user:=$user+"Venue: "+$venueInfo+"\n"
 	$user:=$user+"Guest Count: "+String($event.guestCount)+"\n\n"
 
-	// Weather setup prévu pour cet événement
+	// Planned weather setup for this event
 	var $setup : Object:=$event.weatherSetup
 	If ($setup#Null)
 		$user:=$user+"Planned Weather Setup:\n"
@@ -189,7 +189,7 @@ Function _onWeatherChatDone($chatResult : Object; $callback : 4D.Function; $even
 	If (($parsed.eventID=Null) || ($parsed.eventID=""))
 		$parsed.eventID:=$event.ID
 	End if 
-	// JSON Validate côté 4D — filet de sécurité post-AI (blog pattern)
+	// JSON Validate on the 4D side — post-AI safety net (blog pattern)
 	$result.validation:=This._validateResponse($parsed; "schema_weather_actions.json")
 	If (Not($result.validation.success))
 		$result.validationError:="schema_weather_actions: "+JSON Stringify($result.validation.errors)
@@ -200,8 +200,8 @@ Function _onWeatherChatDone($chatResult : Object; $callback : 4D.Function; $even
 	$result.weatherActions:=$parsed
 	$callback.call(Null; $result)
 
-// ─── Scénario 3 : Email de modification client ───────────────────────────────
-// $callback reçoit {success; ambiguous; impacts; validationError}
+// ─── Scenario 3: Client modification email ─────────────────────────────────────
+// $callback receives {success; ambiguous; impacts; validationError}
 Function analyzeModificationEmailAsync($email : cs.EmailEntity; $candidateEvents : Collection; $eventLines : Collection; $callback : 4D.Function)
 	var $schemaImpacts : Object:=This._loadSchema("schema_modification_impacts.json")
 	If ($schemaImpacts=Null)
@@ -256,7 +256,7 @@ Function _onModificationChatDone($chatResult : Object; $callback : 4D.Function)
 		$callback.call(Null; $result)
 		return 
 	End if 
-	// JSON Validate côté 4D — filet de sécurité post-AI (blog pattern)
+	// JSON Validate on the 4D side — post-AI safety net (blog pattern)
 	$result.validation:=This._validateResponse($parsed; "schema_modification_impacts.json")
 	If (Not($result.validation.success))
 		$result.validationError:="schema_modification_impacts: "+JSON Stringify($result.validation.errors)
@@ -268,9 +268,9 @@ Function _onModificationChatDone($chatResult : Object; $callback : 4D.Function)
 	$result.ambiguous:=($parsed.candidateEvents#Null) && ($parsed.candidateEvents.length>1)
 	$callback.call(Null; $result)
 
-// ─── Scénario 3b : Email de modification lié directement à un événement connu ──
-// L'événement est déjà identifié — pas besoin de disambiguïser.
-// $callback reçoit {success; impacts; validationError}
+// ─── Scenario 3b: Modification email linked directly to a known event ──────────
+// The event is already identified — no need to disambiguate.
+// $callback receives {success; impacts; validationError}
 Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntity; $eventLines : Collection; $callback : 4D.Function)
 	var $schemaImpacts : Object:=This._loadSchema("schema_modification_impacts.json")
 	If ($schemaImpacts=Null)
@@ -313,7 +313,7 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	This._chat.prompt($user)
 
 // ─── generateDraftEmail: confirmation email after applying an action ──────────
-// $callback reçoit {success; emailText; validationError}
+// $callback receives {success; emailText; validationError}
 Function generateDraftEmailAsync($event : cs.EventEntity; $action : Object; $proposedLines : Collection; $callback : 4D.Function)
 	var $schemaDraft : Object:=This._loadSchema("schema_draft_email.json")
 	If ($schemaDraft=Null)
@@ -427,8 +427,8 @@ Function _onDraftReplyChatDone($chatResult : Object; $callback : 4D.Function)
 	End if 
 	$callback.call(Null; {success: True; draft: $chatResult.choice.message.content; error: ""})
 
-// ─── Réévaluation des actions restantes après application d'une action ────────
-// $callback reçoit {success; actions; validationError}
+// ─── Re-evaluation of remaining actions after applying an action ────────────────
+// $callback receives {success; actions; validationError}
 Function reassessActionsAsync($remainingActions : Collection; $appliedLabel : Text; $eventLines : Collection; $callback : 4D.Function)
 	var $schemaReassess : Object:=This._loadSchema("schema_reassess_actions.json")
 	If ($schemaReassess=Null)
@@ -489,8 +489,8 @@ Function _onReassessChatDone($chatResult : Object; $callback : 4D.Function)
 	$result.actions:=$parsed.actions
 	$callback.call(Null; $result)
 
-// ─── Temps 2 : Exécution avec tool calling (ChatHelper + registerTools) ──────
-// $callback reçoit {success; proposedLines; summary; totalImpact; error}
+// ─── Step 2: Execution with tool calling (ChatHelper + registerTools) ───────────
+// $callback receives {success; proposedLines; summary; totalImpact; error}
 Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback : 4D.Function)
 	var $system : Text:="You are an event planning execution assistant for Event Pulse. "
 	$system:=$system+"You have access to a search_services tool to find services in our catalog. "
@@ -558,7 +558,7 @@ Function _onExecutionChatDone($chatResult : Object; $callback : 4D.Function)
 		$callback.call(Null; $result)
 		return 
 	End if 
-	// JSON Validate côté 4D — filet de sécurité post-AI (blog pattern)
+	// JSON Validate on the 4D side — post-AI safety net (blog pattern)
 	$result.validation:=This._validateResponse($parsed; "schema_action_execution.json")
 	If (Not($result.validation.success))
 		$result.error:="schema_action_execution: "+JSON Stringify($result.validation.errors)
@@ -575,7 +575,7 @@ Function _onExecutionChatDone($chatResult : Object; $callback : 4D.Function)
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// ─── Extrait et parse le JSON de la réponse chat ─────────────────────────────
+// ─── Extracts and parses JSON from the chat response ────────────────────────────
 Function _extractParsedResponse($chatResult : Object) : Object
 	If ($chatResult=Null) || (Not($chatResult.success))
 		return Null
@@ -592,7 +592,7 @@ Function _extractParsedResponse($chatResult : Object) : Object
 	End if 
 	return JSON Parse($content)
 
-// ─── Extrait un message d'erreur lisible de la réponse chat ──────────────────
+// ─── Extracts a readable error message from the chat response ───────────────────
 Function _extractError($chatResult : Object) : Text
 	If ($chatResult=Null)
 		return "API call returned Null"
@@ -608,7 +608,7 @@ Function _extractError($chatResult : Object) : Text
 	End if 
 	return "Empty or invalid JSON response"
 
-// ─── Construction du résumé catalogue pour les prompts ───────────────────────
+// ─── Builds the catalog summary for prompts ─────────────────────────────────────
 Function _buildCatalogSnippet($catalog : Collection) : Text
 	var $result : Text:=""
 	If ($catalog=Null)
@@ -623,8 +623,8 @@ Function _buildCatalogSnippet($catalog : Collection) : Text
 	End for 
 	return $result
 
-// ─── Validation JSON côté 4D (illustre le blog "Making AI Predictable") ─────
-// Valide la réponse AI parsée contre le schéma Draft 2020-12.
+// ─── JSON Validation on the 4D side (illustrates the "Making AI Predictable" blog) ─
+// Validates the parsed AI response against the Draft 2020-12 schema.
 // Retourne {success; errors; schemaName}
 Function _validateResponse($parsed : Object; $schemaFilename : Text) : Object
 	var $schema : Object:=This._loadSchema($schemaFilename)
@@ -634,7 +634,7 @@ Function _validateResponse($parsed : Object; $schemaFilename : Text) : Object
 	var $validation : Object:=JSON Validate($parsed; $schema)
 	return {success: $validation.success; errors: $validation.errors; schemaName: $schemaFilename}
 
-// ─── Chargement de schéma depuis Resources/schemas ───────────────────────────
+// ─── Schema loading from Resources/schemas ─────────────────────────────────────
 Function _loadSchema($filename : Text) : Object
 	var $file : 4D.File:=Folder(fk resources folder).file("schemas/"+$filename)
 	If (Not($file.exists))

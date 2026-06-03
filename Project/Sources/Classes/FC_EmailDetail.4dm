@@ -1,5 +1,5 @@
 // FC_EmailDetail.4dm
-// Scénario 1 (devis) et Scénario 3 (modification) — analyse IA + panneau d'actions
+// Scenario 1 (quote) and Scenario 3 (modification) — AI analysis + action panel
 
 property email : cs.EmailEntity
 property event : cs.EventEntity
@@ -271,7 +271,7 @@ Function _renderModificationResult($result : Object)
 		OBJECT SET TITLE(*; "text_ai_status"; "✦ "+String($data.impacts.length)+" impacts identified")
 		OBJECT SET TITLE(*; "text_ai_context"; $ctx)
 
-		// Utiliser les executionActions retournées par l'IA (avec hiddenPrompt)
+		// Use the executionActions returned by the AI (with hiddenPrompt)
 		var $actions : Collection:=Choose(($data.executionActions#Null); $data.executionActions; [])
 		If ($actions.length=0)
 			// Fallback si pas d'executionActions
@@ -319,7 +319,7 @@ Function _executeAction($index : Integer)
 			ALERT("Action: "+$action.label)
 	End case 
 
-// ─── Temps 2 : Exécution avec tool calling + panneau confirm slide-in ────────
+// ─── Step 2: Execution with tool calling + confirm slide-in panel ───────────────
 Function _executeWithToolCalling($action : Object)
 	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Searching services...")
 

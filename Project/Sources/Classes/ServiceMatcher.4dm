@@ -1,15 +1,15 @@
 // ServiceMatcher.4dm
-// Gère les embeddings vectoriels du catalogue Service et la recherche sémantique
+// Manages vector embeddings for the Service catalog and semantic search
 
 property _client : Object
 property _model : Text
 
 Class constructor()
 	This._client:=cs.AIKit.OpenAI.new()
-	This._model:="embedding"  // model alias défini dans AIProviders.json
+	This._model:="embedding"  // model alias defined in AIProviders.json
 
-// ─── Génère les embeddings pour tous les services du catalogue ────────────────
-// Appelé une seule fois au seed initial
+// ─── Generates embeddings for all services in the catalog ───────────────────────
+// Called once at initial seed
 Function buildEmbeddings()
 	var $services : cs.ServiceSelection:=ds.Service.query("embedding = null")
 	var $service : cs.ServiceEntity
@@ -26,7 +26,7 @@ Function buildEmbeddings()
 		End if 
 	End for each 
 
-// ─── Force la recalcul de tous les embeddings (après changement de labels) ────
+// ─── Forces recalculation of all embeddings (after label changes) ──────────────
 Function rebuildAllEmbeddings()
 	var $services : cs.ServiceSelection:=ds.Service.all()
 	var $service : cs.ServiceEntity
@@ -41,14 +41,14 @@ Function rebuildAllEmbeddings()
 		End if 
 	End for each 
 
-// ─── Recherche sémantique dans le catalogue ──────────────────────────────────
-// Retourne les top services matchant la query (max $limit résultats)
+// ─── Semantic search in the catalog ────────────────────────────────────────────
+// Returns the top services matching the query (max $limit results)
 Function search($query : Text; $category : Text; $limit : Integer) : Collection
 	If ($limit=0)
 		$limit:=5
 	End if 
 
-	// Créer l'embedding de la requête
+	// Create the query embedding
 	var $searchText : Text:=$query
 	If ($category#"")
 		$searchText:=$category+" | "+$searchText
@@ -82,7 +82,7 @@ Function search($query : Text; $category : Text; $limit : Integer) : Collection
 		return This._keywordSearch($query; $category; $limit)
 	End if 
 
-	// Construire la collection de résultats
+	// Build the result collection
 	var $results : Collection:=[]
 	var $svc : cs.ServiceEntity
 	var $i : Integer:=0

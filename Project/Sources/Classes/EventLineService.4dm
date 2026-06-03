@@ -1,9 +1,9 @@
 // EventLineService.4dm
-// Service partagé pour manipuler les EventLines (ajout, suppression, mise à jour)
+// Shared service for manipulating EventLines (add, remove, update)
 
 singleton Class constructor()
 
-// ─── Applique des modifications proposées par l'IA sur les lignes d'un event ──
+// ─── Applies AI-proposed changes to the lines of an event ──────────────────────
 Function applyProposedChanges($eventID : Text; $proposedLines : Collection)
 	If (($eventID=Null) || ($eventID=""))
 		return 
@@ -57,7 +57,7 @@ Function applyProposedChanges($eventID : Text; $proposedLines : Collection)
 		End case 
 	End for each 
 
-// ─── Calcule le total d'une collection de lignes ──────────────────────────────
+// ─── Calculates the total of a collection of lines ─────────────────────────────
 Function calculateTotal($lines : Collection) : Real
 	var $total : Real:=0
 	If ($lines=Null)

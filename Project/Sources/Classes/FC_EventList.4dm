@@ -1,5 +1,5 @@
 // FC_EventList.4dm
-// Liste des événements avec indicateurs météo et filtres
+// Event list with weather indicators and filters
 
 property events : cs.EventSelection
 property activeFilter : Text

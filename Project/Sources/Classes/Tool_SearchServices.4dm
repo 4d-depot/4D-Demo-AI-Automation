@@ -1,6 +1,6 @@
 // Tool_SearchServices.4dm
-// Tool AIKit pour la recherche sémantique dans le catalogue de services
-// Pattern registerTools Example 3 : tools collection + function nommée comme le tool
+// AIKit tool for semantic search in the service catalog
+// Pattern registerTools Example 3: tools collection + function named like the tool
 
 property tools : Collection
 

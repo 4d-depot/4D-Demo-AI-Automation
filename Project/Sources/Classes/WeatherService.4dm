@@ -1,6 +1,6 @@
 // WeatherService.4dm
-// Appel Open-Meteo pour récupérer les prévisions météo par venue (lat/lng)
-// Cache dans Event.weatherAlertJson — fallback sur données pré-semées si offline
+// Open-Meteo call to retrieve weather forecasts by venue (lat/lng)
+// Cached in Event.weatherAlertJson — fallback on pre-seeded data if offline
 
 property _baseURL : Text
 

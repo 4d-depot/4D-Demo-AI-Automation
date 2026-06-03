@@ -1,29 +1,29 @@
 // EmailAnalyzer.4dm
-// Routing d'emails : identifie le type et le contexte sans appel IA
-// L'IA intervient seulement après la pré-qualification
+// Email routing: identifies the type and context without an AI call
+// AI only intervenes after pre-qualification
 
 singleton Class constructor()
 
-// ─── Recherche des événements candidats pour une modification ─────────────────
-// Cherche par email du sender, puis par date ou référence mentionnée dans le corps
+// ─── Search for candidate events for a modification ───────────────────────────
+// Searches by sender email, then by date or reference mentioned in the body
 Function _findCandidateEvents($email : cs.EmailEntity) : Collection
 	var $candidates : Collection:=[]
 
-	// 1) Chercher le client par email du sender
+	// 1) Find the client by sender email
 	var $clientEmail : Text:=$email.senderEmail
 	var $client : cs.ClientEntity:=ds.Client.query("email = :1"; $clientEmail).first()
 	If ($client=Null)
 		return $candidates
 	End if
 
-	// 2) Récupérer ses événements futurs (status confirmed ou quote)
+	// 2) Get their future events (status confirmed or quote)
 	var $today : Date:=Current date
 	var $events : cs.EventSelection:=ds.Event.query(\
 		"clientID = :1 AND eventDate >= :2 AND (status = :3 OR status = :4)"; \
 		$client.ID; $today; "confirmed"; "quote"\
 	).orderBy("eventDate ASC")
 
-	// 3) Scorer chaque événement selon mentions dans le body
+	// 3) Score each event based on mentions in the body
 	var $body : Text:=Lowercase($email.body)
 	var $subject : Text:=Lowercase($email.subject)
 
@@ -39,17 +39,17 @@ Function _findCandidateEvents($email : cs.EmailEntity) : Collection
 		$ref:=Lowercase($evt.contractRef)
 		$dateStr:=String($evt.eventDate; "yyyy-MM-dd")
 
-		// Mention de la référence
+		// Reference mention
 		If ((Position($ref; $body)>0) || (Position($ref; $subject)>0))
 			$score:=$score+10
 		End if
 
-		// Mention de la date
+		// Date mention
 		If (Position($dateStr; $body)>0)
 			$score:=$score+5
 		End if
 
-		// Mention du nom du venue
+		// Venue name mention
 		$venue:=$evt.venue
 		If ($venue#Null)
 			$venueName:=Lowercase($venue.name)
@@ -62,27 +62,27 @@ Function _findCandidateEvents($email : cs.EmailEntity) : Collection
 			End if
 		End if
 
-		// Toujours inclure si score > 0, ou si < 3 événements futurs (petit portefeuille)
+		// Always include if score > 0, or if < 3 future events (small portfolio)
 		If (($score>0) || ($events.length<=3))
 			$candidates.push({eventID: $evt.ID; contractRef: $evt.contractRef; eventDate: String($evt.eventDate; "yyyy-MM-dd"); venueName: (Choose($venue#Null; $venue.name; "")); guestCount: $evt.guestCount; score: $score})
 		End if
 	End for each
 
-	// Trier par score décroissant
+	// Sort by descending score
 	$candidates:=$candidates.orderBy("score desc")
 
-	// Limiter à 4 candidats max
+	// Limit to 4 candidates max
 	If ($candidates.length>4)
 		$candidates:=$candidates.slice(0; 4)
 	End if
 
 	return $candidates
 
-// ─── Construit la collection candidats pour AIAdvisor ────────────────────────
+// ─── Builds the candidate collection for AIAdvisor ────────────────────────────
 Function buildCandidateCollection($email : cs.EmailEntity) : Collection
 	return This._findCandidateEvents($email)
 
-// ─── Charge les lignes d'un événement pour le prompt IA ──────────────────────
+// ─── Loads event lines for the AI prompt ───────────────────────────────────────
 Function buildEventLinesCollection($eventID : Text) : Collection
 	var $lines : Collection:=[]
 	var $selection : cs.EventLineSelection:=ds.EventLine.query("eventID = :1"; $eventID)
@@ -90,6 +90,6 @@ Function buildEventLinesCollection($eventID : Text) : Collection
 	var $service : cs.ServiceEntity
 	For each ($line; $selection)
 		$service:=$line.service
-		$lines.push({serviceID: $line.serviceID; serviceLabel: (Choose($service#Null; $service.label; "Inconnu")); quantity: $line.quantity; unitPrice: $line.unitPrice})
+		$lines.push({serviceID: $line.serviceID; serviceLabel: (Choose($service#Null; $service.label; "Unknown")); quantity: $line.quantity; unitPrice: $line.unitPrice})
 	End for each
 	return $lines

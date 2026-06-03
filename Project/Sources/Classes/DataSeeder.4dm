@@ -1,12 +1,12 @@
 // DataSeeder.4dm
-// Amorce la base avec les données JSON si elle est vide
-// Appelé au démarrage de l'application (On Startup / Home form On Load)
+// Seeds the database with JSON data if it is empty
+// Called at application startup (On Startup / Home form On Load)
 
 property _weatherTemplates : Object
 
 singleton Class constructor()
 
-// ─── Point d'entrée principal ─────────────────────────────────────────────────
+// ─── Main entry point ───────────────────────────────────────────────────────────
 Function seedIfEmpty()
 	If (ds.Client.all().length=0)
 		This._seedClients()
@@ -24,12 +24,12 @@ Function seedIfEmpty()
 		This._seedEmails()
 	End if 
 
-	// Générer les embeddings vectoriels pour les services (si absents)
+	// Generate vector embeddings for services (if missing)
 	This._buildServiceEmbeddings()
 
-// ─── Reset complet : vide tout et ré-importe ─────────────────────────────────
+// ─── Full reset: empties everything and re-imports ──────────────────────────────
 Function resetAll()
-	// Supprimer dans l'ordre (enfants d'abord)
+	// Delete in order (children first)
 	ds.EventLine.all().drop()
 	ds.Event.all().drop()
 	ds.Email.all().drop()
@@ -40,17 +40,17 @@ Function resetAll()
 	// Reset cached templates so file is reloaded
 	This._weatherTemplates:=Null
 
-	// Ré-importer tout depuis les JSON
+	// Re-import everything from JSON files
 	This._seedClients()
 	This._seedVenues()
 	This._seedServices()
 	This._seedEventsAndLines()
 	This._seedEmails()
 
-	// Recalculer les embeddings (forcé car les services sont neufs)
+	// Recalculate embeddings (forced because services are new)
 	This._buildServiceEmbeddings()
 
-// ─── Clients ──────────────────────────────────────────────────────────────────
+// ─── Clients ─────────────────────────────────────────────────────────────────────
 Function _seedClients()
 	var $file : 4D.File:=Folder(fk resources folder).file("data/clients.json")
 	var $data : Collection:=JSON Parse($file.getText())
@@ -67,7 +67,7 @@ Function _seedClients()
 		$e.save()
 	End for each
 
-// ─── Venues ───────────────────────────────────────────────────────────────────
+// ─── Venues ──────────────────────────────────────────────────────────────────────
 Function _seedVenues()
 	var $file : 4D.File:=Folder(fk resources folder).file("data/venues.json")
 	var $data : Collection:=JSON Parse($file.getText())
@@ -94,7 +94,7 @@ Function _seedVenues()
 		$e.save()
 	End for each
 
-// ─── Services ─────────────────────────────────────────────────────────────────
+// ─── Services ────────────────────────────────────────────────────────────────────
 Function _seedServices()
 	var $file : 4D.File:=Folder(fk resources folder).file("data/services.json")
 	var $data : Collection:=JSON Parse($file.getText())
@@ -112,12 +112,12 @@ Function _seedServices()
 		$e.save()
 	End for each
 
-// ─── Events + EventLines ──────────────────────────────────────────────────────
+// ─── Events + EventLines ────────────────────────────────────────────────────────
 Function _seedEventsAndLines()
-	// Délègue à regenerateEvents() qui charge events.json avec dates relatives
+	// Delegates to regenerateEvents() which loads events.json with relative dates
 	This.regenerateEvents()
 
-// ─── Génère des lignes réalistes pour un événement ────────────────────────────
+// ─── Generates realistic lines for an event ────────────────────────────────────
 Function _generateEventLines($evt : cs.EventEntity; $item : Object; $svcByCategory : Object)
 	var $guestCount : Integer:=$item.guestCount
 	var $status : Text:=$item.status
@@ -221,14 +221,14 @@ Function _generateEventLines($evt : cs.EventEntity; $item : Object; $svcByCatego
 		End if 
 	End if 
 
-// ─── Ajoute un service aléatoire d'une catégorie donnée ──────────────────────
+// ─── Adds a random service from a given category ───────────────────────────────
 Function _addRandomService($evt : cs.EventEntity; $svcByCategory : Object; $category : Text; $qty : Integer; $lineStatus : Text)
 	var $list : Collection:=$svcByCategory[$category]
 	If (($list#Null) && ($list.length>0))
 		This._addLine($evt; $list[Random%$list.length]; $qty; $lineStatus)
 	End if
 
-// ─── Ajoute un service en préférant les labels outdoor ou indoor ──────────────
+// ─── Adds a service preferring outdoor or indoor labels ────────────────────────
 Function _addPreferredService($evt : cs.EventEntity; $svcByCategory : Object; $category : Text; $qty : Integer; $lineStatus : Text; $preferOutdoor : Boolean)
 	var $list : Collection:=$svcByCategory[$category]
 	If (($list=Null) || ($list.length=0))
@@ -241,7 +241,7 @@ Function _addPreferredService($evt : cs.EventEntity; $svcByCategory : Object; $c
 	End if 
 	This._addLine($evt; $preferred[Random%$preferred.length]; $qty; $lineStatus)
 
-// ─── Ajoute un service spécifique par son label ───────────────────────────────
+// ─── Adds a specific service by its label ──────────────────────────────────────
 Function _addServiceByLabel($evt : cs.EventEntity; $svcByCategory : Object; $category : Text; $label : Text; $qty : Integer; $lineStatus : Text)
 	var $list : Collection:=$svcByCategory[$category]
 	If (($list=Null) || ($list.length=0))
@@ -254,7 +254,7 @@ Function _addServiceByLabel($evt : cs.EventEntity; $svcByCategory : Object; $cat
 		End if 
 	End if
 
-// ─── Ajoute une ligne de commande ─────────────────────────────────────────────
+// ─── Adds an order line ─────────────────────────────────────────────────────────
 Function _addLine($evt : cs.EventEntity; $svc : Object; $qty : Integer; $status : Text)
 	This._addLineWithPrice($evt; $svc; $qty; $status; $svc.unitPrice)
 
@@ -294,21 +294,21 @@ Function _seedEmails()
 		$e.save()
 	End for each 
 
-// ─── Régénération des events avec dates relatives ─────────────────────────────
-// Supprime tous les events + eventlines, puis recharge events.json avec des
-// dates calculées relativement à la date courante.
-// Seuls 1-2 events proches reçoivent une fausse alerte météo.
+// ─── Regeneration of events with relative dates ────────────────────────────────
+// Deletes all events + eventlines, then reloads events.json with
+// dates calculated relative to the current date.
+// Only 1-2 nearby events receive a fake weather alert.
 Function regenerateEvents()
-	// Supprimer les données existantes
+	// Delete existing data
 	ds.EventLine.all().drop()
 	ds.Event.all().drop()
 
-	// Charger les templates depuis events.json
+	// Load templates from events.json
 	var $file : 4D.File:=Folder(fk resources folder).file("data/events.json")
 	var $templates : Collection:=JSON Parse($file.getText())
 	var $total : Integer:=$templates.length
 
-	// Charger les références en base — no ordering needed, lookup by seedIndex
+	// Load references from database — no ordering needed, lookup by seedIndex
 	var $services : cs.ServiceSelection:=ds.Service.all()
 
 	// Cache services by category
@@ -325,14 +325,14 @@ Function regenerateEvents()
 
 	var $today : Date:=Current date
 
-	// ── Distribution des dates relatives ──────────────────────────────────────
-	// 300 events répartis :
-	//   [0..39]     → completed  (-1 à -180j)
-	//   [40..49]    → cancelled  (-1 à -90j)
-	//   [50..119]   → confirmed  (+1 à +30j)   ← sweet spot démo / météo
-	//   [120..219]  → confirmed  (+31 à +180j)
-	//   [220..279]  → quote      (+5 à +150j)
-	//   [280..299]  → confirmed  (+181 à +365j)
+	// ── Relative date distribution ─────────────────────────────────────────────
+	// 300 events distributed:
+	//   [0..39]     → completed  (-1 to -180d)
+	//   [40..49]    → cancelled  (-1 to -90d)
+	//   [50..119]   → confirmed  (+1 to +30d)   ← demo / weather sweet spot
+	//   [120..219]  → confirmed  (+31 to +180d)
+	//   [220..279]  → quote      (+5 to +150d)
+	//   [280..299]  → confirmed  (+181 to +365d)
 	var $i : Integer
 	var $item : Object
 	var $evt : cs.EventEntity
@@ -411,10 +411,10 @@ Function regenerateEvents()
 		End if 
 		$evt.venueRentalPrice:=$venueRentalPrice  // keep field as reference for venue switch
 
-		// Assigner le weatherSetup en fonction du type choisi
+		// Assign the weatherSetup based on the chosen type
 		$evt.weatherSetup:=This._assignWeatherSetup($venueOption)
 
-		// Les alertes météo seront calculées par le WeatherService
+		// Weather alerts will be calculated by the WeatherService
 		$evt.weatherAlertLevel:="none"
 		$evt.seedIndex:=$item.seedIndex
 		$evt.weatherForecast:=Null  // explicit NULL — avoids empty-string Object field on catalog migration
@@ -431,9 +431,9 @@ Function regenerateEvents()
 	ds.Email.all().drop()
 	This._seedEmails()
 
-// ─── Embeddings vectoriels des services ───────────────────────────────────────
+// ─── Vector embeddings for services ────────────────────────────────────────────
 Function _buildServiceEmbeddings()
-	// Vérifie si au moins un service n'a pas d'embedding
+	// Check if at least one service has no embedding
 	var $missing : cs.ServiceSelection:=ds.Service.query("embedding = null")
 	If ($missing.length=0)
 		return 
@@ -441,12 +441,12 @@ Function _buildServiceEmbeddings()
 	var $matcher : cs.ServiceMatcher:=cs.ServiceMatcher.new()
 	$matcher.buildEmbeddings()
 
-// ─── Force la reconstruction de tous les embeddings (après changement de labels) ──
+// ─── Forces rebuild of all embeddings (after label changes) ────────────────────
 Function rebuildEmbeddings()
 	var $matcher : cs.ServiceMatcher:=cs.ServiceMatcher.new()
 	$matcher.rebuildAllEmbeddings()
 
-// ─── Attribution du weatherSetup en fonction du choix indoor/outdoor ──────────
+// ─── Assignment of weatherSetup based on indoor/outdoor choice ─────────────────
 Function _assignWeatherSetup($venueOption : Text) : Object
 	var $conditions : Text
 	var $temperature : Text

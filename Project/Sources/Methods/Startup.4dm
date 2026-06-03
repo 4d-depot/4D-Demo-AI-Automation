@@ -1,8 +1,8 @@
 //%attributes = {}
 // Startup.4dm
-// Méthode de démarrage de l'application Event Pulse
-// Appelée automatiquement par la Database Method "On Startup"
-// Provider et modèles IA configurés dans AIProviders.json
+// Startup method for the Event Pulse application
+// Called automatically by the Database Method "On Startup"
+// AI provider and models configured in AIProviders.json
 
 // 1. Amorcer la base si vide
 cs.DataSeeder.me.seedIfEmpty()

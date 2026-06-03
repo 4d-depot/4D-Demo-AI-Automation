@@ -1,5 +1,5 @@
 // UIHelpers.4dm
-// Fonctions UI partagées entre les form controllers (boutons d'action IA)
+// UI functions shared between form controllers (AI action buttons)
 
 singleton Class constructor()
 
@@ -13,7 +13,7 @@ Function resetActionButtons()
 	End for each 
 	OBJECT SET TITLE(*; "text_ai_validation_badge"; "")
 
-// ─── Afficher les boutons d'action IA (max 4), empilés depuis le bas ──────────
+// ─── Display AI action buttons (max 4), stacked from the bottom ─────────────────
 // Buttons are pre-positioned bottom-to-top in the form (action4=680, action3=624, action2=568, action1=512)
 // We show the last N slots so actions always appear just above the analyze button.
 // Returns a Collection[4] mapping slot index → action index (or -1 if unused).
@@ -49,7 +49,7 @@ Function typeBadge($type : Text) : Text
 			return $type
 	End case 
 
-// Version longue (détail)
+// Long version (detail)
 Function typeBadgeFull($type : Text) : Text
 	Case of 
 		: ($type="quote")

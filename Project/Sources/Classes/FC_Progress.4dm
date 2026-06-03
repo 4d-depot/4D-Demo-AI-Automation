@@ -1,5 +1,5 @@
 // FC_Progress.4dm
-// Contrôleur du formulaire Progress — affiche un spinner pendant un traitement worker
+// Progress form controller — displays a spinner during worker processing
 // Usage : var $p := cs.FC_Progress.new("Message…"; Formula(...))
 //         DIALOG("Progress"; $p)
 
@@ -40,7 +40,7 @@ Function _onTimer()
 		OBJECT SET TITLE(*; "text_detail"; This.detail)
 	End if 
 
-// Appelé par le worker via CALL FORM quand le traitement est terminé
+// Called by the worker via CALL FORM when processing is complete
 Function _onDone()
 	SET TIMER(0)
 	CANCEL

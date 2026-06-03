@@ -1,5 +1,5 @@
 // FC_Home.4dm
-// Contrôleur du formulaire Home – hub de navigation vers les 3 modules
+// Home form controller – navigation hub for the 3 modules
 
 property statusText : Text
 

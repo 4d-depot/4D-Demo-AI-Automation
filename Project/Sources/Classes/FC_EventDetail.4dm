@@ -1,5 +1,5 @@
 // FC_EventDetail.4dm
-// Scénario 2 : Alerte météo + panneau IA avec actions contextuelles
+// Scenario 2: Weather alert + AI panel with contextual actions
 
 property event : cs.EventEntity
 property eventLines : cs.EventLineSelection
@@ -401,11 +401,11 @@ Function _executeAction($slot : Integer)
 			ALERT("Action: "+$action.label+"\n\n"+Choose(($action.description#Null); $action.description; ""))
 	End case 
 	
-	// ─── Temps 2 : Exécution avec tool calling + dialogue confirmation ───────────
+	// ─── Step 2: Execution with tool calling + confirmation dialog ──────────────────
 Function _executeWithToolCalling($action : Object)
 	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Searching services...")
 	
-	// Contexte de l'événement
+	// Event context
 	var $context : Object:={\
 		eventID: This.event.ID; \
 		eventDate: String(This.event.eventDate; "yyyy-MM-dd"); \
