@@ -129,7 +129,9 @@ Function validationBadgeClicked()
 	var $d : Object:=This._lastValidationData
 	var $schemaFile : 4D.File:=Folder(fk resources folder).file("schemas/"+$d.schema)
 	var $fc : cs.FC_JSONValidateDetail:=cs.FC_JSONValidateDetail.new($d.schema; $schemaFile; $d.json)
+	var $w : Integer:=Open form window("JSONValidateDetail"; Plain form window; Horizontally centered; Vertically centered)
 	DIALOG("JSONValidateDetail"; $fc)
+	CLOSE WINDOW($w)
 	
 Function _showValidationBadge($schemaName : Text; $validatedObject : Object)
 	var $label : Text:=Replace string($schemaName; ".json"; "")

@@ -10,7 +10,13 @@ Class constructor($schemaName : Text; $schemaFile : 4D.File; $validatedJson : Ob
 	This.schemaLabel:=$schemaName
 	This.jsonContent:=JSON Stringify($validatedJson; *)
 	If ($schemaFile#Null) && ($schemaFile.exists)
-		This.schemaContent:=$schemaFile.getText()
+		var $raw : Text:=$schemaFile.getText()
+		var $parsed : Object:=JSON Parse($raw)
+		If ($parsed#Null)
+			This.schemaContent:=JSON Stringify($parsed; *)
+		Else 
+			This.schemaContent:=$raw
+		End if 
 	Else 
 		This.schemaContent:="(schema file not found)"
 	End if 
