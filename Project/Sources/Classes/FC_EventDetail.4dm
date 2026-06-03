@@ -549,7 +549,12 @@ Function _dismissAfterActions()
 		This.linkedEmail:=Null
 		This.hasEmail:=False
 	Else 
-		// Dismiss weather alert on the event
+		// Update weatherSetup to match current forecast so no future alert is raised,
+		// then clear the alert level
+		var $forecast : Object:=This.event.weatherForecast
+		If ($forecast#Null)
+			This.event.weatherSetup:=$forecast
+		End if 
 		This.event.weatherAlertLevel:="none"
 		This.event.save()
 	End if 
