@@ -137,6 +137,12 @@ Function validationBadgeClicked()
 	$msg:=$msg+"\n\n── Schema ──\n"+$schemaText
 	ALERT($msg)
 	
+Function _showValidationBadge($schemaName : Text; $validatedObject : Object)
+	var $label : Text:=Replace string($schemaName; ".json"; "")
+	OBJECT SET TITLE(*; "text_ai_validation_badge"; "✓ JSON Validate: "+$label)
+	OBJECT SET VISIBLE(*; "text_ai_validation_badge"; True)
+	This._lastValidationData:=New object("schema"; $schemaName; "json"; $validatedObject)
+	
 	//MARK: - Private
 Function _onLoad()
 	This._resizeWindow(1100)
@@ -181,7 +187,7 @@ Function _clearAIPanel()
 	OBJECT SET VISIBLE(*; "input_email_body"; False)
 	OBJECT SET VISIBLE(*; "text_email_ai_result"; False)
 	OBJECT SET VISIBLE(*; "btn_email_analyze"; False)
-
+	
 Function _renderCurrentTab()
 	This._clearAIPanel()
 	If (This.activeAdvisorTab="email")
@@ -189,7 +195,7 @@ Function _renderCurrentTab()
 	Else 
 		This._renderWeatherTab(Null)
 	End if 
-
+	
 Function _renderWeatherTab($weatherResult : Object)
 	OBJECT SET VISIBLE(*; "text_weather_ai_explanation"; True)
 	
@@ -230,16 +236,12 @@ Function _renderWeatherTab($weatherResult : Object)
 		OBJECT SET TITLE(*; "text_weather_ai_explanation"; $wa.explanation)
 	End if 
 	
-	OBJECT SET TITLE(*; "text_ai_validation_badge"; "✓ JSON Validate: schema_weather_actions")
-	OBJECT SET VISIBLE(*; "text_ai_validation_badge"; True)
-	This._lastValidationData:=New object(\
-		"schema"; "schema_weather_actions.json"; \
-		"json"; $weatherResult.weatherActions)
+	This._showValidationBadge("schema_weather_actions.json"; $weatherResult.weatherActions)
 	
 	var $actions : Collection:=$wa.actions
 	This._actionMap:=cs.UIHelpers.me.showActionButtons($actions)
 	This.aiActions:=$actions
-
+	
 Function _renderEmailTab()
 	var $hasEmail : Boolean:=(This.linkedEmail#Null)
 	OBJECT SET VISIBLE(*; "text_email_ai_result"; True)
@@ -355,6 +357,7 @@ Function _onEmailAnalysisDone($result : Object)
 	var $impacts : Object:=$result.impacts
 	This._emailImpacts:=$impacts
 	OBJECT SET TITLE(*; "text_ai_status"; "✓ Modification request analyzed")
+	This._showValidationBadge("schema_modification_impacts.json"; $impacts)
 	
 	var $summary : Text:=""
 	If (($impacts.modificationSummary#Null) && ($impacts.modificationSummary#""))
@@ -447,6 +450,7 @@ Function _onExecutionDone($execResult : Object; $action : Object)
 	End if 
 	
 	OBJECT SET TITLE(*; "text_ai_status"; "✓ Impact calculated")
+	This._showValidationBadge("schema_action_execution.json"; $execResult)
 	This._showConfirmPanel($action; $execResult)
 	
 Function _showConfirmPanel($action : Object; $execResult : Object)
@@ -535,10 +539,10 @@ Function _hideConfirmPanel()
 	This._resizeWindow(1100)
 	This._pendingExecResult:=Null
 	This._pendingAction:=Null
-
-// Called when all actions have been applied (directly or after reassessment).
-// Dismisses the weather alert or marks the pending email as processed,
-// then re-renders the AI panel to reflect the resolved state.
+	
+	// Called when all actions have been applied (directly or after reassessment).
+	// Dismisses the weather alert or marks the pending email as processed,
+	// then re-renders the AI panel to reflect the resolved state.
 Function _dismissAfterActions()
 	cs.UIHelpers.me.resetActionButtons()
 	This.aiActions:=[]
@@ -668,6 +672,7 @@ Function _onReassessmentDone($result : Object)
 	Else 
 		This._actionMap:=cs.UIHelpers.me.showActionButtons($result.actions)
 		OBJECT SET TITLE(*; "text_ai_status"; "✅ Applied. "+String($result.actions.length)+" action(s) remaining.")
+		This._showValidationBadge("schema_reassess_actions.json"; $result)
 	End if 
 	
 Function btnCancelConfirmEventHandler($formEventCode : Integer)
@@ -704,6 +709,7 @@ Function _onDraftEmailDone($result : Object)
 	End if 
 	This.confirmEmailDraft:=$result.emailText
 	OBJECT SET TITLE(*; "text_ai_status"; "✉ Draft email ready")
+	This._showValidationBadge("schema_draft_email.json"; $result)
 	
 	//MARK: - Helpers
 Function _startSpinner()
@@ -722,11 +728,11 @@ Function _stopSpinner()
 	OBJECT SET TITLE(*; "text_ai_spinner"; "")
 Function _navigate($direction : Integer)
 	var $pos : Integer:=This.event.indexOf(This._selection)
-	If ($pos < 0)
+	If ($pos<0)
 		return 
 	End if 
 	var $newPos : Integer:=$pos+$direction
-	If (($newPos < 0) || ($newPos >= This._selection.length))
+	If (($newPos<0) || ($newPos>=This._selection.length))
 		return 
 	End if 
 	var $newEvent : cs.EventEntity:=This._selection[$newPos]
@@ -746,12 +752,12 @@ Function _navigate($direction : Integer)
 	
 Function _updateNavButtons()
 	var $pos : Integer:=This.event.indexOf(This._selection)
-	If ($pos < 0)
+	If ($pos<0)
 		OBJECT SET ENABLED(*; "btn_prev"; False)
 		OBJECT SET ENABLED(*; "btn_next"; False)
 	Else 
-		OBJECT SET ENABLED(*; "btn_prev"; $pos > 0)
-		OBJECT SET ENABLED(*; "btn_next"; $pos < (This._selection.length-1))
+		OBJECT SET ENABLED(*; "btn_prev"; $pos>0)
+		OBJECT SET ENABLED(*; "btn_next"; $pos<(This._selection.length-1))
 	End if 
 	
 Function _linesAsCollection() : Collection

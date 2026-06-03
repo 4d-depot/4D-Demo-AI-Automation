@@ -729,10 +729,10 @@
 				},
 				"text_ai_validation_badge": {
 					"type": "button",
-					"left": 760,
+					"left": 776,
 					"top": 819,
-					"width": 340,
-					"height": 22,
+					"width": 308,
+					"height": 23,
 					"text": "",
 					"visibility": "hidden",
 					"events": [
@@ -914,7 +914,7 @@
 		"onTimer"
 	],
 	"method": "method.4dm",
-	"geometryStamp": 462,
+	"geometryStamp": 464,
 	"$4d": {
 		"version": "1",
 		"kind": "form"
