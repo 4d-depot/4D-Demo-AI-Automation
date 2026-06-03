@@ -15,4 +15,4 @@ var $captured : Object:={w: $w; actionJson: $actionJson}
 
 var $advisor : cs.AIAdvisor:=cs.AIAdvisor.new()
 $advisor.executeActionAsync($hiddenPrompt; $context; \
-	Formula(CALL FORM($captured.w; Formula(Form._onExecutionDone($1; JSON Parse($captured.actionJson))); $1)))
+	Formula(CALL FORM($captured.w; Formula(Form._onExecutionDone($1; JSON Parse($2))); $1; $captured.actionJson)))
