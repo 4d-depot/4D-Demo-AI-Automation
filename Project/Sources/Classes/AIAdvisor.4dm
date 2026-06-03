@@ -312,6 +312,74 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	This._chat:=This._createChat($system; $schemaImpacts; "modification_impacts"; Formula($self._onModificationChatDone($1; $cb)))
 	This._chat.prompt($user)
 
+// ─── generateDraftEmail: confirmation email after applying an action ──────────
+// $callback reçoit {success; emailText; validationError}
+Function generateDraftEmailAsync($event : cs.EventEntity; $action : Object; $proposedLines : Collection; $callback : 4D.Function)
+	var $schemaDraft : Object:=This._loadSchema("schema_draft_email.json")
+	If ($schemaDraft=Null)
+		$callback.call(Null; {success: False; emailText: ""; validationError: "Cannot load schema_draft_email.json"})
+		return 
+	End if 
+
+	var $venue : cs.VenueEntity:=$event.venue
+	var $venueInfo : Text:=Choose($venue#Null; $venue.name+", "+$venue.city; "?")
+	var $client : cs.ClientEntity:=$event.client
+	var $clientName : Text:=Choose($client#Null; $client.contactName; "Client")
+
+	var $linesText : Text:=""
+	var $line : Object
+	For each ($line; $proposedLines)
+		var $lineTotal : Real:=Num($line.quantity)*Num($line.unitPrice)
+		$linesText:=$linesText+"- "+String($line.label)+" × "+String($line.quantity)+" @ "+String($line.unitPrice)+"€ = "+String($lineTotal)+"€\n"
+	End for each 
+
+	var $system : Text:="You are an event coordinator at Event Pulse drafting a professional confirmation email to a client. "
+	$system:=$system+"Write a clear, professional email in the language typically used with the client. "
+	$system:=$system+"Address the client by first name. Be concise and positive. "
+	$system:=$system+"Summarize the service changes just applied to their event. "
+	$system:=$system+"Do NOT include subject line or headers — just the email body text. "
+	$system:=$system+"Respond ONLY with a valid JSON object matching the schema: {\"emailText\": \"...\"}."
+
+	var $user : Text:="Client: "+$clientName+"\n"
+	$user:=$user+"Event: "+$event.contractRef+" — "+String($event.eventDate; "yyyy-MM-dd")+" at "+$venueInfo+" ("+String($event.guestCount)+" guests)\n\n"
+	If ($action#Null)
+		$user:=$user+"Action applied: "+String($action.label)+"\n"
+		If ($action.description#Null)
+			$user:=$user+"Details: "+String($action.description)+"\n"
+		End if 
+		$user:=$user+"\n"
+	End if 
+	If ($linesText#"")
+		$user:=$user+"Service changes:\n"+$linesText+"\n"
+	End if 
+	$user:=$user+"Draft a short professional confirmation email to the client informing them of these changes."
+
+	var $self : Object:=This
+	var $cb : 4D.Function:=$callback
+	This._chat:=This._createChat($system; $schemaDraft; "draft_email"; Formula($self._onGenerateDraftEmailDone($1; $cb)))
+	This._chat.prompt($user)
+
+Function _onGenerateDraftEmailDone($chatResult : Object; $callback : 4D.Function)
+	If (($chatResult#Null) && (Not($chatResult.terminated)))
+		return 
+	End if 
+	var $result : Object:={success: False; emailText: ""; validationError: ""}
+	var $parsed : Object:=This._extractParsedResponse($chatResult)
+	If ($parsed=Null)
+		$result.validationError:="schema_draft_email: "+This._extractError($chatResult)
+		$callback.call(Null; $result)
+		return 
+	End if 
+	$result.validation:=This._validateResponse($parsed; "schema_draft_email.json")
+	If (Not($result.validation.success))
+		$result.validationError:="schema_draft_email: "+JSON Stringify($result.validation.errors)
+		$callback.call(Null; $result)
+		return 
+	End if 
+	$result.success:=True
+	$result.emailText:=$parsed.emailText
+	$callback.call(Null; $result)
+
 // ─── draft_reply: AI generates email text for client ─────────────────────────
 // $callback receives {success; draft; error}
 Function draftReplyAsync($hiddenPrompt : Text; $email : cs.EmailEntity; $event : cs.EventEntity; $eventLines : Collection; $callback : 4D.Function)
