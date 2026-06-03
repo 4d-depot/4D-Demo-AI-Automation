@@ -155,7 +155,8 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object;
 	$user:=$user+"Weather Forecast:\n"
 	$user:=$user+JSON Stringify($weatherData)+"\n\n"
 	$user:=$user+"Booked Services:\n"+$servicesSnippet+"\n"
-	$user:=$user+"Return the weather risk analysis with explanation and 1-4 recommended actions."
+	$user:=$user+"Return the weather risk analysis with explanation and 2-4 recommended actions. "
+	$user:=$user+"Each action MUST address a distinct concern (e.g., one action per service category impacted). Do not bundle everything into a single action."
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
