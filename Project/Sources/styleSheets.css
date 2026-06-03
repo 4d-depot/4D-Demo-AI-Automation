@@ -98,6 +98,16 @@
     textAlign: center;
 }
 
+/* JSON validation badge button — subtle clickable indicator */
+.btnValidationBadge {
+    fill: #1A2B1A;
+    stroke: #4CAF50;
+    fontSize: 11;
+    borderStyle: solid;
+    borderRadius: 6;
+    textAlign: left;
+}
+
 /* Refresh Weather button */
 .btnRefresh {
     fill: #1F3A5C;
