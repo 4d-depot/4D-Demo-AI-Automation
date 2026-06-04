@@ -494,7 +494,10 @@
     "notes": "Graduation ceremony – Oslo",
     "seedIndex": 70,
     "clientSeedIndex": 63,
-    "venueSeedIndex": 102
+    "venueSeedIndex": 102,
+    "forcedServices": [
+      { "category": "Catering", "label": "Buffet lunch", "qty": 609 }
+    ]
   },
   {
     "guestCount": 59,
@@ -928,7 +931,10 @@
     "notes": "Graduation ceremony – Diamniadio",
     "seedIndex": 130,
     "clientSeedIndex": 61,
-    "venueSeedIndex": 120
+    "venueSeedIndex": 120,
+    "forcedServices": [
+      { "category": "Catering", "label": "Cocktail bar animation", "qty": 1 }
+    ]
   },
   {
     "guestCount": 412,
