@@ -1,28 +1,38 @@
 // AIWorkerContext.4dm
 // Session singleton — stores pending AI data per form window, keyed by window ID.
 // Shared across all processes in the same session (form process + workers).
-// Eliminates JSON round-trip serialization of action objects and existing lines.
+// Data is stored as JSON text because session singletons are shared objects
+// and cannot hold regular (non-shared) objects/collections directly.
 
-property pendingActions : Object
-property pendingExistingLines : Object
+property _actionsJson : Object
+property _linesJson : Object
 
 session singleton Class constructor()
-	This.pendingActions:={}
-	This.pendingExistingLines:={}
+	This._actionsJson:=New shared object()
+	This._linesJson:=New shared object()
 
 Function storeAction($windowID : Integer; $action : Object)
-	This.pendingActions[String($windowID)]:=$action
+	Use (This._actionsJson)
+		This._actionsJson[String($windowID)]:=JSON Stringify($action)
+	End use 
 
 Function getAction($windowID : Integer) : Object
-	return This.pendingActions[String($windowID)]
+	var $json : Text:=This._actionsJson[String($windowID)]
+	return ($json#Null) && ($json#"") ? JSON Parse($json) : Null
 
 Function storeExistingLines($windowID : Integer; $lines : Collection)
-	This.pendingExistingLines[String($windowID)]:=$lines
+	Use (This._linesJson)
+		This._linesJson[String($windowID)]:=JSON Stringify($lines)
+	End use 
 
 Function getExistingLines($windowID : Integer) : Collection
-	var $lines : Collection:=This.pendingExistingLines[String($windowID)]
-	return ($lines#Null) ? $lines : []
+	var $json : Text:=This._linesJson[String($windowID)]
+	return ($json#Null) && ($json#"") ? JSON Parse($json) : []
 
 Function clearAction($windowID : Integer)
-	OB REMOVE(This.pendingActions; String($windowID))
-	OB REMOVE(This.pendingExistingLines; String($windowID))
+	Use (This._actionsJson)
+		OB REMOVE(This._actionsJson; String($windowID))
+	End use 
+	Use (This._linesJson)
+		OB REMOVE(This._linesJson; String($windowID))
+	End use 
