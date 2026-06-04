@@ -509,7 +509,7 @@ Function _onExecutionDone($execResult : Object)
 	End if 
 	
 	OBJECT SET TITLE(*; "text_ai_status"; "✓ Impact calculated")
-	This._showValidationBadge("schema_action_execution.json"; $execResult)
+	This._showValidationBadge("schema_action_execution.json"; $execResult.rawAiResponse)
 	This._showConfirmPanel($action; $execResult)
 	
 Function _showConfirmPanel($action : Object; $execResult : Object)
@@ -743,7 +743,7 @@ Function _onReassessmentDone($result : Object)
 	Else 
 		This._actionMap:=cs.UIHelpers.me.showActionButtons($result.actions)
 		OBJECT SET TITLE(*; "text_ai_status"; "✅ Applied. "+String($result.actions.length)+" action(s) remaining.")
-		This._showValidationBadge("schema_reassess_actions.json"; $result)
+		This._showValidationBadge("schema_reassess_actions.json"; $result.rawAiResponse)
 	End if 
 	
 Function btnCancelConfirmEventHandler($formEventCode : Integer)
@@ -780,7 +780,7 @@ Function _onDraftEmailDone($result : Object)
 	End if 
 	This.confirmEmailDraft:=$result.emailText
 	OBJECT SET TITLE(*; "text_ai_status"; "✉ Draft email ready")
-	This._showValidationBadge("schema_draft_email.json"; $result)
+	This._showValidationBadge("schema_draft_email.json"; $result.rawAiResponse)
 	
 	//MARK: - Helpers
 Function _startSpinner()

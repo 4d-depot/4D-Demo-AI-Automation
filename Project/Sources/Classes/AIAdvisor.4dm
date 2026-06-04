@@ -338,6 +338,7 @@ Function _onGenerateDraftEmailDone($chatResult : Object; $callback : 4D.Function
 		return 
 	End if 
 	$result.success:=True
+	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))
 	$result.emailText:=$parsed.emailText
 	$callback.call(Null; $result)
 
@@ -447,6 +448,7 @@ Function _onReassessChatDone($chatResult : Object; $callback : 4D.Function)
 		return 
 	End if 
 	$result.success:=True
+	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))
 	$result.actions:=$parsed.actions
 	$callback.call(Null; $result)
 
@@ -527,6 +529,7 @@ Function _onExecutionChatDone($chatResult : Object; $callback : 4D.Function)
 		return 
 	End if 
 	$result.success:=True
+	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))  // snapshot before enrichment — used by debug display
 	$result.proposedLines:=This._enrichProposedLines($parsed.proposedLines)
 	$result.summary:=$parsed.summary
 	$callback.call(Null; $result)
