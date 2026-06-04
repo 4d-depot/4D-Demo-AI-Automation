@@ -268,7 +268,8 @@
 					"events": [],
 					"focusable": false,
 					"class": "btnStatusGreen",
-					"style": "flat"
+					"style": "flat",
+					"borderRadius": 15
 				},
 				"btn_ai_setup": {
 					"type": "button",
@@ -284,7 +285,8 @@
 					"focusable": true,
 					"method": "objbtn_ai_setup_link.4dm",
 					"class": "btnStatusWarning",
-					"style": "flat"
+					"style": "flat",
+					"borderRadius": 15
 				}
 			}
 		}

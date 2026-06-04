@@ -172,8 +172,7 @@
     stroke: #2D6E41;
     color: #4CAF50;
     fontSize: 12;
-    borderStyle: solid;
-    borderRadius: 15;
+    borderStyle: none;
     textAlign: center;
 }
 
@@ -182,8 +181,7 @@
     stroke: #E65100;
     color: #FF8C00;
     fontSize: 12;
-    borderStyle: solid;
-    borderRadius: 15;
+    borderStyle: none;
     textAlign: center;
 }
 
