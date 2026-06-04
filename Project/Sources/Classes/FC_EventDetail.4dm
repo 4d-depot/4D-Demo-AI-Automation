@@ -433,8 +433,12 @@ Function _executeSwitchVenue($action : Object)
 	var $evt : cs.EventEntity:=This.event
 	var $venue : cs.VenueEntity:=$evt.venue
 	
-	var $indoorName : Text:=Choose(($venue#Null) && ($venue.indoorOption#Null); String($venue.indoorOption.name); "indoor option")
-	var $indoorRental : Real:=Choose(($venue#Null) && ($venue.indoorOption#Null); Num($venue.indoorOption.rentalPrice); 0)
+	var $indoorName : Text:="indoor option"
+	var $indoorRental : Real:=0
+	If (($venue#Null) && ($venue.indoorOption#Null))
+		$indoorName:=String($venue.indoorOption.name)
+		$indoorRental:=Num($venue.indoorOption.rentalPrice)
+	End if 
 	var $guestCount : Integer:=$evt.guestCount
 	
 	// List all booked services — let AI decide which are outdoor-specific
