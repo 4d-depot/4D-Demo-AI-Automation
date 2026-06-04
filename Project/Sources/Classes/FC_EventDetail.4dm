@@ -404,29 +404,21 @@ Function _executeAction($slot : Integer)
 Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Searching services...")
 	
-	// Event context
+	// Event context — use _linesAsCollection() which includes serviceID (needed for removes)
 	var $context : Object:={\
 		eventID: This.event.ID; \
 		eventDate: String(This.event.eventDate; "yyyy-MM-dd"); \
 		guestCount: This.event.guestCount; \
-		venueName: This.event.venue.name\
+		venueName: This.event.venue.name; \
+		existingLines: This._linesAsCollection()\
 		}
-	
-	$context.existingLines:=[]
-	var $line : Object
-	For each ($line; This.eventLines)
-		$context.existingLines.push({\
-			serviceLabel: $line.serviceLabel; \
-			quantity: $line.quantity; \
-			unitPrice: $line.unitPrice\
-			})
-	End for each 
 	
 	var $w : Integer:=Current form window
 	var $hiddenPrompt : Text:=$promptOverride || String($action.hiddenPrompt)
-	var $actJson : Text:=JSON Stringify($action)
+	// Store action in process singleton — avoids JSON round-trip through worker
+	cs.AIWorkerContext.me.storeAction($w; $action)
 	var $ctxJson : Text:=JSON Stringify($context)
-	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiExecuteWorkerJob($w; $hiddenPrompt; $ctxJson; $actJson)))
+	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiExecuteWorkerJob($w; $hiddenPrompt; $ctxJson)))
 	
 // ─── switch_venue: build a smart prompt then route through normal tool-calling ───
 Function _executeSwitchVenue($action : Object)
@@ -464,10 +456,14 @@ Function _executeSwitchVenue($action : Object)
 	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Switching to indoor — calculating replacements...")
 	This._executeWithToolCalling($action; $prompt)
 	
-Function _onExecutionDone($execResult : Object; $action : Object)
+Function _onExecutionDone($execResult : Object)
 	If (Form=Null)
 		return 
 	End if 
+	
+	// Retrieve and clear the stored action — no JSON round-trip needed
+	var $action : Object:=cs.AIWorkerContext.me.getAction(Current form window)
+	cs.AIWorkerContext.me.clearAction(Current form window)
 	
 	If (Not($execResult.success))
 		OBJECT SET TITLE(*; "text_ai_status"; "❌ "+String($execResult.error))
@@ -481,8 +477,6 @@ Function _onExecutionDone($execResult : Object; $action : Object)
 	
 	// For switch_venue: inject the indoor venue rental as a guaranteed add line
 	// (AI may fail to find it; we always inject it from the venue's indoorOption.rentalPrice)
-	var $dbgFile : 4D.File:=Folder(fk logs folder).file("switch_venue_debug.json")
-	$dbgFile.setText(JSON Stringify({switchVenue: $action._switchVenue; indoorRental: $action._indoorRental; indoorName: $action._indoorName; actionKeys: OB Keys($action); proposedCount: $execResult.proposedLines.length}; *))
 	If ($action._switchVenue=True) && (Num($action._indoorRental)>0)
 		var $alreadyHasIndoor : Boolean:=$execResult.proposedLines.some(Formula(\
 			($1.value.delta="add") && (Position("indoor"; Lowercase($1.value.label))>0) && (Position("rental"; Lowercase($1.value.label))>0)\
