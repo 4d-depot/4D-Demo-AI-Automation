@@ -400,7 +400,8 @@ Function _executeAction($slot : Integer)
 	End case 
 	
 	// ─── Step 2: Execution with tool calling + confirmation dialog ──────────────────
-Function _executeWithToolCalling($action : Object)
+// $promptOverride: optional — if provided, replaces the action's hiddenPrompt
+Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Searching services...")
 	
 	// Event context
@@ -411,7 +412,6 @@ Function _executeWithToolCalling($action : Object)
 		venueName: This.event.venue.name\
 		}
 	
-	// Lignes existantes
 	$context.existingLines:=[]
 	var $line : Object
 	For each ($line; This.eventLines)
@@ -423,73 +423,65 @@ Function _executeWithToolCalling($action : Object)
 	End for each 
 	
 	var $w : Integer:=Current form window
-	var $hiddenPrompt : Text:=$action.hiddenPrompt
+	var $hiddenPrompt : Text:=Choose($promptOverride#""; $promptOverride; String($action.hiddenPrompt))
 	var $actJson : Text:=JSON Stringify($action)
 	var $ctxJson : Text:=JSON Stringify($context)
 	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiExecuteWorkerJob($w; $hiddenPrompt; $ctxJson; $actJson)))
 	
-// ─── switch_venue: switch outdoor → indoor directly without AI tool call ─────────
+// ─── switch_venue: build a smart prompt then route through normal tool-calling ───
 Function _executeSwitchVenue($action : Object)
 	var $evt : cs.EventEntity:=This.event
 	var $venue : cs.VenueEntity:=$evt.venue
 	
-	// Determine the indoor option rental price
-	var $indoorRental : Real:=0
-	var $indoorName : Text:=""
-	If (($venue#Null) && ($venue.indoorOption#Null))
-		$indoorRental:=Num($venue.indoorOption.rentalPrice)
-		$indoorName:=$venue.indoorOption.name
+	// Build the indoor option info
+	var $indoorName : Text:=Choose(($venue#Null) && ($venue.indoorOption#Null); String($venue.indoorOption.name); "indoor option")
+	var $indoorRental : Real:=Choose(($venue#Null) && ($venue.indoorOption#Null); Num($venue.indoorOption.rentalPrice); 0)
+	var $guestCount : Integer:=$evt.guestCount
+	
+	// Identify outdoor-specific services to remove and indoor ones to swap
+	var $outdoorKeywords : Collection:=["outdoor"; "tent"; "tarp"; "poncho"; "rain"; "patio heater"; "outdoor sound"; "outdoor architectural"; "outdoor venue rental"; "stretch clear-span"; "pagoda"; "marquee"; "semi-closed tent"; "prestige marquee"; "waterproof"; "drainage"; "bâche"; "chapiteau"; "tente"; "extérieur"]
+	var $outdoorServices : Collection:=[]
+	var $line : Object
+	For each ($line; This.eventLines)
+		var $lbl : Text:=Lowercase(String($line.serviceLabel))
+		var $kw : Text
+		var $isOutdoor : Boolean:=False
+		For each ($kw; $outdoorKeywords)
+			If (Position($kw; $lbl)>0)
+				$isOutdoor:=True
+				break
+			End if 
+		End for each 
+		If ($isOutdoor)
+			$outdoorServices.push($line.serviceLabel+" x"+String($line.quantity))
+		End if 
+	End for each 
+	
+	// Build a rich hiddenPrompt for the AI
+	var $prompt : Text:="Switch this outdoor event to the indoor venue option '"+$indoorName+"'.\n\n"
+	$prompt:=$prompt+"REMOVE these outdoor-specific services (they are no longer needed indoors):\n"
+	If ($outdoorServices.length>0)
+		var $os : Text
+		For each ($os; $outdoorServices)
+			$prompt:=$prompt+"- "+$os+"\n"
+		End for each 
+	Else 
+		$prompt:=$prompt+"- Outdoor venue rental x1\n"
 	End if 
+	$prompt:=$prompt+"\nSEARCH for indoor replacement services to maintain the event quality and revenue:\n"
+	$prompt:=$prompt+"- Indoor venue rental at "+String($indoorRental)+"€ x1 (replaces outdoor venue rental)\n"
+	$prompt:=$prompt+"- Indoor sound system appropriate for "+String($guestCount)+" guests (if outdoor sound system is being removed)\n"
+	$prompt:=$prompt+"- Indoor lighting, stage setup or decor upgrades appropriate for an indoor "+String($guestCount)+"-guest event\n"
+	$prompt:=$prompt+"- Any indoor comfort services that would enhance the indoor experience\n"
+	$prompt:=$prompt+"Goal: maintain total service revenue close to the current level while removing outdoor-only items."
 	
-	var $oldRental : Real:=Num($evt.venueRentalPrice)
-	var $impact : Real:=$indoorRental-$oldRental
+	// Tag the action so confirm step knows to save venueOption
+	$action._switchVenue:=True
 	
-	// Build a synthetic execResult with a single venue-rental swap line
-	var $proposedLines : Collection:=[]
+	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Switching to indoor — calculating replacements...")
+	This._executeWithToolCalling($action; $prompt)
 	
-	// Remove current venue rental line if present
-	var $rentalLine : cs.EventLineEntity:=This.eventLines.query("serviceLabel = :1"; "Outdoor venue rental").first()
-	If ($rentalLine#Null)
-		$proposedLines.push({\
-			serviceID: $rentalLine.serviceID; \
-			label: "Outdoor venue rental"; \
-			category: "Venue"; \
-			quantity: 1; \
-			unitPrice: $rentalLine.unitPrice; \
-			delta: "remove"\
-			})
-	End if 
-	// Add indoor rental line
-	var $indoorService : cs.ServiceEntity:=ds.Service.query("label = :1"; "Indoor venue rental").first()
-	If ($indoorService#Null)
-		$proposedLines.push({\
-			serviceID: $indoorService.ID; \
-			label: "Indoor venue rental"; \
-			category: "Venue"; \
-			quantity: 1; \
-			unitPrice: $indoorRental; \
-			delta: "add"\
-			})
-	End if 
-	
-	var $summary : Text:="Switch to "+Choose($indoorName#""; $indoorName; "indoor option")
-	If ($impact>0)
-		$summary:=$summary+" (+"+(String($impact; "### ### ##0"))+" €)"
-	Else If ($impact<0)
-		$summary:=$summary+" ("+(String($impact; "### ### ##0"))+" €)"
-	End if 
-	
-	var $execResult : Object:={\
-		success: True; \
-		proposedLines: $proposedLines; \
-		summary: $summary; \
-		totalImpact: $impact; \
-		_switchVenue: True\
-		}
-	
-	OBJECT SET TITLE(*; "text_ai_status"; "✓ Indoor switch ready")
-	This._showConfirmPanel($action; $execResult)
-	
+Function _onExecutionDone($execResult : Object; $action : Object)
 	If (Form=Null)
 		return 
 	End if 
@@ -689,7 +681,7 @@ Function btnConfirmActionEventHandler($formEventCode : Integer)
 			var $appliedAction : Object:=This._pendingAction
 			
 			// If this is a switch_venue action, update venueOption and rental price on the event
-			If (This._pendingExecResult._switchVenue=True)
+			If (($appliedAction.actionType="switch_venue") || ($appliedAction._switchVenue=True))
 				var $evt : cs.EventEntity:=This.event
 				$evt.venueOption:="indoor"
 				var $venue : cs.VenueEntity:=$evt.venue
