@@ -258,8 +258,19 @@ Function _renderEmailTab()
 		OBJECT SET TITLE(*; "text_ai_status"; "No email to process.")
 	End if 
 	
+Function _checkAiReady() : Boolean
+	var $aliases : Collection:=cs.AIKit.OpenAIProviders.new().modelAliases()
+	var $chatEntry : Object:=$aliases.query("name = :1"; "chat").first()
+	If (($chatEntry=Null) || ($chatEntry.model="") || ($chatEntry.model=Null))
+		ALERT("No chat model alias is configured.\n\nPlease set up a 'chat' model alias in the AI settings.\nSee: https://developer.4d.com/docs/settings/ai")
+		return False
+	End if 
+	return True
+
 Function _runWeatherAnalysis()
-	This.running:=True
+	If (Not(This._checkAiReady()))
+		return 
+	End if 	This.running:=True
 	This._startSpinner()
 	OBJECT SET VISIBLE(*; "btn_ai_analyze"; False)
 	If (This._pendingExecResult#Null)
@@ -325,6 +336,9 @@ Function btnEmailAnalyzeEventHandler($formEventCode : Integer)
 	End case 
 	
 Function _runEmailAnalysis()
+	If (Not(This._checkAiReady()))
+		return 
+	End if 
 	If (This.linkedEmail=Null)
 		return 
 	End if 
