@@ -229,14 +229,18 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	End for each 
 
 	var $system : Text:="You are a contract specialist for Event Pulse. "
-	$system:=$system+"A client has sent a modification request for a confirmed event. The event is already identified. "
-	$system:=$system+"Analyze the request and produce one or more actions describing what service changes to make. "
+	$system:=$system+"A client has sent a message about a confirmed event. The event is already identified. "
+	$system:=$system+"Your task is to identify ONLY requests that require an actual change to the contracted services (add, remove, or replace a service line). "
+	$system:=$system+"IGNORE: questions, confirmations, reassurances, logistical inquiries, or requests that do not change what is on the contract. "
+	$system:=$system+"Examples of what to IGNORE: 'please confirm heating is included', 'does the team have experience outdoors?', 'will the venue be ready on time?'. "
+	$system:=$system+"Examples of what to ACT ON: 'switch the buffet to a plated dinner', 'add a photo booth', 'remove the DJ'.\n"
 	$system:=$system+"Valid actionType values: 'add_services', 'remove_services', 'replace_services', 'switch_venue'.\n"
 	$system:=$system+"For each action, write a 'hiddenPrompt' describing precisely:\n"
 	$system:=$system+"- For removes: exact service labels from the existing services list to remove\n"
 	$system:=$system+"- For adds/replace: what services to SEARCH for and ADD (only if plausibly in a standard event catalog)\n"
 	$system:=$system+"- For replace: use format 'REMOVE: <labels>\nSEARCH: <what to find>'\n"
 	$system:=$system+"Keep 'label' short (button text, 3-5 words max).\n"
+	$system:=$system+"If the email contains NO actionable service changes, return an empty actions array [].\n"
 	$system:=$system+"Also write a brief 'modificationSummary' (1-2 sentences) describing what the client requested.\n"
 	$system:=$system+"Respond ONLY with a valid JSON object: {\"modificationSummary\": \"...\", \"actions\": [...]}. No markdown."
 

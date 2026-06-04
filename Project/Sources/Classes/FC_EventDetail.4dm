@@ -374,6 +374,8 @@ Function _onEmailAnalysisDone($result : Object)
 		This.aiActions:=$impacts.actions
 		// Hide analyze button once actions are proposed — user cannot re-trigger analysis
 		OBJECT SET VISIBLE(*; "btn_email_analyze"; False)
+	Else 
+		OBJECT SET TITLE(*; "text_ai_status"; "✓ No service changes required")
 	End if 
 	
 Function _executeAction($slot : Integer)
