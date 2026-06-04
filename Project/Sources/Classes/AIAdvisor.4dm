@@ -496,6 +496,7 @@ Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback :
 		$system:=$system+"Only finalize when net_impact >= 0. Adding revenue is always preferred over losing it.\n"
 	End if 
 	$system:=$system+"\nFor 'add' lines: ONLY propose services that were actually returned by the search_services tool. "
+	$system:=$system+"DEDUPLICATION: Before adding any service, check the existing services list. Do NOT add a service if an equivalent is already booked (same category and purpose — e.g. do not add a catering service if one is already booked, do not add a sound system if one is already present). "
 	$system:=$system+"CRITICAL: If search_services returns no results, return an EMPTY proposedLines array. "
 	$system:=$system+"If search_services returns results but none are appropriate, return empty proposedLines AND set summary to explain clearly why each result was rejected (e.g. 'Found: X, Y, Z — rejected because task requires indoor heating and all results are outdoor equipment'). "
 	$system:=$system+"NEVER emit 'remove' lines for an 'add_services' task — only emit removes for 'remove_services' or 'replace_services' tasks. "
