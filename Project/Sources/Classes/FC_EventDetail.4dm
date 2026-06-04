@@ -453,11 +453,13 @@ Function _executeSwitchVenue($action : Object)
 	$prompt:=$prompt+"Current booked services:\n"+$allServices+"\n"
 	$prompt:=$prompt+"Task:\n"
 	$prompt:=$prompt+"1. REMOVE all services that are specific to outdoor events (tents, outdoor structures, outdoor sound, outdoor lighting, rain gear, patio heaters, outdoor venue rental, etc.) — use your knowledge to identify them.\n"
-	$prompt:=$prompt+"2. SEARCH for indoor equivalents and additions to replace them: indoor venue rental at "+String($indoorRental)+"€, indoor sound system for "+String($guestCount)+" guests, indoor lighting/decor upgrades, and any indoor comfort services.\n"
+	$prompt:=$prompt+"2. SEARCH for indoor equivalents and additions to replace them: indoor sound system for "+String($guestCount)+" guests, indoor lighting/decor upgrades, and any indoor comfort services. Do NOT search for venue rental — that is handled separately.\n"
 	$prompt:=$prompt+"Goal: maintain total service revenue close to the current level while making the service list appropriate for an indoor event."
 	
-	// Tag the action so confirm step knows to save venueOption
+	// Tag the action so confirm step knows to save venueOption + inject indoor rental
 	$action._switchVenue:=True
+	$action._indoorRental:=$indoorRental
+	$action._indoorName:=$indoorName
 	
 	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Switching to indoor — calculating replacements...")
 	This._executeWithToolCalling($action; $prompt)
@@ -475,6 +477,27 @@ Function _onExecutionDone($execResult : Object; $action : Object)
 	If (($execResult.proposedLines=Null) || ($execResult.proposedLines.length=0))
 		OBJECT SET TITLE(*; "text_ai_status"; "No services proposed.")
 		return 
+	End if 
+	
+	// For switch_venue: inject the indoor venue rental as a guaranteed add line
+	// (AI may fail to find it; we always inject it from the venue's indoorOption.rentalPrice)
+	If ($action._switchVenue=True) && (Num($action._indoorRental)>0)
+		var $alreadyHasIndoor : Boolean:=$execResult.proposedLines.some(Formula(\
+			($1.value.delta="add") && (Position("indoor"; Lowercase($1.value.label))>0) && (Position("rental"; Lowercase($1.value.label))>0)\
+			))
+		If (Not($alreadyHasIndoor))
+			// Look up the real service so we use its actual ID
+			var $indoorSvc : cs.ServiceEntity:=ds.Service.query("label = :1"; "Indoor venue rental").first()
+			If ($indoorSvc#Null)
+				$execResult.proposedLines.push({\
+					delta: "add"; \
+					serviceID: $indoorSvc.ID; \
+					label: "Indoor venue rental"; \
+					quantity: 1; \
+					unitPrice: Num($action._indoorRental)\
+					})
+			End if 
+		End if 
 	End if 
 	
 	OBJECT SET TITLE(*; "text_ai_status"; "✓ Impact calculated")
