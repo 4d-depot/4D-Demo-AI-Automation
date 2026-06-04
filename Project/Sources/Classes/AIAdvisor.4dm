@@ -294,26 +294,26 @@ Function generateDraftEmailAsync($event : cs.EventEntity; $action : Object; $pro
 		$linesText:=$linesText+"- "+String($line.label)+" × "+String($line.quantity)+" @ "+String($line.unitPrice)+"€ = "+String($lineTotal)+"€\n"
 	End for each 
 
-	var $system : Text:="You are an event coordinator at Event Pulse drafting a professional confirmation email to a client. "
+	var $system : Text:="You are an event coordinator at Event Pulse drafting a professional email to a client about PROPOSED service changes. "
 	$system:=$system+"Write a clear, professional email in the language typically used with the client. "
 	$system:=$system+"Address the client by first name. Be concise and positive. "
-	$system:=$system+"Summarize the service changes just applied to their event. "
+	$system:=$system+"IMPORTANT: these are PROPOSED changes, NOT yet applied. Use conditional language: 'we would like to propose', 'we recommend', 'subject to your approval', 'pending your confirmation'. Do NOT write as if changes are already done. "
 	$system:=$system+"Do NOT include subject line or headers — just the email body text. "
 	$system:=$system+"Respond ONLY with a valid JSON object matching the schema: {\"emailText\": \"...\"}."
 
 	var $user : Text:="Client: "+$clientName+"\n"
 	$user:=$user+"Event: "+$event.contractRef+" — "+String($event.eventDate; "yyyy-MM-dd")+" at "+$venueInfo+" ("+String($event.guestCount)+" guests)\n\n"
 	If ($action#Null)
-		$user:=$user+"Action applied: "+String($action.label)+"\n"
+		$user:=$user+"Proposed action: "+String($action.label)+"\n"
 		If ($action.description#Null)
 			$user:=$user+"Details: "+String($action.description)+"\n"
 		End if 
 		$user:=$user+"\n"
 	End if 
 	If ($linesText#"")
-		$user:=$user+"Service changes:\n"+$linesText+"\n"
+		$user:=$user+"Proposed service changes:\n"+$linesText+"\n"
 	End if 
-	$user:=$user+"Draft a short professional confirmation email to the client informing them of these changes."
+	$user:=$user+"Draft a short professional email to the client presenting these proposed changes and asking for their confirmation."
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
@@ -491,6 +491,7 @@ Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback :
 	$system:=$system+"NEVER emit 'remove' lines for an 'add_services' task — only emit removes for 'remove_services' or 'replace_services' tasks. "
 	$system:=$system+"For 'remove' lines: use the exact serviceID from the existing services list above — do NOT search for them. The serviceID for removes MUST be the [ID:xxx] value from the existing services list. "
 	$system:=$system+"Return a JSON with: proposedLines (array of {serviceID, quantity, delta}), summary (text). "
+	$system:=$system+"The summary must describe the proposed changes using conditional language (e.g. 'We propose to add...', 'We recommend removing...') — NOT past tense. These changes are proposals pending client approval."
 	$system:=$system+"Do NOT include label, category, unitPrice, or totalImpact — those are resolved server-side."
 
 	var $execSchema : Object:=This._loadSchema("schema_action_execution.json")
