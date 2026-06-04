@@ -499,7 +499,7 @@ Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback :
 			$system:=$system+"- [ID:"+String($el.serviceID)+"] "+$el.serviceLabel+" × "+String($el.quantity)+" @ "+String($el.unitPrice)+"€\n"
 		End for each 
 	End if 
-	If ($context.currentTotal#Null)
+	If (($context.currentTotal#Null) && ($context.revenueProtection#False))
 		$system:=$system+"\nREVENUE PROTECTION RULE (mandatory):\n"
 		$system:=$system+"Before finalizing your response, you MUST compute the net impact:\n"
 		$system:=$system+"  net_impact = SUM(unitPrice × qty for each ADD line) - SUM(unitPrice × qty for each REMOVE line)\n"

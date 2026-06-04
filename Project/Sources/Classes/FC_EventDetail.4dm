@@ -426,6 +426,7 @@ Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 		guestCount: This.event.guestCount; \
 		venueName: This.event.venue.name; \
 		currentTotal: $total; \
+		revenueProtection: (This.activeAdvisorTab="weather"); \
 		existingLines: $lines\
 		}
 	
