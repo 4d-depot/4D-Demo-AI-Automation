@@ -17,7 +17,7 @@ Class constructor()
 				}; \
 				category: { \
 					type: "string"; \
-					description: "Optional service category to filter results, e.g. 'Structures', 'Traiteur', 'Sonorisation'" \
+					description: "Optional service category to filter results. ONLY use one of these exact values: Accommodation, Catering, Communication, Coordination, Entertainment, Furniture & Decor, Health & Safety, Lighting, Photography & Film, Security, Sound & AV, Structures, Technical, Transport, Venue. Do NOT invent categories." \
 				} \
 			}; \
 			required: ["query"] \
