@@ -257,7 +257,11 @@ Function _renderEmailTab()
 	
 Function _runWeatherAnalysis()
 	This.running:=True
-	OBJECT SET TITLE(*; "btn_ai_analyze"; "⏳ Analyzing...")
+	This._startSpinner()
+	OBJECT SET VISIBLE(*; "btn_ai_analyze"; False)
+	If (This._pendingExecResult#Null)
+		This._hideConfirmPanel()
+	End if 
 	OBJECT SET TITLE(*; "text_ai_status"; "Fetching weather data...")
 	
 	var $weather : cs.WeatherService:=cs.WeatherService.me
@@ -287,6 +291,8 @@ Function _onWeatherAnalysisDone($aiResult : Object; $weatherFetch : Object)
 		return 
 	End if 
 	This.running:=False
+	This._stopSpinner()
+	OBJECT SET VISIBLE(*; "btn_ai_analyze"; True)
 	OBJECT SET TITLE(*; "btn_ai_analyze"; "⚡ Run AI Weather Analysis")
 	This._clearAIPanel()
 	OBJECT SET VISIBLE(*; "text_weather_ai_explanation"; True)
@@ -319,7 +325,11 @@ Function _runEmailAnalysis()
 		return 
 	End if 
 	This.running:=True
-	OBJECT SET TITLE(*; "btn_email_analyze"; "⏳ Analyzing...")
+	This._startSpinner()
+	OBJECT SET VISIBLE(*; "btn_email_analyze"; False)
+	If (This._pendingExecResult#Null)
+		This._hideConfirmPanel()
+	End if 
 	OBJECT SET TITLE(*; "text_ai_status"; "⏳ Analyzing modification request...")
 	
 	var $evt : cs.EventEntity:=This.event
@@ -334,6 +344,8 @@ Function _onEmailAnalysisDone($result : Object)
 		return 
 	End if 
 	This.running:=False
+	This._stopSpinner()
+	OBJECT SET VISIBLE(*; "btn_email_analyze"; True)
 	OBJECT SET TITLE(*; "btn_email_analyze"; "📧 Analyze Email with AI")
 	
 	If (Not($result.success))
