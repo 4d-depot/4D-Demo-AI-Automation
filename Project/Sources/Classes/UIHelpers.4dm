@@ -50,14 +50,3 @@ Function typeBadge($type : Text) : Text
 	End case 
 
 // Long version (detail)
-Function typeBadgeFull($type : Text) : Text
-	Case of 
-		: ($type="quote")
-			return "📋 QUOTE REQUEST"
-		: ($type="modification")
-			return "🌧 MODIFICATION"
-		: ($type="info")
-			return "ℹ INFO"
-		Else 
-			return $type
-	End case 

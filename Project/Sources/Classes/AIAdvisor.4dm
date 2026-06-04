@@ -7,6 +7,7 @@
 property _client : Object
 property _model : Text
 property _chat : cs.AIKit.OpenAIChatHelper
+property _windowID : Integer
 
 Class constructor()
 	This._model:="chat"  // model alias defined in AIProviders.json
@@ -362,51 +363,6 @@ Function _onGenerateDraftEmailDone($chatResult : Object; $callback : 4D.Function
 
 // ─── draft_reply: AI generates email text for client ─────────────────────────
 // $callback receives {success; draft; error}
-Function draftReplyAsync($hiddenPrompt : Text; $email : cs.EmailEntity; $event : cs.EventEntity; $eventLines : Collection; $callback : 4D.Function)
-	var $venue : cs.VenueEntity:=$event.venue
-	var $eventContext : Text:="Contract: "+$event.contractRef
-	$eventContext:=$eventContext+" | Date: "+String($event.eventDate; "yyyy-MM-dd")
-	$eventContext:=$eventContext+" | Venue: "+($venue ? $venue.name+", "+$venue.city : "?")
-	$eventContext:=$eventContext+" | Guests: "+String($event.guestCount)
-	$eventContext:=$eventContext+" | Option: "+$event.venueOption
-
-	var $linesText : Text:=""
-	var $line : Object
-	For each ($line; $eventLines)
-		$linesText:=$linesText+"- "+$line.serviceLabel+" × "+String($line.quantity)+" @ "+String($line.unitPrice)+"€ = "+String($line.quantity*$line.unitPrice)+"€\n"
-	End for each 
-
-	var $system : Text:="You are an event coordinator at Event Pulse drafting a professional client reply email. "
-	$system:=$system+"Write a clear, professional email in the same language as the client's original email. "
-	$system:=$system+"Include the client's first name in the salutation. Be concise and action-oriented. "
-	$system:=$system+"Do NOT include subject line or headers — just the email body text."
-
-	var $user : Text:="Original email from client:\n"
-	If ($email#Null)
-		$user:=$user+"From: "+$email.sender+"\nSubject: "+$email.subject+"\n\n"+$email.body+"\n\n"
-	End if 
-	$user:=$user+"Event: "+$eventContext+"\n"
-	If ($linesText#"")
-		$user:=$user+"Current services:\n"+$linesText+"\n"
-	End if 
-	$user:=$user+"Task: "+$hiddenPrompt
-
-	var $self : Object:=This
-	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; Null; ""; Formula($self._onDraftReplyChatDone($1; $cb)))
-	This._chat.prompt($user)
-
-Function _onDraftReplyChatDone($chatResult : Object; $callback : 4D.Function)
-	If (Not($chatResult.success))
-		$callback.call(Null; {success: False; draft: ""; error: This._extractError($chatResult)})
-		return 
-	End if 
-	If ($chatResult.choice=Null)
-		$callback.call(Null; {success: False; draft: ""; error: "No content returned by AI"})
-		return 
-	End if 
-	$callback.call(Null; {success: True; draft: $chatResult.choice.message.content; error: ""})
-
 // ─── Re-evaluation of remaining actions after applying an action ────────────────
 // $callback receives {success; actions; validationError}
 Function reassessActionsAsync($remainingActions : Collection; $appliedLabel : Text; $eventLines : Collection; $callback : 4D.Function)
