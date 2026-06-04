@@ -433,47 +433,24 @@ Function _executeSwitchVenue($action : Object)
 	var $evt : cs.EventEntity:=This.event
 	var $venue : cs.VenueEntity:=$evt.venue
 	
-	// Build the indoor option info
 	var $indoorName : Text:=Choose(($venue#Null) && ($venue.indoorOption#Null); String($venue.indoorOption.name); "indoor option")
 	var $indoorRental : Real:=Choose(($venue#Null) && ($venue.indoorOption#Null); Num($venue.indoorOption.rentalPrice); 0)
 	var $guestCount : Integer:=$evt.guestCount
 	
-	// Identify outdoor-specific services to remove and indoor ones to swap
-	var $outdoorKeywords : Collection:=["outdoor"; "tent"; "tarp"; "poncho"; "rain"; "patio heater"; "outdoor sound"; "outdoor architectural"; "outdoor venue rental"; "stretch clear-span"; "pagoda"; "marquee"; "semi-closed tent"; "prestige marquee"; "waterproof"; "drainage"; "bâche"; "chapiteau"; "tente"; "extérieur"]
-	var $outdoorServices : Collection:=[]
+	// List all booked services — let AI decide which are outdoor-specific
+	var $allServices : Text:=""
 	var $line : Object
 	For each ($line; This.eventLines)
-		var $lbl : Text:=Lowercase(String($line.serviceLabel))
-		var $kw : Text
-		var $isOutdoor : Boolean:=False
-		For each ($kw; $outdoorKeywords)
-			If (Position($kw; $lbl)>0)
-				$isOutdoor:=True
-				break
-			End if 
-		End for each 
-		If ($isOutdoor)
-			$outdoorServices.push($line.serviceLabel+" x"+String($line.quantity))
-		End if 
+		$allServices:=$allServices+"- "+$line.serviceLabel+" x"+String($line.quantity)+" @ "+String($line.unitPrice)+"€\n"
 	End for each 
 	
-	// Build a rich hiddenPrompt for the AI
-	var $prompt : Text:="Switch this outdoor event to the indoor venue option '"+$indoorName+"'.\n\n"
-	$prompt:=$prompt+"REMOVE these outdoor-specific services (they are no longer needed indoors):\n"
-	If ($outdoorServices.length>0)
-		var $os : Text
-		For each ($os; $outdoorServices)
-			$prompt:=$prompt+"- "+$os+"\n"
-		End for each 
-	Else 
-		$prompt:=$prompt+"- Outdoor venue rental x1\n"
-	End if 
-	$prompt:=$prompt+"\nSEARCH for indoor replacement services to maintain the event quality and revenue:\n"
-	$prompt:=$prompt+"- Indoor venue rental at "+String($indoorRental)+"€ x1 (replaces outdoor venue rental)\n"
-	$prompt:=$prompt+"- Indoor sound system appropriate for "+String($guestCount)+" guests (if outdoor sound system is being removed)\n"
-	$prompt:=$prompt+"- Indoor lighting, stage setup or decor upgrades appropriate for an indoor "+String($guestCount)+"-guest event\n"
-	$prompt:=$prompt+"- Any indoor comfort services that would enhance the indoor experience\n"
-	$prompt:=$prompt+"Goal: maintain total service revenue close to the current level while removing outdoor-only items."
+	// Let AI identify outdoor-specific services and find indoor replacements
+	var $prompt : Text:="This outdoor event is being switched to the indoor venue option '"+$indoorName+"' (rental: "+String($indoorRental)+"€).\n\n"
+	$prompt:=$prompt+"Current booked services:\n"+$allServices+"\n"
+	$prompt:=$prompt+"Task:\n"
+	$prompt:=$prompt+"1. REMOVE all services that are specific to outdoor events (tents, outdoor structures, outdoor sound, outdoor lighting, rain gear, patio heaters, outdoor venue rental, etc.) — use your knowledge to identify them.\n"
+	$prompt:=$prompt+"2. SEARCH for indoor equivalents and additions to replace them: indoor venue rental at "+String($indoorRental)+"€, indoor sound system for "+String($guestCount)+" guests, indoor lighting/decor upgrades, and any indoor comfort services.\n"
+	$prompt:=$prompt+"Goal: maintain total service revenue close to the current level while making the service list appropriate for an indoor event."
 	
 	// Tag the action so confirm step knows to save venueOption
 	$action._switchVenue:=True
