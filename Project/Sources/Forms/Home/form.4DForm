@@ -287,6 +287,18 @@
 					"class": "btnStatusWarning",
 					"style": "flat",
 					"borderRadius": 15
+				},
+				"text_ai_hint": {
+					"type": "text",
+					"left": 490,
+					"top": 66,
+					"width": 340,
+					"height": 16,
+					"text": "",
+					"visible": false,
+					"class": "textMuted",
+					"sizingX": "move",
+					"textAlign": "right"
 				}
 			}
 		}

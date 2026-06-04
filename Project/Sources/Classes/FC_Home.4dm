@@ -58,23 +58,40 @@ Function btnAiSetupEventHandler($formEventCode : Integer)
 //MARK: - Private
 Function _onLoad()
 	var $providers : Object:=cs.AIKit.OpenAIProviders.new()
-	var $providerList : Collection:=$providers.list()
 	var $aliases : Collection:=$providers.modelAliases()
 	var $chatEntry : Object:=$aliases.query("name = :1"; "chat").first()
-	var $aiOk : Boolean:=($providerList.length>0) && ($chatEntry#Null) && ($chatEntry.model#"") && ($chatEntry.model#Null)
+	var $embeddingEntry : Object:=$aliases.query("name = :1"; "embedding").first()
 	
-	If ($aiOk)
+	var $chatOk : Boolean:=($chatEntry#Null) && ($chatEntry.model#"") && ($chatEntry.model#Null)
+	var $embedOk : Boolean:=($embeddingEntry#Null) && ($embeddingEntry.model#"") && ($embeddingEntry.model#Null)
+	var $allOk : Boolean:=$chatOk && $embedOk
+	
+	If ($allOk)
 		OBJECT SET VISIBLE(*; "btn_ai_connected"; True)
 		OBJECT SET VISIBLE(*; "btn_ai_setup"; False)
+		OBJECT SET VISIBLE(*; "text_ai_hint"; False)
 	Else 
 		OBJECT SET VISIBLE(*; "btn_ai_connected"; False)
 		OBJECT SET VISIBLE(*; "btn_ai_setup"; True)
+		// Build hint indicating which aliases are missing
+		var $missing : Collection:=New collection
+		If (Not($chatOk))
+			$missing.push("'chat'")
+		End if 
+		If (Not($embedOk))
+			$missing.push("'embedding'")
+		End if 
+		OBJECT SET TITLE(*; "text_ai_hint"; "Missing model alias: "+$missing.join(" and "))
+		OBJECT SET VISIBLE(*; "text_ai_hint"; True)
 	End if 
 	
+	// Disable embedding-dependent buttons when embedding alias is missing
+	OBJECT SET ENABLED(*; "btn_rebuild_embeddings"; $embedOk)
+	OBJECT SET ENABLED(*; "btn_reset_all"; $embedOk)
+	
 	// Build "Powered by" footer from model aliases
-	var $embeddingEntry : Object:=$aliases.query("name = :1"; "embedding").first()
-	var $chatLabel : Text:=$chatEntry ? $chatEntry.model : "?"
-	var $embedLabel : Text:=$embeddingEntry ? $embeddingEntry.model : "?"
+	var $chatLabel : Text:=$chatOk ? $chatEntry.model : "not configured"
+	var $embedLabel : Text:=$embedOk ? $embeddingEntry.model : "not configured"
 	OBJECT SET TITLE(*; "text_footer"; "Powered by "+$chatLabel+" (chat) · "+$embedLabel+" (embedding) · Open-Meteo")
 
 Function _openEvents()
@@ -92,7 +109,19 @@ Function _openVenues()
 	DIALOG("VenueBrowser")
 	CLOSE WINDOW($w)
 
+Function _checkEmbeddingReady() : Boolean
+	var $aliases : Collection:=cs.AIKit.OpenAIProviders.new().modelAliases()
+	var $e : Object:=$aliases.query("name = :1"; "embedding").first()
+	If (($e=Null) || ($e.model="") || ($e.model=Null))
+		ALERT("No embedding model alias is configured.\n\nPlease set up an 'embedding' model alias in the AI settings.\nSee: https://developer.4d.com/docs/settings/ai")
+		return False
+	End if 
+	return True
+
 Function _resetAll()
+	If (Not(This._checkEmbeddingReady()))
+		return 
+	End if 
 	CONFIRM("Reset ALL data?\n\nThis will delete all records and re-import everything from JSON files, including re-building service embeddings.")
 	If (OK=1)
 		var $progress : cs.FC_Progress:=cs.FC_Progress.new("Rebuilding all data…"; Formula(_resetAllWorkerJob))
@@ -103,6 +132,9 @@ Function _resetAll()
 	End if 
 
 Function _rebuildEmbeddings()
+	If (Not(This._checkEmbeddingReady()))
+		return 
+	End if 
 	CONFIRM("Rebuild service embeddings?\n\nThis re-computes the AI search index for all services.\nUseful after translating or renaming service labels.\nMay take a minute.")
 	If (OK=1)
 		cs.DataSeeder.me.rebuildEmbeddings()
