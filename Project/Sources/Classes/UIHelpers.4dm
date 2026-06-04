@@ -49,4 +49,41 @@ Function typeBadge($type : Text) : Text
 			return $type
 	End case 
 
+// ─── AI alias helpers ─────────────────────────────────────────────────────────
+
+// Returns True if the named model alias is configured (non-empty model value)
+Function isAliasConfigured($alias : Text) : Boolean
+	var $entry : Object:=cs.AIKit.OpenAIProviders.new().modelAliases().query("name = :1"; $alias).first()
+	return ($entry#Null) && ($entry.model#"") && ($entry.model#Null)
+
+// Opens AI settings in dev mode, or the online doc page otherwise
+Function openAiSetup()
+	If (Application type=0)
+		OPEN SETTINGS WINDOW("/Database/AI")
+	Else 
+		OPEN URL("https://developer.4d.com/docs/settings/ai")
+	End if 
+
+// Checks that $alias is configured; if not, prompts and offers to open settings.
+// Returns True if ready, False if not configured.
+Function checkAliasOrPrompt($alias : Text) : Boolean
+	If (This.isAliasConfigured($alias))
+		return True
+	End if 
+	If (Application type=0)
+		CONFIRM("No '"+$alias+"' model alias is configured.\n\nOpen AI settings now?")
+		If (OK=1)
+			OPEN SETTINGS WINDOW("/Database/AI")
+		End if 
+	Else 
+		ALERT("No '"+$alias+"' model alias is configured.\n\nPlease set up a '"+$alias+"' model alias in the AI settings.\nSee: https://developer.4d.com/docs/settings/ai")
+	End if 
+	return False
+
+// ─── Spinner constants ────────────────────────────────────────────────────────
+
+// Returns the braille spinner frame sequence used by all form spinners
+Function spinnerFrames() : Collection
+	return ["⠋"; "⠙"; "⠹"; "⠸"; "⠼"; "⠴"; "⠦"; "⠧"; "⠇"; "⠏"]
+
 // Long version (detail)

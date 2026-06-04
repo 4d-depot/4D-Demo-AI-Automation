@@ -37,7 +37,7 @@ Class constructor($event : cs.EventEntity; $eventSelection : cs.EventSelection; 
 	This.confirmLines:=[]
 	This.running:=False
 	This._spinnerIndex:=0
-	This._spinnerFrames:=["⠋"; "⠙"; "⠹"; "⠸"; "⠼"; "⠴"; "⠦"; "⠧"; "⠇"; "⠏"]
+	This._spinnerFrames:=cs.UIHelpers.me.spinnerFrames()
 	This._spinnerActive:=False
 	This._spinnerBtnSlot:=-1
 	This._spinnerBtnLabel:=""
@@ -270,20 +270,7 @@ Function _renderEmailTab()
 	End if 
 	
 Function _checkAiReady() : Boolean
-	var $aliases : Collection:=cs.AIKit.OpenAIProviders.new().modelAliases()
-	var $chatEntry : Object:=$aliases.query("name = :1"; "chat").first()
-	If (($chatEntry=Null) || ($chatEntry.model="") || ($chatEntry.model=Null))
-		If (Application type=0)
-			CONFIRM("No 'chat' model alias is configured.\n\nOpen AI settings now?")
-			If (OK=1)
-				OPEN SETTINGS WINDOW("/Database/AI")
-			End if 
-		Else 
-			ALERT("No chat model alias is configured.\n\nPlease set up a 'chat' model alias in the AI settings.\nSee: https://developer.4d.com/docs/settings/ai")
-		End if 
-		return False
-	End if 
-	return True
+	return cs.UIHelpers.me.checkAliasOrPrompt("chat")
 
 Function _runWeatherAnalysis()
 	If (Not(This._checkAiReady()))

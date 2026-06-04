@@ -62,13 +62,8 @@ Function _onLoad()
 	This._refreshAiStatus()
 
 Function _refreshAiStatus()
-	var $providers : Object:=cs.AIKit.OpenAIProviders.new()
-	var $aliases : Collection:=$providers.modelAliases()
-	var $chatEntry : Object:=$aliases.query("name = :1"; "chat").first()
-	var $embeddingEntry : Object:=$aliases.query("name = :1"; "embedding").first()
-	
-	var $chatOk : Boolean:=($chatEntry#Null) && ($chatEntry.model#"") && ($chatEntry.model#Null)
-	var $embedOk : Boolean:=($embeddingEntry#Null) && ($embeddingEntry.model#"") && ($embeddingEntry.model#Null)
+	var $chatOk : Boolean:=cs.UIHelpers.me.isAliasConfigured("chat")
+	var $embedOk : Boolean:=cs.UIHelpers.me.isAliasConfigured("embedding")
 	var $allOk : Boolean:=$chatOk && $embedOk
 	
 	If ($allOk)
@@ -78,7 +73,6 @@ Function _refreshAiStatus()
 	Else 
 		OBJECT SET VISIBLE(*; "btn_ai_connected"; False)
 		OBJECT SET VISIBLE(*; "btn_ai_setup"; True)
-		// Build hint indicating which aliases are missing
 		var $missing : Collection:=New collection
 		If (Not($chatOk))
 			$missing.push("'chat'")
@@ -90,11 +84,13 @@ Function _refreshAiStatus()
 		OBJECT SET VISIBLE(*; "text_ai_hint"; True)
 	End if 
 	
-	// Disable embedding-dependent buttons when embedding alias is missing
 	OBJECT SET ENABLED(*; "btn_rebuild_embeddings"; $embedOk)
 	OBJECT SET ENABLED(*; "btn_reset_all"; $embedOk)
 	
-	// Build "Powered by" footer from model aliases
+	var $providers : Object:=cs.AIKit.OpenAIProviders.new()
+	var $aliases : Collection:=$providers.modelAliases()
+	var $chatEntry : Object:=$aliases.query("name = :1"; "chat").first()
+	var $embeddingEntry : Object:=$aliases.query("name = :1"; "embedding").first()
 	var $chatLabel : Text:=$chatOk ? $chatEntry.model : "not configured"
 	var $embedLabel : Text:=$embedOk ? $embeddingEntry.model : "not configured"
 	OBJECT SET TITLE(*; "text_footer"; "Powered by "+$chatLabel+" (chat) · "+$embedLabel+" (embedding) · Open-Meteo")
@@ -115,20 +111,7 @@ Function _openVenues()
 	CLOSE WINDOW($w)
 
 Function _checkEmbeddingReady() : Boolean
-	var $aliases : Collection:=cs.AIKit.OpenAIProviders.new().modelAliases()
-	var $e : Object:=$aliases.query("name = :1"; "embedding").first()
-	If (($e=Null) || ($e.model="") || ($e.model=Null))
-		If (Application type=0)
-			CONFIRM("No 'embedding' model alias is configured.\n\nOpen AI settings now?")
-			If (OK=1)
-				OPEN SETTINGS WINDOW("/Database/AI")
-			End if 
-		Else 
-			ALERT("No embedding model alias is configured.\n\nPlease set up an 'embedding' model alias in the AI settings.\nSee: https://developer.4d.com/docs/settings/ai")
-		End if 
-		return False
-	End if 
-	return True
+	return cs.UIHelpers.me.checkAliasOrPrompt("embedding")
 
 Function _resetAll()
 	If (Not(This._checkEmbeddingReady()))
@@ -154,13 +137,7 @@ Function _rebuildEmbeddings()
 	End if 
 
 Function _openAiSetupDocs()
-	// In development mode: open 4D project settings directly on AI page
-	// In other modes: open the web documentation
-	If (Application type=0)
-		OPEN SETTINGS WINDOW("/Database/AI")
-	Else 
-		OPEN URL("https://developer.4d.com/docs/settings/ai")
-	End if 
+	cs.UIHelpers.me.openAiSetup()
 
 Function _clearData()
 	CONFIRM("Clear ALL data?\n\nThis will delete all records without re-importing.\nThe database will be empty — use 'Reset & Rebuild All' to re-seed.")
