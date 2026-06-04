@@ -3,6 +3,9 @@
 // Shared across all processes in the same session (form process + workers).
 // Eliminates JSON round-trip serialization of action objects and existing lines.
 
+property pendingActions : Object
+property pendingExistingLines : Object
+
 session singleton Class constructor()
 	This.pendingActions:={}
 	This.pendingExistingLines:={}
@@ -17,7 +20,7 @@ Function storeExistingLines($windowID : Integer; $lines : Collection)
 	This.pendingExistingLines[String($windowID)]:=$lines
 
 Function getExistingLines($windowID : Integer) : Collection
-	var $lines:=This.pendingExistingLines[String($windowID)]
+	var $lines : Collection:=This.pendingExistingLines[String($windowID)]
 	return ($lines#Null) ? $lines : []
 
 Function clearAction($windowID : Integer)
