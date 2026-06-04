@@ -469,7 +469,7 @@ Function _executeSwitchVenue($action : Object)
 	$prompt:=$prompt+"Task:\n"
 	$prompt:=$prompt+"1. REMOVE all services that are specific to outdoor events (tents, outdoor structures, outdoor sound, outdoor lighting, rain gear, patio heaters, outdoor venue rental, etc.) — use your knowledge to identify them.\n"
 	$prompt:=$prompt+"2. SEARCH for indoor equivalents and additions: indoor sound system for "+String($guestCount)+" guests, indoor lighting/decor upgrades, indoor comfort services, entertainment, catering upgrades. Do NOT search for venue rental — that is handled separately.\n"
-	$prompt:=$prompt+"3. DEDUPLICATION (CRITICAL): Before adding any service found in search results, check the existing services list above. Do NOT add a service if an equivalent already exists (same category and purpose). For example: do NOT add a catering service if a catering service is already booked; do NOT add a sound system if one is already booked.\n"
+	$prompt:=$prompt+"3. DEDUPLICATION: Do NOT add a service already present in the existing list with the exact same label or serviceID. Adding a different service in the same category is allowed.\n"
 	$prompt:=$prompt+"4. MANDATORY: Apply the REVENUE PROTECTION RULE from your instructions — calculate net_impact after each round of searches and keep adding services until net_impact >= 0."
 	
 	// Tag the action so confirm step knows to save venueOption + inject indoor rental
