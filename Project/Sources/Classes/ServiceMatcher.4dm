@@ -48,11 +48,8 @@ Function search($query : Text; $category : Text; $limit : Integer) : Collection
 		$limit:=5
 	End if 
 
-	// Create the query embedding
-	var $searchText : Text:=$query
-	If ($category#"")
-		$searchText:=$category+" | "+$searchText
-	End if 
+	// Create the query embedding — prepend category to steer the vector
+	var $searchText : Text:=($category#"") ? ($category+" | "+$query) : $query
 	var $result : Object:=This._client.embeddings.create($searchText; This._model)
 	If ($result.vector=Null)
 		// Fallback to keyword search if embedding fails
@@ -61,8 +58,7 @@ Function search($query : Text; $category : Text; $limit : Integer) : Collection
 
 	var $vec : 4D.Vector:=$result.vector
 
-	// Semantic vector search — use only a strict threshold to avoid false positives
-	// If nothing is found at threshold 0.3, fall through to keyword search
+	// Semantic vector search — strict threshold; category filter already narrows scope
 	var $found : cs.ServiceSelection
 	var $comparisonVector : Object:={vector: $vec; metric: mk cosine; threshold: 0.3}
 	If ($category#"")
@@ -71,42 +67,22 @@ Function search($query : Text; $category : Text; $limit : Integer) : Collection
 		$found:=ds.Service.query("embedding > :1 AND available = true"; $comparisonVector)
 	End if 
 
-	// If semantic search still empty, fallback to keyword search
+	// If semantic search returns nothing, fall back to keyword search
 	If ($found=Null) || ($found.length=0)
 		return This._keywordSearch($query; $category; $limit)
 	End if 
 
-	// Build the result collection
-	var $results : Collection:=[]
-	var $svc : cs.ServiceEntity
-	var $i : Integer:=0
-	For each ($svc; $found)
-		If ($i<$limit)
-			$results.push({ \
-				serviceID: $svc.ID; \
-				label: $svc.label; \
-				category: $svc.category; \
-				unitPrice: $svc.unitPrice; \
-				unit: $svc.unit \
-			})
-			$i:=$i+1
-		End if 
-	End for each 
-
-	return $results
+	return This._toResults($found; $limit)
 
 // ─── Fallback keyword search (used when vector search returns nothing) ────────
 Function _keywordSearch($query : Text; $category : Text; $limit : Integer) : Collection
-	// Extract meaningful words from query (drop stop words and numbers)
+	// Extract meaningful words from query (drop stop words and short tokens)
 	var $stopWords : Collection:=["for"; "a"; "an"; "the"; "of"; "to"; "with"; "and"; "or"; "in"; "on"; "at"; "by"; "from"; "per"; "x"; "guests"; "pax"; "units"; "pack"; "packs"; "set"; "sets"]
 	var $words : Collection:=Split string(Lowercase($query); " ")
 	var $keywords : Collection:=[]
 	var $w : Text
 	For each ($w; $words)
-		// Strip punctuation and digits-only tokens
-		$w:=Replace string($w; "("; "")
-		$w:=Replace string($w; ")"; "")
-		$w:=Replace string($w; ","; "")
+		$w:=Replace string(Replace string(Replace string($w; "("; ""); ")"; ""); ","; "")
 		If ((Length($w)>2) && ($stopWords.indexOf($w)<0) && (Num($w)=0))
 			$keywords.push($w)
 		End if 
@@ -116,33 +92,22 @@ Function _keywordSearch($query : Text; $category : Text; $limit : Integer) : Col
 		return []
 	End if 
 
-	// Search each keyword against label, collect union of results
-	var $seen : Object:={}
-	var $results : Collection:=[]
+	// Union all keyword hits into a single deduplicated entity selection via .or()
+	var $allHits : cs.ServiceSelection:=ds.Service.newSelection()
 	var $kw : Text
-	var $qry : Text
-	var $hits : cs.ServiceSelection
 	For each ($kw; $keywords)
+		var $hits : cs.ServiceSelection
 		If ($category#"")
-			$qry:="label = :1 AND category = :2 AND available = true"
-			$hits:=ds.Service.query($qry; "@"+$kw+"@"; $category)
+			$hits:=ds.Service.query("label = :1 AND category = :2 AND available = true"; "@"+$kw+"@"; $category)
 		Else 
-			$qry:="label = :1 AND available = true"
-			$hits:=ds.Service.query($qry; "@"+$kw+"@")
+			$hits:=ds.Service.query("label = :1 AND available = true"; "@"+$kw+"@")
 		End if 
-		var $hit : cs.ServiceEntity
-		For each ($hit; $hits)
-			If ($seen[String($hit.ID)]=Null) && ($results.length<$limit)
-				$seen[String($hit.ID)]:=True
-				$results.push({ \
-					serviceID: $hit.ID; \
-					label: $hit.label; \
-					category: $hit.category; \
-					unitPrice: $hit.unitPrice; \
-					unit: $hit.unit \
-				})
-			End if 
-		End for each 
+		$allHits:=$allHits.or($hits)
 	End for each 
 
-	return $results
+	return This._toResults($allHits; $limit)
+
+// ─── Converts a ServiceSelection to the standard result collection format ─────
+Function _toResults($sel : cs.ServiceSelection; $limit : Integer) : Collection
+	return $sel.toCollection("ID, label, category, unitPrice, unit"; 0; $limit)\
+		.map(Formula({serviceID: $1.ID; label: $1.label; category: $1.category; unitPrice: $1.unitPrice; unit: $1.unit}))
