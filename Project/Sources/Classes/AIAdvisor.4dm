@@ -115,10 +115,14 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object;
 	If ($venue#Null)
 		$venueInfo:=$venue.name+" - "+$venue.city+", "+$venue.country+" ("+$venue.venueType+")"
 		$venueInfo:=$venueInfo+" | Event option: "+$event.venueOption
-		// Mention indoor alternative if available
-		If (($event.venueOption="outdoor") && ($venue.indoorOption#Null))
+	// Mention indoor alternative if available — explicitly state absence otherwise
+	If ($event.venueOption="outdoor")
+		If ($venue.indoorOption#Null)
 			$venueInfo:=$venueInfo+"\nIndoor alternative available at same venue: "+$venue.indoorOption.name+" (capacity: "+String($venue.indoorOption.capacity)+", rental: "+String($venue.indoorOption.rentalPrice)+"€)"
+		Else 
+			$venueInfo:=$venueInfo+"\nNo indoor alternative at this venue."
 		End if 
+	End if 
 	Else 
 		$venueInfo:="[No venue]"
 	End if 
@@ -139,8 +143,11 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object;
 	$system:=$system+"4) If forecast is BETTER than planned (e.g., planned rain but sunny forecast): propose removing now-unnecessary rain services and replacing them with fair-weather upgrades\n"
 	$system:=$system+"5) If forecast matches the plan: propose service optimizations (upgrade quality, add comfort services matching the weather, adjust quantities). Do NOT suggest monitoring.\n"
 	$system:=$system+"6) For indoor/indifferent venues: only flag extreme conditions (storms, extreme heat/cold) and propose relevant services (extra heating, cooling, guest transport cover)\n"
-	$system:=$system+"7) If the event is outdoor and an indoor alternative is available at the same venue, you MUST propose 'switch_venue' as one of the actions when rain or storm is forecast.\n"
-	$system:=$system+"   NEVER propose 'switch_venue' if the event venueOption is already 'indoor'.\n"
+	$system:=$system+"7) SWITCH_VENUE rules (STRICT):\n"
+	$system:=$system+"   - Only propose 'switch_venue' if the venue info explicitly says 'Indoor alternative available at same venue'.\n"
+	$system:=$system+"   - NEVER propose 'switch_venue' if the venue info says 'No indoor alternative at this venue'.\n"
+	$system:=$system+"   - NEVER propose 'switch_venue' if the event venueOption is already 'indoor'.\n"
+	$system:=$system+"   - When proposing switch_venue for rain/storm: it is MANDATORY to include it when an indoor alternative IS available.\n"
 	$system:=$system+"8) Propose 2 to 4 distinct actions covering different strategies (e.g., add rain protection AND switch to indoor AND replace services). Do NOT merge everything into a single action.\n\n"
 	$system:=$system+"For each action, include a 'hiddenPrompt' describing what contingency services to search for, quantities needed, and weather-specific requirements. "
 	$system:=$system+"Example hiddenPrompt: 'Search for weather protection structures: large tent or pagoda for 150 guests, waterproof flooring, portable heating units x2.'\n"

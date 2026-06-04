@@ -61,21 +61,15 @@ Function search($query : Text; $category : Text; $limit : Integer) : Collection
 
 	var $vec : 4D.Vector:=$result.vector
 
-	// Recherche vectorielle ORDA — try progressively looser thresholds
+	// Semantic vector search — use only a strict threshold to avoid false positives
+	// If nothing is found at threshold 0.3, fall through to keyword search
 	var $found : cs.ServiceSelection
-	var $thresholds : Collection:=[0.3; 0.2; 0.15]
-	var $t : Real
-	For each ($t; $thresholds)
-		var $comparisonVector : Object:={vector: $vec; metric: mk cosine; threshold: $t}
-		If ($category#"")
-			$found:=ds.Service.query("embedding > :1 AND category = :2 AND available = true"; $comparisonVector; $category)
-		Else 
-			$found:=ds.Service.query("embedding > :1 AND available = true"; $comparisonVector)
-		End if 
-		If ($found.length>0)
-			break
-		End if 
-	End for each 
+	var $comparisonVector : Object:={vector: $vec; metric: mk cosine; threshold: 0.3}
+	If ($category#"")
+		$found:=ds.Service.query("embedding > :1 AND category = :2 AND available = true"; $comparisonVector; $category)
+	Else 
+		$found:=ds.Service.query("embedding > :1 AND available = true"; $comparisonVector)
+	End if 
 
 	// If semantic search still empty, fallback to keyword search
 	If ($found=Null) || ($found.length=0)

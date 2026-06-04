@@ -479,7 +479,7 @@ Function _onExecutionDone($execResult : Object)
 	// (AI may fail to find it; we always inject it from the venue's indoorOption.rentalPrice)
 	If ($action._switchVenue=True) && (Num($action._indoorRental)>0)
 		var $alreadyHasIndoor : Boolean:=$execResult.proposedLines.some(Formula(\
-			($1.value.delta="add") && (Position("indoor"; Lowercase($1.value.label))>0) && (Position("rental"; Lowercase($1.value.label))>0)\
+			($1.delta="add") && (Position("indoor"; Lowercase($1.label))>0) && (Position("rental"; Lowercase($1.label))>0)\
 			))
 		If (Not($alreadyHasIndoor))
 			// Look up the real service so we use its actual ID
