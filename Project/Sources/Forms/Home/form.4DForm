@@ -305,7 +305,8 @@
 	],
 	"events": [
 		"onLoad",
-		"onClick"
+		"onClick",
+		"onActivate"
 	],
 	"formClass": "FC_Home",
 	"method": "method.4dm"

@@ -11,6 +11,8 @@ Function formEventHandler($formEventCode : Integer)
 	Case of 
 		: ($formEventCode=On Load)
 			This._onLoad()
+		: ($formEventCode=On Activate)
+			This._refreshAiStatus()
 	End case 
 
 Function btnEventsEventHandler($formEventCode : Integer)
@@ -57,6 +59,9 @@ Function btnAiSetupEventHandler($formEventCode : Integer)
 
 //MARK: - Private
 Function _onLoad()
+	This._refreshAiStatus()
+
+Function _refreshAiStatus()
 	var $providers : Object:=cs.AIKit.OpenAIProviders.new()
 	var $aliases : Collection:=$providers.modelAliases()
 	var $chatEntry : Object:=$aliases.query("name = :1"; "chat").first()
