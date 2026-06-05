@@ -724,6 +724,12 @@ Function btnConfirmActionEventHandler($formEventCode : Integer)
 				$evt.save()
 			End if 
 			
+			// If action carries a new guest count, update the event
+			If (($appliedAction.newGuestCount#Null) && (Num($appliedAction.newGuestCount)>0))
+				This.event.guestCount:=Num($appliedAction.newGuestCount)
+				This.event.save()
+			End if 
+			
 			cs.EventLineService.me.applyProposedChanges(This.event.ID; This._pendingExecResult.proposedLines)
 			var $appliedLabel : Text:=String($appliedAction.label)
 			This._hideConfirmPanel()

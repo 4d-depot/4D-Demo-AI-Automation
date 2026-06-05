@@ -1,1 +1,48 @@
-{"type":"object","required":["summary","actions"],"additionalProperties":false,"properties":{"summary":{"type":"string"},"actions":{"type":"array","minItems":0,"maxItems":4,"items":{"type":"object","required":["actionType","label","hiddenPrompt"],"additionalProperties":false,"properties":{"actionType":{"type":"string","enum":["add_services","remove_services","replace_services","switch_venue"]},"label":{"type":"string"},"hiddenPrompt":{"type":"string"}}}}}}
+{
+  "type": "object",
+  "required": [
+    "summary",
+    "actions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "summary": {
+      "type": "string"
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "actionType",
+          "label",
+          "hiddenPrompt"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "actionType": {
+            "type": "string",
+            "enum": [
+              "add_services",
+              "remove_services",
+              "replace_services",
+              "switch_venue"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "hiddenPrompt": {
+            "type": "string"
+          },
+          "newGuestCount": {
+            "type": "integer",
+            "description": "Updated guest count if client changed the number of attendees"
+          }
+        }
+      }
+    }
+  }
+}

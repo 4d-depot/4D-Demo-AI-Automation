@@ -160,6 +160,8 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	$system:=$system+"- For removes: exact service labels from the existing services list to remove\n"
 	$system:=$system+"- For adds/replace: what services to SEARCH for and ADD (only if plausibly in a standard event catalog)\n"
 	$system:=$system+"- For replace: use format 'REMOVE: <labels>\nSEARCH: <what to find>'\n"
+	$system:=$system+"GUEST COUNT: If the client mentions a change in the number of guests/attendees, set 'newGuestCount' to the new integer value on the most relevant action. "
+	$system:=$system+"The hiddenPrompt for that action should reflect the new guest count for any per-guest services (e.g. 'adjust catering for 150 guests').\n"
 	$system:=$system+"Keep 'label' short (button text, 3-5 words max).\n"
 	$system:=$system+"If the email contains NO actionable service changes, return an empty actions array [].\n"
 	$system:=$system+"Also write a brief 'summary' (1-2 sentences) describing what the client requested.\n"
