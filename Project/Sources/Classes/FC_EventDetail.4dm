@@ -471,7 +471,7 @@ Function _onExecutionDone($execResult : Object)
 			var $fl : Object
 			For each ($fl; $execResult.proposedLines)
 				// Strip venue rental ADD lines the AI may have added despite instructions
-				If Not(($fl.delta="add") && (Position("venue rental"; Lowercase(String($fl.label)))>0))
+				If (Not(($fl.delta="add") && (Position("venue rental"; Lowercase(String($fl.label)))>0)))
 					$merged.push($fl)
 				End if 
 			End for each 
@@ -499,7 +499,7 @@ Function _onExecutionDone($execResult : Object)
 		var $filtered : Collection:=[]
 		var $rl : Object
 		For each ($rl; $execResult.proposedLines)
-			If Not(($rl.delta="add") && (Position("venue rental"; Lowercase(String($rl.label)))>0))
+			If (Not(($rl.delta="add") && (Position("venue rental"; Lowercase(String($rl.label)))>0)))
 				$filtered.push($rl)
 			End if 
 		End for each 
