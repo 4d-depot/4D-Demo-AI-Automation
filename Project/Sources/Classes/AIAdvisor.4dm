@@ -37,65 +37,6 @@ Function _createChat($systemPrompt : Text; $schema : Object; $schemaName : Text;
 // Pattern: $self:=This + Formula($self._onXxx($1; captured_params...))
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// ─── Scenario 1: Email analysis = quote request ────────────────────────────────
-// $callback receives {success; extraction; actions; validationError}
-Function analyzeQuoteEmailAsync($email : cs.EmailEntity; $catalog : Collection; $callback : 4D.Function)
-	var $schemaCombined : Object:=This._loadSchema("schema_quote_combined.json")
-	If ($schemaCombined=Null)
-		$callback.call(Null; {success: False; extraction: Null; actions: Null; validationError: "Impossible de charger schema_quote_combined.json"})
-		return 
-	End if 
-
-	var $catalogSnippet : Text:=This._buildCatalogSnippet($catalog)
-
-	var $system : Text:="You are an expert event planning assistant working for an international event agency called Event Pulse. "
-	$system:=$system+"Your task is to analyze a client email that is a quote request and return a STRICT JSON object. "
-	$system:=$system+"Respond ONLY with the JSON — no markdown, no explanation.\n\n"
-	$system:=$system+"Return TWO top-level keys:\n"
-	$system:=$system+"1) 'extraction': the quote data (eventType, missingFields, etc.)\n"
-	$system:=$system+"2) 'actions': an array of recommended actions (max 4)\n\n"
-	$system:=$system+"For each action, you MUST include a 'hiddenPrompt' field. This is an internal prompt that will be sent back to an AI assistant with access to a service catalog search tool. "
-	$system:=$system+"The hiddenPrompt must describe in detail: what services to search for, estimated quantities based on guest count, and any specific constraints. "
-	$system:=$system+"Example: 'Search for catering services for a seated dinner for 200 guests, including appetizers, main course, dessert. Also search for table setup and linens for 25 round tables.'\n\n"
-	$system:=$system+"For 'extraction':\n"
-	$system:=$system+"- 'eventType' is REQUIRED (e.g. 'seminar', 'gala', 'product launch', 'conference')\n"
-	$system:=$system+"- 'missingFields' is REQUIRED: list fields not found in the email\n"
-	$system:=$system+"- Use null for optional fields not found in the email\n\n"
-	$system:=$system+"Available services in our catalog (excerpt):\n"+$catalogSnippet
-
-	var $user : Text:="Client email subject: "+$email.subject+"\n"
-	$user:=$user+"From: "+$email.sender+" <"+$email.senderEmail+">\n\n"
-	$user:=$user+"Body:\n"+$email.body+"\n\n"
-	$user:=$user+"Extract quote information and propose 2-4 concrete actions."
-
-	var $self : Object:=This
-	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; $schemaCombined; "quote_extraction"; Formula($self._onQuoteChatDone($1; $cb)))
-	This._chat.prompt($user)
-
-Function _onQuoteChatDone($chatResult : Object; $callback : 4D.Function)
-	If (($chatResult#Null) && (Not($chatResult.terminated)))
-		return 
-	End if 
-	var $result : Object:={success: False; extraction: Null; actions: Null; validationError: ""; validation: Null}
-	var $parsed : Object:=This._extractParsedResponse($chatResult)
-	If ($parsed=Null)
-		$result.validationError:=This._extractError($chatResult)
-		$callback.call(Null; $result)
-		return 
-	End if 
-	// JSON Validate on the 4D side — post-AI safety net (blog pattern)
-	$result.validation:=This._validateResponse($parsed; "schema_quote_combined.json")
-	If (Not($result.validation.success))
-		$result.validationError:="schema_quote_combined: "+JSON Stringify($result.validation.errors)
-		$callback.call(Null; $result)
-		return 
-	End if 
-	$result.success:=True
-	$result.extraction:=$parsed.extraction
-	$result.actions:=$parsed.actions
-	$callback.call(Null; $result)
-
 // ─── Scenario 2: Weather alert on an event ─────────────────────────────────────
 // $callback receives {success; weatherActions; validationError}
 Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object; $eventLines : Collection; $callback : 4D.Function)
@@ -593,21 +534,6 @@ Function _extractError($chatResult : Object) : Text
 		return "No choice in response"
 	End if 
 	return "Empty or invalid JSON response"
-
-// ─── Builds the catalog summary for prompts ─────────────────────────────────────
-Function _buildCatalogSnippet($catalog : Collection) : Text
-	var $result : Text:=""
-	If ($catalog=Null)
-		return $result
-	End if 
-	var $i : Integer
-	var $svc : Object
-	var $max : Integer:=($catalog.length<30) ? $catalog.length : 30
-	For ($i; 0; $max-1)
-		$svc:=$catalog[$i]
-		$result:=$result+($svc.category || "")+" | "+($svc.label || "")+" | "+String($svc.unitPrice)+"€/"+($svc.unit || "unit")+Char(13)
-	End for 
-	return $result
 
 // ─── JSON Validation on the 4D side (illustrates the "Making AI Predictable" blog) ─
 // Validates the parsed AI response against the Draft 2020-12 schema.
