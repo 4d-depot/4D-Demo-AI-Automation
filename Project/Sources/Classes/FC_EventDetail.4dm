@@ -409,19 +409,11 @@ Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 	// Event context — use _linesAsCollection() which includes serviceID (needed for removes)
 	var $w : Integer:=Current form window
 	var $lines : Collection:=This._linesAsCollection()
-	var $total : Real:=0
-	var $tl : Object
-	For each ($tl; $lines)
-		$total:=$total+($tl.quantity*$tl.unitPrice)
-	End for each 
 	var $context : Object:={\
 		windowID: $w; \
-		eventID: This.event.ID; \
 		eventDate: String(This.event.eventDate; "yyyy-MM-dd"); \
 		guestCount: This.event.guestCount; \
 		venueName: This.event.venue.name; \
-		currentTotal: $total; \
-		revenueProtection: (This.activeAdvisorTab="weather"); \
 		existingLines: $lines\
 		}
 	
@@ -432,7 +424,7 @@ Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 	var $ctxJson : Text:=JSON Stringify($context)
 	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiExecuteWorkerJob($w; $hiddenPrompt; $ctxJson)))
 	
-	// ─── switch_venue: build a smart prompt then route through normal tool-calling ───
+	// ─── switch_venue: build a stepped prompt with budget cap ───
 Function _executeSwitchVenue($action : Object)
 	var $evt : cs.EventEntity:=This.event
 	var $venue : cs.VenueEntity:=$evt.venue
@@ -445,29 +437,30 @@ Function _executeSwitchVenue($action : Object)
 	End if 
 	var $guestCount : Integer:=$evt.guestCount
 	
-	// List all booked services — let AI decide which are outdoor-specific
+	// List all booked services with IDs and prices for removes
 	var $allServices : Text:=""
-	var $line : Object
-	For each ($line; This.event.lines)
-		$allServices:=$allServices+"- "+$line.serviceLabel+" x"+String($line.quantity)+" @ "+String($line.unitPrice)+"€\n"
+	var $removedTotal : Real:=0
+	var $line : cs.EventLineEntity
+	For each ($line; $evt.lines)
+		$allServices:=$allServices+"- [ID:"+String($line.serviceID)+"] "+$line.serviceLabel+" x"+String($line.quantity)+" @ "+String($line.unitPrice)+"€\n"
+		$removedTotal:=$removedTotal+($line.quantity*$line.unitPrice)
 	End for each 
 	
-	// Compute current services total — passed to system prompt for revenue protection
-	var $currentTotal : Real:=0
-	For each ($line; This.event.lines)
-		$currentTotal:=$currentTotal+($line.quantity*$line.unitPrice)
-	End for each 
+	// Budget for indoor additions: money freed by removing outdoor services minus indoor rental cost
+	// The AI will compute the actual freed amount; we pass the worst-case cap (total - rental)
+	// so it knows not to overshoot by more than 10% of the freed amount
+	var $maxBudget : Real:=($removedTotal-$indoorRental)*1.10
 	
-	// Let AI identify outdoor-specific services and find indoor replacements
-	var $prompt : Text:="This outdoor event is being switched to the indoor venue option '"+$indoorName+"' (rental: "+String($indoorRental)+"€).\n\n"
-	$prompt:=$prompt+"Current booked services (total: "+String($currentTotal)+"€):\n"+$allServices+"\n"
-	$prompt:=$prompt+"Task:\n"
-	$prompt:=$prompt+"1. REMOVE all services that are specific to outdoor events (tents, outdoor structures, outdoor sound, outdoor lighting, rain gear, patio heaters, outdoor venue rental, etc.) — use your knowledge to identify them.\n"
-	$prompt:=$prompt+"2. SEARCH for indoor equivalents and additions: indoor sound system for "+String($guestCount)+" guests, indoor lighting/decor upgrades, indoor comfort services, entertainment, catering upgrades. Do NOT search for venue rental — that is handled separately.\n"
-	$prompt:=$prompt+"3. DEDUPLICATION & REPLACEMENT RULES:\n"
-	$prompt:=$prompt+"   - Do NOT add a service already present in the existing list with the exact same label or serviceID.\n"
-	$prompt:=$prompt+"   - MEAL SERVICES (dinners, lunches, buffets, banquets, seated meals): if the booked list already contains a meal service and you want to propose an upgraded meal, you MUST first REMOVE the existing meal service before adding the new one. Never keep "+"two meal services simultaneously.\n"
-	$prompt:=$prompt+"4. MANDATORY: Apply the REVENUE PROTECTION RULE from your instructions — calculate net_impact after each round of searches and keep adding services until net_impact >= 0."
+	var $prompt : Text:="Switch this outdoor event to the indoor venue '"+$indoorName+"' (rental: "+String($indoorRental)+"€).\n\n"
+	$prompt:=$prompt+"Current booked services:\n"+$allServices+"\n"
+	$prompt:=$prompt+"Step 1 — REMOVE: Identify and remove all outdoor-specific services (tents, outdoor structures, outdoor sound/lighting, rain gear, patio heaters, outdoor venue rental, outdoor power/generators used for structures, etc.). Use [ID:xxx] from the list above.\n\n"
+	$prompt:=$prompt+"Step 2 — ADD indoor rental: Add the indoor venue rental at "+String($indoorRental)+"€ (search for 'indoor venue rental' if needed, or use the injected rental line).\n\n"
+	$prompt:=$prompt+"Step 3 — COMPUTE: Calculate freed_budget = SUM(removed services cost) - "+String($indoorRental)+"€ (indoor rental).\n\n"
+	$prompt:=$prompt+"Step 4 — ADD indoor services (ONLY if freed_budget > 0):\n"
+	$prompt:=$prompt+"  Search for indoor-compatible services (sound system, lighting, decor, comfort) appropriate for "+String($guestCount)+" guests.\n"
+	$prompt:=$prompt+"  STRICT BUDGET: total cost of ADD lines (excluding venue rental) must NOT exceed freed_budget × 1.10 (max budget: "+String($maxBudget)+"€).\n"
+	$prompt:=$prompt+"  Stop searching once budget is reached. Do NOT add services just to fill the budget — only add what is genuinely useful.\n"
+	$prompt:=$prompt+"  If freed_budget <= 0: skip this step entirely.\n"
 	
 	// Tag the action so confirm step knows to save venueOption + inject indoor rental
 	$action._switchVenue:=True

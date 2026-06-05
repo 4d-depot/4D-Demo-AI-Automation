@@ -329,54 +329,36 @@ Function _onChatDone($chatResult : Object; $callback : 4D.Function; $schemaFile 
 // ─── Step 2: Execution with tool calling (ChatHelper + registerTools) ───────────
 // $callback receives {success; proposedLines; summary; error}
 Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback : 4D.Function)
-	var $system : Text:="You are an event planning execution assistant for Event Pulse. "
-	$system:=$system+"You have access to a search_services tool to find services in our catalog. "
-	$system:=$system+"Based on the task description, build the list of proposed service changes for this event.\n\n"
-	$system:=$system+"The 'delta' field on each line controls what happens:\n"
-	$system:=$system+"- 'add': a new service found via search_services to add to the event\n"
-	$system:=$system+"- 'remove': an EXISTING service to remove — do NOT search for it, take serviceID and quantity directly from the existing services list in context\n"
+	var $system : Text:="You are an event service execution assistant for Event Pulse.\n"
+	$system:=$system+"Use the search_services tool to find services in the catalog, then build a list of proposed changes.\n\n"
+	$system:=$system+"Delta rules:\n"
+	$system:=$system+"- 'add': a new service found via search_services\n"
+	$system:=$system+"- 'remove': an EXISTING service — take serviceID directly from the existing services list, do NOT search\n"
 	$system:=$system+"- 'update': change the quantity of an existing service\n\n"
-	$system:=$system+"For 'replace_services' tasks: you must produce BOTH 'remove' lines (for existing services listed under REMOVE:) AND 'add' lines (found via search_services for items listed under SEARCH:). "
-	$system:=$system+"Do NOT search for services that are listed under REMOVE — just emit them with delta:'remove'. "
-	$system:=$system+"CRITICAL: Never add a service (delta:'add') if you are also removing a service with the same or equivalent label. A service cannot be both removed and added in the same proposal.\n\n"
-	$system:=$system+"Context:\n"
-	If ($context.eventID#Null)
-		$system:=$system+"- Event ID: "+$context.eventID+"\n"
-	End if 
+	$system:=$system+"For 'replace_services' tasks: emit BOTH 'remove' lines (from REMOVE: section) AND 'add' lines (from SEARCH: section).\n"
+	$system:=$system+"NEVER add a service that is already in the existing list with the same label or serviceID.\n"
+	$system:=$system+"MEAL RULE: if adding an upgraded meal and an existing meal service is already booked, emit a 'remove' for the existing one first.\n"
+	$system:=$system+"If search_services returns no results: return empty proposedLines.\n"
+	$system:=$system+"For 'remove' lines: the serviceID MUST be the [ID:xxx] value from the existing services list.\n"
+	$system:=$system+"Summary: 1-2 sentences, use 'We propose...' — not past tense.\n"
+	$system:=$system+"Do NOT include label, category, unitPrice — resolved server-side.\n"
 	If ($context.eventDate#Null)
-		$system:=$system+"- Event Date: "+$context.eventDate+"\n"
-	End if 
-	If ($context.guestCount#Null)
-		$system:=$system+"- Guest Count: "+String($context.guestCount)+"\n"
-	End if 
-	If ($context.venueName#Null)
-		$system:=$system+"- Venue: "+$context.venueName+"\n"
+		$system:=$system+"\nEvent: "+$context.eventDate
+		If ($context.guestCount#Null)
+			$system:=$system+", "+String($context.guestCount)+" guests"
+		End if 
+		If ($context.venueName#Null)
+			$system:=$system+", "+$context.venueName
+		End if 
+		$system:=$system+"\n"
 	End if 
 	If (($context.existingLines#Null) && ($context.existingLines.length>0))
-		$system:=$system+"\nExisting services on this event:\n"
+		$system:=$system+"Existing services:\n"
 		var $el : Object
 		For each ($el; $context.existingLines)
 			$system:=$system+"- [ID:"+String($el.serviceID)+"] "+$el.serviceLabel+" × "+String($el.quantity)+" @ "+String($el.unitPrice)+"€\n"
 		End for each 
 	End if 
-	If (($context.currentTotal#Null) && ($context.revenueProtection#False))
-		$system:=$system+"\nREVENUE PROTECTION RULE (mandatory):\n"
-		$system:=$system+"Before finalizing your response, you MUST compute the net impact:\n"
-		$system:=$system+"  net_impact = SUM(unitPrice × qty for each ADD line) - SUM(unitPrice × qty for each REMOVE line)\n"
-		$system:=$system+"  (Prices for removes are in the existing services list above. Prices for adds come from search_services results.)\n"
-		$system:=$system+"If net_impact < 0: you MUST call search_services again to find more services to add (try Entertainment, Catering, Decor, Lighting categories) until net_impact >= 0.\n"
-		$system:=$system+"Only finalize when net_impact >= 0. Adding revenue is always preferred over losing it.\n"
-	End if 
-	$system:=$system+"\nFor 'add' lines: ONLY propose services that were actually returned by the search_services tool. "
-	$system:=$system+"DEDUPLICATION: Do NOT add a service that is already in the existing services list with the exact same label or serviceID. Adding a different service in the same category is fine (e.g. adding a gas heater when a patio heater is already booked is allowed). "
-	$system:=$system+"MEAL REPLACEMENT: If the task involves adding an upgraded meal service (dinner, lunch, buffet, banquet, seated meal) and the existing services list already contains a meal service, you MUST emit a 'remove' line for the existing meal service AND an 'add' line for the new one. Never keep two meal services at the same time. "
-	$system:=$system+"CRITICAL: If search_services returns no results, return an EMPTY proposedLines array. "
-	$system:=$system+"If search_services returns results but none are appropriate, return empty proposedLines AND set summary to explain clearly why each result was rejected (e.g. 'Found: X, Y, Z — rejected because task requires indoor heating and all results are outdoor equipment'). "
-	$system:=$system+"NEVER emit 'remove' lines for an 'add_services' task — only emit removes for 'remove_services' or 'replace_services' tasks. "
-	$system:=$system+"For 'remove' lines: use the exact serviceID from the existing services list above — do NOT search for them. The serviceID for removes MUST be the [ID:xxx] value from the existing services list. "
-	$system:=$system+"Return a JSON with: proposedLines (array of {serviceID, quantity, delta}), summary (text). "
-	$system:=$system+"The summary must be 1-2 sentences MAX using conditional language ('We propose...', 'We recommend...') — NOT past tense. Be concise."
-	$system:=$system+"Do NOT include label, category, unitPrice, or totalImpact — those are resolved server-side."
 
 	var $execSchema : Object:=This._loadSchema("schema_action_execution.json")
 	var $self : Object:=This
