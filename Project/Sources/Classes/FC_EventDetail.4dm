@@ -153,6 +153,7 @@ Function _showValidationBadge($schemaName : Text; $validatedObject : Object)
 	//MARK: - Private
 Function _onLoad()
 	cs.UIHelpers.me.resizeWindowWidth(1100)
+	This._loadEventLines()
 	This._checkLinkedEmail()
 	This._renderCurrentTab()
 	This._updateNavButtons()
