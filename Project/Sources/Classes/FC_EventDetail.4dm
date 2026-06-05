@@ -493,11 +493,14 @@ Function _onExecutionDone($execResult : Object)
 		If (($execResult.proposedLines#Null) && ($execResult.proposedLines.length>0))
 			var $fl : Object
 			For each ($fl; $execResult.proposedLines)
-				$merged.push($fl)
+				// Skip any venue rental the AI may have added despite instructions
+				If (Position("venue rental"; Lowercase($fl.label))=0)
+					$merged.push($fl)
+				End if 
 			End for each 
 		End if 
 		$execResult.proposedLines:=$merged
-		$execResult.summary:=String($action._firstRoundSummary)  // restore original summary
+		$execResult.summary:=String($action._firstRoundSummary)
 		OB REMOVE($action; "_partialLines")
 		OB REMOVE($action; "_fillBudget")
 		OB REMOVE($action; "_firstRoundSummary")
