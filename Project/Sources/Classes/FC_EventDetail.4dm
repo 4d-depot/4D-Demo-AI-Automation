@@ -262,7 +262,7 @@ Function _renderEmailTab()
 	
 Function _checkAiReady() : Boolean
 	return cs.UIHelpers.me.checkAliasOrPrompt("chat")
-
+	
 Function _runWeatherAnalysis()
 	If (Not(This._checkAiReady()))
 		return 
@@ -411,8 +411,9 @@ Function _executeAction($slot : Integer)
 	End case 
 	
 	// ─── Step 2: Execution with tool calling + confirmation dialog ──────────────────
-// $promptOverride: optional — if provided, replaces the action's hiddenPrompt
+	// $promptOverride: optional — if provided, replaces the action's hiddenPrompt
 Function _executeWithToolCalling($action : Object; $promptOverride : Text)
+	This._startSpinner()
 	This._setAiStatus("Searching services...")
 	
 	// Event context — use _linesAsCollection() which includes serviceID (needed for removes)
@@ -441,7 +442,7 @@ Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 	var $ctxJson : Text:=JSON Stringify($context)
 	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiExecuteWorkerJob($w; $hiddenPrompt; $ctxJson)))
 	
-// ─── switch_venue: build a smart prompt then route through normal tool-calling ───
+	// ─── switch_venue: build a smart prompt then route through normal tool-calling ───
 Function _executeSwitchVenue($action : Object)
 	var $evt : cs.EventEntity:=This.event
 	var $venue : cs.VenueEntity:=$evt.venue
@@ -475,7 +476,7 @@ Function _executeSwitchVenue($action : Object)
 	$prompt:=$prompt+"2. SEARCH for indoor equivalents and additions: indoor sound system for "+String($guestCount)+" guests, indoor lighting/decor upgrades, indoor comfort services, entertainment, catering upgrades. Do NOT search for venue rental — that is handled separately.\n"
 	$prompt:=$prompt+"3. DEDUPLICATION & REPLACEMENT RULES:\n"
 	$prompt:=$prompt+"   - Do NOT add a service already present in the existing list with the exact same label or serviceID.\n"
-	$prompt:=$prompt+"   - MEAL SERVICES (dinners, lunches, buffets, banquets, seated meals): if the booked list already contains a meal service and you want to propose an upgraded meal, you MUST first REMOVE the existing meal service before adding the new one. Never keep two meal services simultaneously.\n"
+	$prompt:=$prompt+"   - MEAL SERVICES (dinners, lunches, buffets, banquets, seated meals): if the booked list already contains a meal service and you want to propose an upgraded meal, you MUST first REMOVE the existing meal service before adding the new one. Never keep "+"two meal services simultaneously.\n"
 	$prompt:=$prompt+"4. MANDATORY: Apply the REVENUE PROTECTION RULE from your instructions — calculate net_impact after each round of searches and keep adding services until net_impact >= 0."
 	
 	// Tag the action so confirm step knows to save venueOption + inject indoor rental
@@ -492,6 +493,7 @@ Function _onExecutionDone($execResult : Object)
 	End if 
 	
 	This._stopButtonSpinner()
+	This._stopSpinner()
 	
 	// Retrieve and clear the stored action — no JSON round-trip needed
 	var $action : Object:=cs.AIWorkerContext.me.getAction(Current form window)
@@ -785,14 +787,16 @@ Function _setAiStatus($text : Text)
 	Else 
 		OBJECT SET TITLE(*; "text_ai_status"; $text)
 	End if 
-
+	
 Function _startSpinner()
 	This._spinnerActive:=True
 	This._spinnerIndex:=0
 	OBJECT SET VISIBLE(*; "text_ai_spinner"; False)  // no longer used for main spinner
-	// Hide action buttons during spinner
-	cs.UIHelpers.me.resetActionButtons()
-	SET TIMER(6)  // ~100ms per frame
+	If (This._spinnerBtnSlot<0)
+		// Only reset buttons if no button spinner is running
+		cs.UIHelpers.me.resetActionButtons()
+		SET TIMER(6)  // ~100ms per frame
+	End if 
 	
 Function _startButtonSpinner($slot : Integer; $label : Text)
 	This._spinnerBtnSlot:=$slot
