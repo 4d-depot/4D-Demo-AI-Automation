@@ -484,7 +484,11 @@ Function _onExecutionDone($execResult : Object)
 	End if 
 	
 	If (($execResult.proposedLines=Null) || ($execResult.proposedLines.length=0))
-		This._setAiStatus("No services proposed.")
+		var $noSvcMsg : Text:="No services proposed."
+		If ($execResult.summary#"")
+			$noSvcMsg:=$noSvcMsg+" (AI: "+$execResult.summary+")"
+		End if 
+		This._setAiStatus($noSvcMsg)
 		return 
 	End if 
 	
