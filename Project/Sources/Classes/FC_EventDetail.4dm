@@ -497,8 +497,10 @@ Function _onExecutionDone($execResult : Object)
 			End for each 
 		End if 
 		$execResult.proposedLines:=$merged
+		$execResult.summary:=String($action._firstRoundSummary)  // restore original summary
 		OB REMOVE($action; "_partialLines")
 		OB REMOVE($action; "_fillBudget")
+		OB REMOVE($action; "_firstRoundSummary")
 	End if 
 	
 	If (($execResult.proposedLines=Null) || ($execResult.proposedLines.length=0))
@@ -538,9 +540,10 @@ Function _onExecutionDone($execResult : Object)
 			var $fillBudget : Real:=Abs($netImpact)*1.10
 			This._startSpinner()
 			This._setAiStatus("Searching indoor fill services (budget: "+String(Round($fillBudget; 0))+"€)...")
-			// Store partial result — will be merged when fill round completes
+			// Store partial result and first-round summary — will be merged when fill round completes
 			$action._fillBudget:=$fillBudget
 			$action._partialLines:=$execResult.proposedLines
+			$action._firstRoundSummary:=$execResult.summary
 			var $w2 : Integer:=Current form window
 			cs.AIWorkerContext.me.storeAction($w2; $action)
 			cs.AIWorkerContext.me.storeExistingLines($w2; This._linesAsCollection())
@@ -823,8 +826,10 @@ Function _startSpinner()
 	This._spinnerIndex:=0
 	OBJECT SET VISIBLE(*; "text_ai_spinner"; False)  // no longer used for main spinner
 	If (This._spinnerBtnSlot<0)
-		// Only reset buttons if no button spinner is running
-		cs.UIHelpers.me.resetActionButtons()
+		// Only reset buttons if no button spinner is running and no actions are pending
+		If (This.aiActions.length=0)
+			cs.UIHelpers.me.resetActionButtons()
+		End if 
 		SET TIMER(6)  // ~100ms per frame
 	End if 
 	
