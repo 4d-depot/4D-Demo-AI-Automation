@@ -660,13 +660,6 @@ Function _hideConfirmPanel()
 Function _dismissAfterActions()
 	cs.UIHelpers.me.resetActionButtons()
 	This.aiActions:=[]
-	// Always try to mark pending email as processed if one exists
-	var $email : cs.EmailEntity:=This.event.pendingEmail
-	If (Not(Undefined($email)) && ($email#Null))
-		$email.emailStatus:="processed"
-		$email.save()
-		This.event.reload()
-	End if 
 	If (This.activeAdvisorTab#"email")
 		// Update weatherSetup to match current forecast so no future alert is raised,
 		// then clear the alert level
@@ -732,6 +725,15 @@ Function btnConfirmActionEventHandler($formEventCode : Integer)
 			var $remaining : Collection:=This.aiActions.query("label != :1"; $appliedLabel)
 			This.aiActions:=$remaining
 			
+			// If on email tab and no more actions, mark the pending email as processed now
+			If ((This.activeAdvisorTab="email") && ($remaining.length=0))
+				var $emailToProcess : cs.EmailEntity:=This.event.pendingEmail
+				If (Not(Undefined($emailToProcess)) && ($emailToProcess#Null))
+					$emailToProcess.emailStatus:="processed"
+					$emailToProcess.save()
+				End if 
+			End if 
+			
 			If ($remaining.length=0)
 				This._dismissAfterActions()
 			Else 
@@ -759,6 +761,14 @@ Function _onReassessmentDone($result : Object)
 	End if 
 	This.aiActions:=$result.actions
 	If ($result.actions.length=0)
+		// If on email tab, mark the pending email as processed before dismiss
+		If (This.activeAdvisorTab="email")
+			var $emailToProcess : cs.EmailEntity:=This.event.pendingEmail
+			If (Not(Undefined($emailToProcess)) && ($emailToProcess#Null))
+				$emailToProcess.emailStatus:="processed"
+				$emailToProcess.save()
+			End if 
+		End if 
 		This._dismissAfterActions()
 	Else 
 		This._actionMap:=cs.UIHelpers.me.showActionButtons($result.actions)
