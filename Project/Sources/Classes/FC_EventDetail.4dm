@@ -292,9 +292,8 @@ Function _runWeatherAnalysis()
 	
 	var $w : Integer:=Current form window
 	var $wfJson : Text:=JSON Stringify($weatherFetch)
-	var $linesJson : Text:=JSON Stringify(This._linesAsCollection())
 	var $evtID : Text:=This.event.ID
-	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiWeatherWorkerJob($w; $evtID; $wfJson; $linesJson)))
+	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiWeatherWorkerJob($w; $evtID; $wfJson)))
 	
 	// ─── Callbacks async ─────────────────────────────────────────────────────────
 Function _onWeatherAnalysisDone($aiResult : Object; $weatherFetch : Object)
@@ -341,8 +340,7 @@ Function _runEmailAnalysis()
 	var $w : Integer:=Current form window
 	var $emailID : Text:=This.event.pendingEmail.ID
 	var $eventID : Text:=String($evt.ID)
-	var $linesJson : Text:=JSON Stringify(This._linesAsCollection())
-	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiEmailWorkerJob($w; $emailID; $eventID; $linesJson)))
+	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiEmailWorkerJob($w; $emailID; $eventID)))
 	
 Function _onEmailAnalysisDone($result : Object)
 	If (Form=Null)

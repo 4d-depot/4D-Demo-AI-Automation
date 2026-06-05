@@ -39,7 +39,7 @@ Function _createChat($systemPrompt : Text; $schema : Object; $schemaName : Text;
 
 // ─── Scenario 2: Weather alert on an event ─────────────────────────────────────
 // $callback receives {success; weatherActions; validationError}
-Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object; $eventLines : Collection; $callback : 4D.Function)
+Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object; $callback : 4D.Function)
 	var $schemaWeather : Object:=This._loadSchema("schema_weather_actions.json")
 	If ($schemaWeather=Null)
 		$callback.call(Null; {success: False; weatherActions: Null; validationError: "Impossible de charger schema_weather_actions.json"})
@@ -47,8 +47,8 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $weatherData : Object;
 	End if 
 
 	var $servicesSnippet : Text:=""
-	var $line : Object
-	For each ($line; $eventLines)
+	var $line : cs.EventLineEntity
+	For each ($line; $event.lines)
 		$servicesSnippet:=$servicesSnippet+"- "+$line.serviceLabel+" (qty: "+String($line.quantity)+")\n"
 	End for each 
 
@@ -151,7 +151,7 @@ Function _onWeatherChatDone($chatResult : Object; $callback : 4D.Function)
 // ─── Scenario 3: Client modification email linked to a known event ──────────
 // The event is already identified — no need to disambiguate.
 // $callback receives {success; impacts; validationError}
-Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntity; $eventLines : Collection; $callback : 4D.Function)
+Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntity; $callback : 4D.Function)
 	var $schemaImpacts : Object:=This._loadSchema("schema_modification_impacts.json")
 	If ($schemaImpacts=Null)
 		$callback.call(Null; {success: False; impacts: Null; validationError: "Cannot load schema_modification_impacts.json"})
@@ -165,8 +165,8 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	$eventText:=$eventText+" | Guests: "+String($event.guestCount)
 
 	var $linesText : Text:=""
-	var $line : Object
-	For each ($line; $eventLines)
+	var $line : cs.EventLineEntity
+	For each ($line; $event.lines)
 		$linesText:=$linesText+"- [ID:"+String($line.serviceID)+"] "+$line.serviceLabel+" × "+String($line.quantity)+" @ "+String($line.unitPrice)+"€/u\n"
 	End for each 
 
@@ -190,7 +190,7 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	$user:=$user+"\nSubject: "+$email.subject+"\n\n"
 	$user:=$user+"Body:\n"+$email.body+"\n\n"
 	$user:=$user+"Event: "+$eventText+"\n"
-	If ($eventLines.length>0)
+	If ($event.lines.length>0)
 		$user:=$user+"\nCurrent services:\n"+$linesText
 	End if 
 
