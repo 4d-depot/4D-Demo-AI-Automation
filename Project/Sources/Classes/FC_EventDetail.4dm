@@ -809,6 +809,8 @@ Function _onDraftEmailDone($result : Object)
 	//MARK: - Helpers
 Function _setAiStatus($text : Text)
 	This._aiStatusBase:=$text
+	var $logFile : 4D.File:=Folder(fk logs folder).file("ai_status.log")
+	$logFile.setText(($logFile.exists ? $logFile.getText() : "")+"["+String(Current time; HH:MM:SS)+"] "+$text+"\n")
 	If (This._spinnerActive)
 		OBJECT SET TITLE(*; "text_ai_status"; This._spinnerFrames[This._spinnerIndex]+" "+$text)
 	Else 
