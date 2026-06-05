@@ -160,8 +160,11 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	$system:=$system+"- For removes: exact service labels from the existing services list to remove\n"
 	$system:=$system+"- For adds/replace: what services to SEARCH for and ADD (only if plausibly in a standard event catalog)\n"
 	$system:=$system+"- For replace: use format 'REMOVE: <labels>\nSEARCH: <what to find>'\n"
-	$system:=$system+"GUEST COUNT: If the client mentions a change in the number of guests/attendees, set 'newGuestCount' to the new integer value on the most relevant action. "
-	$system:=$system+"The hiddenPrompt for that action should reflect the new guest count for any per-guest services (e.g. 'adjust catering for 150 guests').\n"
+	$system:=$system+"GUEST COUNT RULE (CRITICAL): If the client mentions ANY change in the number of guests or attendees:\n"
+	$system:=$system+"  1. You MUST set 'newGuestCount' to the new integer value on EVERY action that involves per-guest services.\n"
+	$system:=$system+"  2. You MUST include the new guest count in the hiddenPrompt (e.g. 'Update Prestige brunch quantity to 30 guests').\n"
+	$system:=$system+"  3. For per-guest services (catering, seating, gifts, etc.), use actionType 'replace_services': REMOVE the old line, SEARCH for the same service at the new quantity.\n"
+	$system:=$system+"  4. newGuestCount must be null if no guest count change was mentioned.\n"
 	$system:=$system+"Keep 'label' short (button text, 3-5 words max).\n"
 	$system:=$system+"If the email contains NO actionable service changes, return an empty actions array [].\n"
 	$system:=$system+"Also write a brief 'summary' (1-2 sentences) describing what the client requested.\n"
@@ -170,7 +173,7 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	var $user : Text:="From: "+$email.sender+" <"+$email.senderEmail+">"
 	$user:=$user+"\nSubject: "+$email.subject+"\n\n"
 	$user:=$user+"Body:\n"+$email.body+"\n\n"
-	$user:=$user+"Event: "+$eventText+"\n"
+	$user:=$user+"Event: "+$eventText+" | Current guest count: "+String($event.guestCount)+"\n"
 	If ($event.lines.length>0)
 		$user:=$user+"\nCurrent services:\n"+$linesText
 	End if 
@@ -341,6 +344,7 @@ Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback :
 	$system:=$system+"- For 'remove_services' tasks: do NOT call search_services. Find the matching service(s) in the existing services list by label, emit 'remove' delta lines. Do not return empty — if client asked to remove something, find it in the list.\n"
 	$system:=$system+"- For 'add_services' tasks: use search_services to find the service, then emit 'add' lines.\n"
 	$system:=$system+"- For 'replace_services' tasks: emit BOTH 'remove' lines (from REMOVE: section, no search needed) AND 'add' lines (from SEARCH: section via search_services).\n"
+	$system:=$system+"- For quantity adjustments on an EXISTING service (e.g. 'update Prestige brunch to 30 guests'): emit a single 'update' delta line with the serviceID and new quantity. Do NOT remove+add the same service.\n"
 	$system:=$system+"NEVER add a service that is already in the existing list with the same label or serviceID.\n"
 	$system:=$system+"MEAL RULE: if adding an upgraded meal and an existing meal service is already booked, emit a 'remove' for the existing one first.\n"
 	$system:=$system+"If search_services returns no results for an 'add' task: return empty proposedLines.\n"
