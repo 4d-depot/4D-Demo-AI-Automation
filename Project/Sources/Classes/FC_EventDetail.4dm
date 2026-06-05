@@ -487,15 +487,28 @@ Function _onExecutionDone($execResult : Object)
 		return 
 	End if 
 	
+	// Second round (fill): merge fill lines into partial result from first round
+	If ($action._partialLines#Null)
+		var $merged : Collection:=$action._partialLines
+		If (($execResult.proposedLines#Null) && ($execResult.proposedLines.length>0))
+			var $fl : Object
+			For each ($fl; $execResult.proposedLines)
+				$merged.push($fl)
+			End for each 
+		End if 
+		$execResult.proposedLines:=$merged
+		OB REMOVE($action; "_partialLines")
+		OB REMOVE($action; "_fillBudget")
+	End if 
+	
 	If (($execResult.proposedLines=Null) || ($execResult.proposedLines.length=0))
 		This._setAiStatus("No services proposed.")
 		return 
 	End if 
 	
 	// For switch_venue: inject the indoor venue rental as a guaranteed add line
-	// (AI may fail to find it; we always inject it from the venue's indoorOption.rentalPrice)
+	// (AI is told not to search for it)
 	If ($action._switchVenue=True) && (Num($action._indoorRental)>0)
-		// Always inject the indoor venue rental — AI is told not to search for it
 		var $indoorSvc : cs.ServiceEntity:=ds.Service.query("label = :1"; "Indoor venue rental").first()
 		If ($indoorSvc#Null)
 			$execResult.proposedLines.push({\
@@ -505,6 +518,45 @@ Function _onExecutionDone($execResult : Object)
 				quantity: 1; \
 				unitPrice: Num($action._indoorRental)\
 				})
+		End if 
+	End if 
+	
+	// For switch_venue: if net impact is negative after injecting rental, search for indoor fill services
+	If ($action._switchVenue=True)
+		var $netImpact : Real:=0
+		var $il : Object
+		For each ($il; $execResult.proposedLines)
+			Case of 
+				: ($il.delta="add") || ($il.delta="update")
+					$netImpact:=$netImpact+($il.quantity*$il.unitPrice)
+				: ($il.delta="remove")
+					$netImpact:=$netImpact-($il.quantity*$il.unitPrice)
+			End case 
+		End for each 
+		If ($netImpact<0)
+			// Budget to fill: abs(netImpact), max 10% overshoot allowed
+			var $fillBudget : Real:=Abs($netImpact)*1.10
+			This._startSpinner()
+			This._setAiStatus("Searching indoor fill services (budget: "+String(Round($fillBudget; 0))+"€)...")
+			// Store partial result — will be merged when fill round completes
+			$action._fillBudget:=$fillBudget
+			$action._partialLines:=$execResult.proposedLines
+			var $w2 : Integer:=Current form window
+			cs.AIWorkerContext.me.storeAction($w2; $action)
+			cs.AIWorkerContext.me.storeExistingLines($w2; This._linesAsCollection())
+			var $fillPrompt : Text:="Find indoor-compatible services to add for an event with "+String(This.event.guestCount)+" guests at '"+String(This.event.venue.indoorOption.name)+"'.\n"
+			$fillPrompt:=$fillPrompt+"STRICT BUDGET: total cost of proposed ADD lines must NOT exceed "+String($fillBudget)+"€.\n"
+			$fillPrompt:=$fillPrompt+"Search for services like: indoor sound, lighting/decor, comfort, entertainment. Stop once budget is reached.\n"
+			$fillPrompt:=$fillPrompt+"Do NOT add services already being removed or already in the existing services list."
+			var $fillCtx : Object:={\
+				windowID: $w2; \
+				eventDate: String(This.event.eventDate; "yyyy-MM-dd"); \
+				guestCount: This.event.guestCount; \
+				venueName: This.event.venue.name; \
+				existingLines: This._linesAsCollection()\
+				}
+			CALL WORKER("aiAdvisorWorker_"+String($w2); Formula(_aiExecuteWorkerJob($w2; $fillPrompt; JSON Stringify($fillCtx))))
+			return 
 		End if 
 	End if 
 	
