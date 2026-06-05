@@ -508,9 +508,8 @@ Function _onExecutionDone($execResult : Object)
 		return 
 	End if 
 	
-	// For switch_venue: inject the indoor venue rental as a guaranteed add line
-	// (AI is told not to search for it)
-	If ($action._switchVenue=True) && (Num($action._indoorRental)>0)
+	// For switch_venue: inject the indoor venue rental (only on first round, not after fill merge)
+	If ($action._switchVenue=True) && (Num($action._indoorRental)>0) && ($action._partialLines=Null)
 		var $indoorSvc : cs.ServiceEntity:=ds.Service.query("label = :1"; "Indoor venue rental").first()
 		If ($indoorSvc#Null)
 			$execResult.proposedLines.push({\
@@ -550,7 +549,7 @@ Function _onExecutionDone($execResult : Object)
 			var $fillPrompt : Text:="Find indoor-compatible services to add for an event with "+String(This.event.guestCount)+" guests at '"+String(This.event.venue.indoorOption.name)+"'.\n"
 			$fillPrompt:=$fillPrompt+"STRICT BUDGET: total cost of proposed ADD lines must NOT exceed "+String($fillBudget)+"€.\n"
 			$fillPrompt:=$fillPrompt+"Search for services like: indoor sound, lighting/decor, comfort, entertainment. Stop once budget is reached.\n"
-			$fillPrompt:=$fillPrompt+"Do NOT add services already being removed or already in the existing services list."
+			$fillPrompt:=$fillPrompt+"Do NOT add venue rental. Do NOT add services already being removed or already in the existing services list."
 			var $fillCtx : Object:={\
 				windowID: $w2; \
 				eventDate: String(This.event.eventDate; "yyyy-MM-dd"); \
