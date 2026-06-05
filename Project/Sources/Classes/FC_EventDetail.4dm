@@ -862,7 +862,7 @@ Function _updateNavButtons()
 	End if 
 	
 Function _linesAsCollection() : Collection
-	return This.event.lines.toCollection("serviceID, serviceLabel, serviceCategory as category, quantity, unitPrice")
+	return This.event.lines.toCollection("serviceID, serviceLabel, serviceCategory, quantity, unitPrice")
 	
 Function _applyReadOnlyIfDone()
 	var $isDone : Boolean:=((This.event.status="completed") || (This.event.status="cancelled"))
