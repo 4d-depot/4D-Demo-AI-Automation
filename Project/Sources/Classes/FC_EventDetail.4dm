@@ -229,20 +229,18 @@ Function _renderWeatherTab($weatherResult : Object)
 		return 
 	End if 
 	
-	var $wa : Object:=$weatherResult.weatherActions
 	This._setAiStatus(This.event.riskLabel)
 	
-	If (($wa.explanation#Null) && ($wa.explanation#""))
-		OBJECT SET TITLE(*; "text_weather_ai_explanation"; $wa.explanation)
-		This._weatherExplanation:=$wa.explanation
+	If ($weatherResult.summary#"")
+		OBJECT SET TITLE(*; "text_weather_ai_explanation"; $weatherResult.summary)
+		This._weatherExplanation:=$weatherResult.summary
 	End if 
 	
-	This._showValidationBadge("schema_weather_actions.json"; $weatherResult.weatherActions)
+	This._showValidationBadge("schema_weather_actions.json"; $weatherResult.rawAiResponse)
 	
-	var $actions : Collection:=$wa.actions
-	This._actionMap:=cs.UIHelpers.me.showActionButtons($actions)
-	This.aiActions:=$actions
-	
+	This._actionMap:=cs.UIHelpers.me.showActionButtons($weatherResult.actions)
+	This.aiActions:=$weatherResult.actions
+
 Function _renderEmailTab()
 	var $hasEmail : Boolean:=(This.event.pendingEmail#Null)
 	OBJECT SET VISIBLE(*; "text_email_ai_result"; True)
@@ -356,19 +354,14 @@ Function _onEmailAnalysisDone($result : Object)
 		return 
 	End if 
 	
-	var $impacts : Object:=$result.impacts
 	This._setAiStatus("✓ Modification request analyzed")
 	This._showValidationBadge("schema_modification_impacts.json"; $result.rawAiResponse)
 	
-	var $summary : Text:=""
-	If (($impacts.modificationSummary#Null) && ($impacts.modificationSummary#""))
-		$summary:=$impacts.modificationSummary
-	End if 
-	OBJECT SET TITLE(*; "text_email_ai_result"; $summary)
+	OBJECT SET TITLE(*; "text_email_ai_result"; $result.summary)
 	
-	If (($impacts.actions#Null) && ($impacts.actions.length>0))
-		This._actionMap:=cs.UIHelpers.me.showActionButtons($impacts.actions)
-		This.aiActions:=$impacts.actions
+	If (($result.actions#Null) && ($result.actions.length>0))
+		This._actionMap:=cs.UIHelpers.me.showActionButtons($result.actions)
+		This.aiActions:=$result.actions
 		// Hide analyze button once actions are proposed — user cannot re-trigger analysis
 		OBJECT SET VISIBLE(*; "btn_email_analyze"; False)
 	Else 

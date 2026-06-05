@@ -81,7 +81,7 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $callback : 4D.Functio
 	$system:=$system+"Valid actionType values: 'add_services', 'remove_services', 'replace_services', 'switch_venue'.\n\n"
 	$system:=$system+"Your analysis MUST:\n"
 	$system:=$system+"1) Compare the forecast with the planned weatherSetup to assess if current services are adequate\n"
-	$system:=$system+"2) In the 'explanation' field, explain in 2-4 sentences: what weather was planned for, what's actually forecast, "
+	$system:=$system+"2) In the 'summary' field, explain in 2-4 sentences: what weather was planned for, what's actually forecast, "
 	$system:=$system+"whether current services match or mismatch, and what should change. Be specific about which booked services are affected.\n"
 	$system:=$system+"3) If forecast is WORSE than planned (e.g., planned sunny but rain forecast): propose adding weather protection services (tents, waterproof covers, drainage, etc.)\n"
 	$system:=$system+"4) If forecast is BETTER than planned (e.g., planned rain but sunny forecast): propose removing now-unnecessary rain services and replacing them with fair-weather upgrades\n"
@@ -98,7 +98,7 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $callback : 4D.Functio
 	$system:=$system+"CRITICAL for 'replace_services' actions: the hiddenPrompt MUST contain two explicit sections:\n"
 	$system:=$system+"  Section REMOVE: list exact labels of existing services to remove (copy them verbatim from the event's services list), e.g. 'REMOVE: Poncho pluie jetable (lot de 50) x3, Parapluie personnalisé événement x43'\n"
 	$system:=$system+"  Section SEARCH: describe what replacement services to search in the catalog, e.g. 'SEARCH: outdoor lounge furniture for 86 guests, comfort seating'\n"
-	$system:=$system+"Respond ONLY with a valid JSON object: {\"explanation\": \"...\", \"actions\": [...]}.'\n"
+	$system:=$system+"Respond ONLY with a valid JSON object: {\"summary\": \"...\", \"actions\": [...]}.'\n"
 	$system:=$system+"Each action has only: actionType, label, hiddenPrompt."
 
 	var $user : Text:="Event ID: "+$event.ID+"\n"
@@ -119,35 +119,12 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $callback : 4D.Functio
 	$user:=$user+"Weather Forecast:\n"
 	$user:=$user+JSON Stringify($weatherData)+"\n\n"
 	$user:=$user+"Booked Services:\n"+$servicesSnippet+"\n"
-	$user:=$user+"Return the weather risk analysis with explanation and 2-4 recommended actions covering diverse strategies."
+	$user:=$user+"Return the weather risk analysis with summary and 2-4 recommended actions covering diverse strategies."
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; $schemaWeather; "weather_actions"; Formula($self._onWeatherChatDone($1; $cb)))
+	This._chat:=This._createChat($system; $schemaWeather; "weather_actions"; Formula($self._onChatDone($1; $cb; "schema_weather_actions.json")))
 	This._chat.prompt($user)
-
-Function _onWeatherChatDone($chatResult : Object; $callback : 4D.Function)
-	If (($chatResult#Null) && (Not($chatResult.terminated)))
-		return 
-	End if 
-	var $result : Object:={success: False; weatherActions: Null; validationError: ""; validation: Null}
-	var $parsed : Object:=This._extractParsedResponse($chatResult)
-	If ($parsed=Null)
-		$result.validationError:="schema_weather_actions: "+This._extractError($chatResult)
-		$callback.call(Null; $result)
-		return 
-	End if 
-	// JSON Validate on the 4D side — post-AI safety net (blog pattern)
-	$result.validation:=This._validateResponse($parsed; "schema_weather_actions.json")
-	If (Not($result.validation.success))
-		$result.validationError:="schema_weather_actions: "+JSON Stringify($result.validation.errors)
-		$callback.call(Null; $result)
-		return 
-	End if 
-	$result.success:=True
-	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))
-	$result.weatherActions:=$parsed
-	$callback.call(Null; $result)
 
 // ─── Scenario 3: Client modification email linked to a known event ──────────
 // The event is already identified — no need to disambiguate.
@@ -184,8 +161,8 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 	$system:=$system+"- For replace: use format 'REMOVE: <labels>\nSEARCH: <what to find>'\n"
 	$system:=$system+"Keep 'label' short (button text, 3-5 words max).\n"
 	$system:=$system+"If the email contains NO actionable service changes, return an empty actions array [].\n"
-	$system:=$system+"Also write a brief 'modificationSummary' (1-2 sentences) describing what the client requested.\n"
-	$system:=$system+"Respond ONLY with a valid JSON object: {\"modificationSummary\": \"...\", \"actions\": [...]}. No markdown."
+	$system:=$system+"Also write a brief 'summary' (1-2 sentences) describing what the client requested.\n"
+	$system:=$system+"Respond ONLY with a valid JSON object: {\"summary\": \"...\", \"actions\": [...]}. No markdown."
 
 	var $user : Text:="From: "+$email.sender+" <"+$email.senderEmail+">"
 	$user:=$user+"\nSubject: "+$email.subject+"\n\n"
@@ -197,30 +174,8 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; $schemaImpacts; "modification_impacts"; Formula($self._onModificationChatDone($1; $cb)))
+	This._chat:=This._createChat($system; $schemaImpacts; "modification_impacts"; Formula($self._onChatDone($1; $cb; "schema_modification_impacts.json")))
 	This._chat.prompt($user)
-
-Function _onModificationChatDone($chatResult : Object; $callback : 4D.Function)
-	If (($chatResult#Null) && (Not($chatResult.terminated)))
-		return 
-	End if 
-	var $result : Object:={success: False; impacts: Null; rawAiResponse: Null; validationError: ""; validation: Null}
-	var $parsed : Object:=This._extractParsedResponse($chatResult)
-	If ($parsed=Null)
-		$result.validationError:="schema_modification_impacts: "+This._extractError($chatResult)
-		$callback.call(Null; $result)
-		return 
-	End if 
-	$result.validation:=This._validateResponse($parsed; "schema_modification_impacts.json")
-	If (Not($result.validation.success))
-		$result.validationError:="schema_modification_impacts: "+JSON Stringify($result.validation.errors)
-		$callback.call(Null; $result)
-		return 
-	End if 
-	$result.success:=True
-	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))
-	$result.impacts:=$parsed
-	$callback.call(Null; $result)
 
 // ─── generateDraftEmail: confirmation email after applying an action ──────────
 // $callback receives {success; emailText; validationError}
@@ -343,28 +298,31 @@ Function reassessActionsAsync($remainingActions : Collection; $appliedLabel : Te
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; $schemaReassess; "reassess_actions"; Formula($self._onReassessChatDone($1; $cb)))
+	This._chat:=This._createChat($system; $schemaReassess; "reassess_actions"; Formula($self._onChatDone($1; $cb; "schema_reassess_actions.json")))
 	This._chat.prompt($user)
 
-Function _onReassessChatDone($chatResult : Object; $callback : 4D.Function)
+// ─── Shared chat completion handler ──────────────────────────────────────────
+// Result: {success; summary; actions; rawAiResponse; validationError; validation}
+Function _onChatDone($chatResult : Object; $callback : 4D.Function; $schemaFile : Text)
 	If (($chatResult#Null) && (Not($chatResult.terminated)))
 		return 
 	End if 
-	var $result : Object:={success: False; actions: []; validationError: ""}
+	var $result : Object:={success: False; summary: ""; actions: []; rawAiResponse: Null; validationError: ""; validation: Null}
 	var $parsed : Object:=This._extractParsedResponse($chatResult)
 	If ($parsed=Null)
-		$result.validationError:="schema_reassess_actions: "+This._extractError($chatResult)
+		$result.validationError:=$schemaFile+": "+This._extractError($chatResult)
 		$callback.call(Null; $result)
 		return 
 	End if 
-	$result.validation:=This._validateResponse($parsed; "schema_reassess_actions.json")
+	$result.validation:=This._validateResponse($parsed; $schemaFile)
 	If (Not($result.validation.success))
-		$result.validationError:="schema_reassess_actions: "+JSON Stringify($result.validation.errors)
+		$result.validationError:=$schemaFile+": "+JSON Stringify($result.validation.errors)
 		$callback.call(Null; $result)
 		return 
 	End if 
 	$result.success:=True
 	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))
+	$result.summary:=String($parsed.summary)
 	$result.actions:=$parsed.actions
 	$callback.call(Null; $result)
 
