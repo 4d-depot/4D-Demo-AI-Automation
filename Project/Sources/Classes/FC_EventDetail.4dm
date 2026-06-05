@@ -470,8 +470,8 @@ Function _onExecutionDone($execResult : Object)
 		If (($execResult.proposedLines#Null) && ($execResult.proposedLines.length>0))
 			var $fl : Object
 			For each ($fl; $execResult.proposedLines)
-				// Strip any venue rental the AI may have added despite instructions
-				If (Position("venue rental"; Lowercase(String($fl.label)))=0)
+				// Strip venue rental ADD lines the AI may have added despite instructions
+				If Not(($fl.delta="add") && (Position("venue rental"; Lowercase(String($fl.label)))>0))
 					$merged.push($fl)
 				End if 
 			End for each 
@@ -490,11 +490,12 @@ Function _onExecutionDone($execResult : Object)
 	
 	// For switch_venue: inject indoor rental once (first round only) — strip AI-added rentals first
 	If ($action._switchVenue=True) && (Not($isFillRound))
-		// Remove any venue rental the AI may have added (catalog price = 0, we inject the correct price)
+		// Remove any venue rental ADD lines the AI may have added (catalog price = 0, we inject the correct price)
+		// Keep REMOVE lines — the AI correctly identified outdoor venue rental to remove
 		var $filtered : Collection:=[]
 		var $rl : Object
 		For each ($rl; $execResult.proposedLines)
-			If (Position("venue rental"; Lowercase(String($rl.label)))=0)
+			If Not(($rl.delta="add") && (Position("venue rental"; Lowercase(String($rl.label)))>0))
 				$filtered.push($rl)
 			End if 
 		End for each 
