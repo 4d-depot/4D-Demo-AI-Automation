@@ -100,13 +100,13 @@ Function get venueOptionIcon() : Text
 	return This.venueOption="indoor" ? "🏢" : "🌳"
 
 Function get emailIcon() : Text
-	If (This.emails.query("emailStatus = :1"; "pending").length>0)
+	If (ds.Email.query("emailStatus = :1 AND event.ID = :2"; "pending"; This.ID).length>0)
 		return "📧"
 	End if 
 	return ""
 
 Function get pendingEmail() : cs.EmailEntity
-	return This.emails.query("emailStatus = :1"; "pending").first()
+	return ds.Email.query("emailStatus = :1 AND event.ID = :2"; "pending"; This.ID).first()
 
 // ─── Weather setup & forecast labels (detail panel) ──────────────────────────
 
