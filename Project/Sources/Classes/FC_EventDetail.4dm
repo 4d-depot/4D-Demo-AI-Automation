@@ -266,12 +266,13 @@ Function _renderEmailTab()
 	End if 
 	
 Function _checkAiReady() : Boolean
-	return cs.UIHelpers.me.checkAliasOrPrompt("chat")
+	return cs.UIHelpers.me.checkAliasOrPrompt("chat-reasoning") && cs.UIHelpers.me.checkAliasOrPrompt("chat-simple")
 	
 Function _runWeatherAnalysis()
 	If (Not(This._checkAiReady()))
 		return 
 	End if 
+	This._logUserAction("Weather Analysis"; "User pressed Weather Analysis button")
 	This.running:=True
 	This._startSpinner()
 	This._startAnalyzeSpinner("btn_ai_analyze"; "⚡ Run AI Weather Analysis")
@@ -297,6 +298,7 @@ Function _runWeatherAnalysis()
 	
 	var $w : Integer:=Current form window
 	var $evtID : Text:=This.event.ID
+	cs.AIWorkerContext.me.storeContractRef($w; This.event.contractRef)
 	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiWeatherWorkerJob($w; $evtID)))
 	
 	// ─── Callbacks async ─────────────────────────────────────────────────────────
@@ -332,6 +334,7 @@ Function _runEmailAnalysis()
 	If (Undefined($pendingEmail) || ($pendingEmail=Null))
 		return 
 	End if 
+	This._logUserAction("Email Analysis"; "User pressed Analyze Email — subject: "+String($pendingEmail.subject))
 	This.running:=True
 	This._startSpinner()
 	This._startAnalyzeSpinner("btn_email_analyze"; "📧 Analyze Email with AI")
@@ -344,6 +347,7 @@ Function _runEmailAnalysis()
 	var $w : Integer:=Current form window
 	var $emailID : Text:=$pendingEmail.ID
 	var $eventID : Text:=String($evt.ID)
+	cs.AIWorkerContext.me.storeContractRef($w; $evt.contractRef)
 	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiEmailWorkerJob($w; $emailID; $eventID)))
 	
 Function _onEmailAnalysisDone($result : Object)
@@ -381,6 +385,7 @@ Function _executeAction($slot : Integer)
 	End if 
 	var $action : Object:=This.aiActions[$actionIdx]
 	var $type : Text:=$action.actionType
+	This._logUserAction("Action Pressed"; String($action.label)+" ["+$type+"]")
 	This._hideConfirmPanel()
 	
 	// switch_venue: update venueOption and rental price directly — no AI tool call needed
@@ -412,11 +417,12 @@ Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 	This._startSpinner()
 	This._setAiStatus("Searching services...")
 	
-	// Event context — use _linesAsCollection() which includes serviceID (needed for removes)
+	// Event context — filter out Venue-category services (venue rental handled server-side)
 	var $w : Integer:=Current form window
-	var $lines : Collection:=This._linesAsCollection()
+	var $lines : Collection:=This._linesAsCollection().query("serviceCategory != :1"; "Venue")
 	var $context : Object:={\
 		windowID: $w; \
+		contractRef: This.event.contractRef; \
 		eventDate: String(This.event.eventDate; "yyyy-MM-dd"); \
 		guestCount: This.event.guestCount; \
 		venueName: This.event.venue.name; \
@@ -427,28 +433,36 @@ Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 	// Store in session singleton — shared with worker process, no JSON round-trip
 	cs.AIWorkerContext.me.storeAction($w; $action)
 	cs.AIWorkerContext.me.storeExistingLines($w; $lines)
+	cs.AIWorkerContext.me.storeContractRef($w; This.event.contractRef)
 	var $ctxJson : Text:=JSON Stringify($context)
 	CALL WORKER("aiAdvisorWorker_"+String($w); Formula(_aiExecuteWorkerJob($w; $hiddenPrompt; $ctxJson)))
 	
-	// ─── switch_venue: build a stepped prompt with budget cap ───
+	// ─── switch_venue: bidirectional, compute venue balance, single-round prompt ───
 Function _executeSwitchVenue($action : Object)
 	var $evt : cs.EventEntity:=This.event
 	var $venue : cs.VenueEntity:=$evt.venue
+	var $isToIndoor : Boolean:=($evt.venueOption="outdoor")
 	
-	var $indoorName : Text:="indoor option"
-	var $indoorRental : Real:=0
-	If (($venue#Null) && ($venue.indoorOption#Null))
-		$indoorName:=String($venue.indoorOption.name)
-		$indoorRental:=Num($venue.indoorOption.rentalPrice)
+	var $oldRentalPrice : Real:=Num($evt.venueRentalPrice)
+	var $newRentalPrice : Real:=0
+	var $newVenueName : Text:=""
+	If ($isToIndoor)
+		$newRentalPrice:=($venue#Null) && ($venue.indoorOption#Null) ? Num($venue.indoorOption.rentalPrice) : 0
+		$newVenueName:=($venue#Null) && ($venue.indoorOption#Null) ? String($venue.indoorOption.name) : "indoor option"
+	Else 
+		$newRentalPrice:=($venue#Null) && ($venue.outdoorOption#Null) ? Num($venue.outdoorOption.rentalPrice) : 0
+		$newVenueName:=($venue#Null) && ($venue.outdoorOption#Null) ? String($venue.outdoorOption.name) : "outdoor option"
 	End if 
 	
-	// Tag the action so confirm step knows to save venueOption + inject indoor rental
 	$action._switchVenue:=True
-	$action._indoorRental:=$indoorRental
-	$action._indoorName:=$indoorName
+	$action._isToIndoor:=$isToIndoor
+	$action._oldRentalPrice:=$oldRentalPrice
+	$action._newRentalPrice:=$newRentalPrice
+	$action._newVenueName:=$newVenueName
+	$action._venueBalance:=$newRentalPrice-$oldRentalPrice
 	
-	var $prompt : Text:=cs.AIAdvisor.new().switchVenuePrompt($evt)
-	This._setAiStatus("Switching to indoor — calculating replacements...")
+	var $prompt : Text:=cs.AIAdvisor.new().switchVenuePrompt($isToIndoor; $newVenueName; $action._venueBalance; $evt.guestCount)
+	This._setAiStatus("Switching venue — calculating changes...")
 	This._executeWithToolCalling($action; $prompt)
 	
 Function _onExecutionDone($execResult : Object)
@@ -468,27 +482,6 @@ Function _onExecutionDone($execResult : Object)
 		return 
 	End if 
 	
-	var $isFillRound : Boolean:=($action._partialLines#Null)
-	
-	// Second round (fill): merge fill lines into partial result from first round
-	If ($isFillRound)
-		var $merged : Collection:=$action._partialLines
-		If (($execResult.proposedLines#Null) && ($execResult.proposedLines.length>0))
-			var $fl : Object
-			For each ($fl; $execResult.proposedLines)
-				// Strip venue rental ADD lines the AI may have added despite instructions
-				If (Not(($fl.delta="add") && (Position("venue rental"; Lowercase(String($fl.label)))>0)))
-					$merged.push($fl)
-				End if 
-			End for each 
-		End if 
-		$execResult.proposedLines:=$merged
-		$execResult.summary:=String($action._firstRoundSummary)
-		OB REMOVE($action; "_partialLines")
-		OB REMOVE($action; "_fillBudget")
-		OB REMOVE($action; "_firstRoundSummary")
-	End if 
-	
 	If (($execResult.proposedLines=Null) || ($execResult.proposedLines.length=0))
 		var $noSvcMsg : Text:="No services proposed."
 		If ($execResult.summary#"")
@@ -498,68 +491,62 @@ Function _onExecutionDone($execResult : Object)
 		return 
 	End if 
 	
-	// For switch_venue: inject indoor rental once (first round only) — strip AI-added rentals first
-	If ($action._switchVenue=True) && (Not($isFillRound))
-		// Remove any venue rental ADD lines the AI may have added (catalog price = 0, we inject the correct price)
-		// Keep REMOVE lines — the AI correctly identified outdoor venue rental to remove
-		var $filtered : Collection:=[]
+	// For switch_venue: server-side venue rental swap + budget cap on AI adds
+	If ($action._switchVenue=True)
+		// Compute freed budget from AI-proposed service removes (venue was filtered from existingLines)
+		var $serviceRemovedTotal : Real:=0
 		var $rl : Object
 		For each ($rl; $execResult.proposedLines)
-			If (Not(($rl.delta="add") && (Position("venue rental"; Lowercase(String($rl.label)))>0)))
-				$filtered.push($rl)
+			If ($rl.delta="remove")
+				$serviceRemovedTotal:=$serviceRemovedTotal+($rl.quantity*$rl.unitPrice)
 			End if 
 		End for each 
-		$execResult.proposedLines:=$filtered
-		// Now inject the real rental at venue-specific price
-		If (Num($action._indoorRental)>0)
-			var $indoorSvc : cs.ServiceEntity:=ds.Service.query("label = :1"; "Indoor venue rental").first()
-			If ($indoorSvc#Null)
+		
+		// Cap AI-added services: freed removes minus venue rental balance
+		var $venueBalance : Real:=Num($action._venueBalance)
+		var $fillBudget : Real:=($serviceRemovedTotal-$venueBalance)*1.1
+		If ($fillBudget>0)
+			var $spentAdd : Real:=0
+			var $cappedLines : Collection:=[]
+			var $al : Object
+			For each ($al; $execResult.proposedLines)
+				If ($al.delta#"add")
+					$cappedLines.push($al)
+				Else 
+					var $lineCost : Real:=Num($al.quantity)*Num($al.unitPrice)
+					If (($spentAdd+$lineCost)<=$fillBudget)
+						$cappedLines.push($al)
+						$spentAdd:=$spentAdd+$lineCost
+					End if 
+				End if 
+			End for each 
+			$execResult.proposedLines:=$cappedLines
+		End if 
+		
+		// Inject server-side venue rental: remove old, add new
+		var $oldVenueLine : cs.EventLineEntity:=This.event.lines.query("serviceCategory = :1"; "Venue").first()
+		If ($oldVenueLine#Null)
+			$execResult.proposedLines.unshift({\
+				delta: "remove"; \
+				serviceID: $oldVenueLine.serviceID; \
+				label: $oldVenueLine.serviceLabel; \
+				quantity: $oldVenueLine.quantity; \
+				unitPrice: $oldVenueLine.unitPrice\
+				})
+		End if 
+		var $newRentalPrice : Real:=Num($action._newRentalPrice)
+		If ($newRentalPrice>0)
+			var $newVenueLabel : Text:=$action._isToIndoor ? "Indoor venue rental" : "Outdoor venue rental"
+			var $newVenueSvc : cs.ServiceEntity:=ds.Service.query("label = :1"; $newVenueLabel).first()
+			If ($newVenueSvc#Null)
 				$execResult.proposedLines.push({\
 					delta: "add"; \
-					serviceID: $indoorSvc.ID; \
-					label: "Indoor venue rental"; \
+					serviceID: $newVenueSvc.ID; \
+					label: $newVenueLabel; \
 					quantity: 1; \
-					unitPrice: Num($action._indoorRental)\
+					unitPrice: $newRentalPrice\
 					})
 			End if 
-		End if 
-	End if 
-	
-	// For switch_venue: if net impact is negative after injecting rental, search for indoor fill services
-	// Only trigger on first round — never recurse into a third round
-	If ($action._switchVenue=True) && (Not($isFillRound))
-		var $netImpact : Real:=0
-		var $il : Object
-		For each ($il; $execResult.proposedLines)
-			Case of 
-				: ($il.delta="add") || ($il.delta="update")
-					$netImpact:=$netImpact+($il.quantity*$il.unitPrice)
-				: ($il.delta="remove")
-					$netImpact:=$netImpact-($il.quantity*$il.unitPrice)
-			End case 
-		End for each 
-		If ($netImpact<0)
-			// Budget to fill: abs(netImpact), max 10% overshoot allowed
-			var $fillBudget : Real:=Abs($netImpact)*1.10
-			This._startSpinner()
-			This._setAiStatus("Searching indoor fill services (budget: "+String(Round($fillBudget; 0))+"€)...")
-			// Store partial result and first-round summary — will be merged when fill round completes
-			$action._fillBudget:=$fillBudget
-			$action._partialLines:=$execResult.proposedLines
-			$action._firstRoundSummary:=$execResult.summary
-			var $w2 : Integer:=Current form window
-			cs.AIWorkerContext.me.storeAction($w2; $action)
-			cs.AIWorkerContext.me.storeExistingLines($w2; This._linesAsCollection())
-			var $fillPrompt : Text:=cs.AIAdvisor.new().fillServicesPrompt(This.event; $fillBudget)
-			var $fillCtx : Object:={\
-				windowID: $w2; \
-				eventDate: String(This.event.eventDate; "yyyy-MM-dd"); \
-				guestCount: This.event.guestCount; \
-				venueName: This.event.venue.name; \
-				existingLines: This._linesAsCollection()\
-				}
-			CALL WORKER("aiAdvisorWorker_"+String($w2); Formula(_aiExecuteWorkerJob($w2; $fillPrompt; JSON Stringify($fillCtx))))
-			return 
 		End if 
 	End if 
 	
@@ -712,14 +699,17 @@ Function btnConfirmActionEventHandler($formEventCode : Integer)
 				return 
 			End if 
 			var $appliedAction : Object:=This._pendingAction
-			
+			This._logUserAction("Confirm Action"; String($appliedAction.label))
 			// If this is a switch_venue action, update venueOption and rental price on the event
 			If (($appliedAction.actionType="switch_venue") || ($appliedAction._switchVenue=True))
 				var $evt : cs.EventEntity:=This.event
-				$evt.venueOption:="indoor"
-				var $venue : cs.VenueEntity:=$evt.venue
-				If (($venue#Null) && ($venue.indoorOption#Null))
-					$evt.venueRentalPrice:=Num($venue.indoorOption.rentalPrice)
+				If ($appliedAction._isToIndoor=True)
+					$evt.venueOption:="indoor"
+				Else 
+					$evt.venueOption:="outdoor"
+				End if 
+				If ($appliedAction._newRentalPrice#Null)
+					$evt.venueRentalPrice:=Num($appliedAction._newRentalPrice)
 				End if 
 				$evt.save()
 			End if 
@@ -785,6 +775,8 @@ Function _onReassessmentDone($result : Object)
 Function btnCancelConfirmEventHandler($formEventCode : Integer)
 	Case of 
 		: ($formEventCode=On Clicked)
+			var $cancelLabel : Text:=(This._pendingAction#Null) ? String(This._pendingAction.label) : ""
+			This._logUserAction("Cancel Action"; $cancelLabel)
 			This._hideConfirmPanel()
 			This._setAiStatus("Action cancelled.")
 	End case 
@@ -796,6 +788,7 @@ Function btnDraftEmailEventHandler($formEventCode : Integer)
 				This.confirmEmailDraft:="(No proposed changes to draft an email for.)"
 				return 
 			End if 
+			This._logUserAction("Draft Email Requested"; String(This._pendingAction ? This._pendingAction.label : ""))
 			This._setAiStatus("✉ Drafting confirmation email...")
 			var $self : Object:=This
 			var $advisor : cs.AIAdvisor:=cs.AIAdvisor.new()
@@ -824,6 +817,7 @@ Function _onDraftEmailDone($result : Object)
 		return 
 	End if 
 	This.confirmEmailDraft:=$result.emailText
+	This._logUserAction("Draft Email"; $result.emailText)
 	This._setAiStatus("✉ Draft email ready")
 	This._showValidationBadge("schema_draft_email.json"; $result.rawAiResponse)
 	
@@ -936,4 +930,10 @@ Function _applyReadOnlyIfDone()
 	If ($isDone)
 		This._setAiStatus("This event is "+This.event.status+" and cannot be modified.")
 	End if 
+
+Function _logUserAction($tag : Text; $detail : Text)
+	var $ref : Text:=String(This.event.contractRef)
+	If ($ref#"")
+		cs.EventLogger.me.logBlock($ref; "USER"; $tag; $detail)
+	End if  
 	

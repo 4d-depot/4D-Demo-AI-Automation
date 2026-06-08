@@ -6,20 +6,24 @@
 
 property _client : Object
 property _model : Text
+property _modelSimple : Text
 property _chat : cs.AIKit.OpenAIChatHelper
 property _windowID : Integer
+property _contractRef : Text
 
 Class constructor()
-	This._model:="chat"  // model alias defined in AIProviders.json
+	This._model:="chat-reasoning"
+	This._modelSimple:="chat-simple"
+	This._contractRef:=""
+	This._windowID:=0
 	This._client:=cs.AIKit.OpenAI.new()
 
 // ─── Factory: creates a configured Chat Helper ─────────────────────────────────
-// Options are passed to chat.create() for correct initialization
-Function _createChat($systemPrompt : Text; $schema : Object; $schemaName : Text; $formula : 4D.Function) : cs.AIKit.OpenAIChatHelper
+// $useSimple: True = chat-simple (gpt-4o); False = chat-reasoning (o4-mini)
+Function _createChat($systemPrompt : Text; $schema : Object; $schemaName : Text; $formula : 4D.Function; $useSimple : Boolean) : cs.AIKit.OpenAIChatHelper
 	var $options:=cs.AIKit.OpenAIChatCompletionsParameters.new()
-	$options.model:=This._model
-	$options.temperature:=0.2
-	$options.max_completion_tokens:=2048
+	$options.model:=$useSimple ? This._modelSimple : This._model
+	$options.max_completion_tokens:=16000
 	$options.formula:=$formula
 	If ($schema#Null)
 		$options.response_format:={type: "json_schema"; json_schema: { \
@@ -29,6 +33,22 @@ Function _createChat($systemPrompt : Text; $schema : Object; $schemaName : Text;
 		}}
 	End if 
 	return This._client.chat.create($systemPrompt; $options)
+
+// ─── Logging helpers ──────────────────────────────────────────────────────────
+Function _logPrompts($callType : Text; $system : Text; $user : Text)
+	If (This._contractRef#"")
+		var $logger : cs.EventLogger:=cs.EventLogger.me
+		$logger.logBlock(This._contractRef; "AI SYS"; $callType+" — SYSTEM PROMPT"; $system)
+		$logger.logBlock(This._contractRef; "AI USER"; $callType+" — USER PROMPT"; $user)
+	End if 
+
+Function _logResponse($callType : Text; $chatResult : Object)
+	If (This._contractRef#"")
+		var $logger : cs.EventLogger:=cs.EventLogger.me
+		var $finish : Text:=($chatResult#Null) && ($chatResult.choice#Null) ? String($chatResult.choice.finish_reason) : "null"
+		var $content : Text:=($chatResult#Null) && ($chatResult.choice#Null) ? String($chatResult.choice.message.content) : ""
+		$logger.logBlock(This._contractRef; "AI RESPONSE"; $callType+" (finish: "+$finish+")"; $content)
+	End if 
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ─── ASYNC API (Chat Helper + formula) ────────────────────────────────────────
@@ -124,7 +144,8 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $callback : 4D.Functio
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; $schemaWeather; "weather_actions"; Formula($self._onChatDone($1; $cb; "schema_weather_actions.json")))
+	This._logPrompts("analyzeWeatherRisk"; $system; $user)
+	This._chat:=This._createChat($system; $schemaWeather; "weather_actions"; Formula($self._onChatDone($1; $cb; "schema_weather_actions.json")); True)
 	This._chat.prompt($user)
 
 // ─── Scenario 3: Client modification email linked to a known event ──────────
@@ -180,7 +201,8 @@ Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntit
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; $schemaImpacts; "modification_impacts"; Formula($self._onChatDone($1; $cb; "schema_modification_impacts.json")))
+	This._logPrompts("analyzeLinkedEmail"; $system; $user)
+	This._chat:=This._createChat($system; $schemaImpacts; "modification_impacts"; Formula($self._onChatDone($1; $cb; "schema_modification_impacts.json")); True)
 	This._chat.prompt($user)
 
 // ─── generateDraftEmail: confirmation email after applying an action ──────────
@@ -239,7 +261,8 @@ Function generateDraftEmailAsync($event : cs.EventEntity; $action : Object; $pro
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; $schemaDraft; "draft_email"; Formula($self._onGenerateDraftEmailDone($1; $cb)))
+	This._logPrompts("generateDraftEmail"; $system; $user)
+	This._chat:=This._createChat($system; $schemaDraft; "draft_email"; Formula($self._onGenerateDraftEmailDone($1; $cb)); True)
 	This._chat.prompt($user)
 
 Function _onGenerateDraftEmailDone($chatResult : Object; $callback : 4D.Function)
@@ -262,6 +285,7 @@ Function _onGenerateDraftEmailDone($chatResult : Object; $callback : 4D.Function
 	$result.success:=True
 	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))
 	$result.emailText:=$parsed.emailText
+	This._logResponse("generateDraftEmail"; $chatResult)
 	$callback.call(Null; $result)
 
 // ─── draft_reply: AI generates email text for client ─────────────────────────
@@ -304,7 +328,8 @@ Function reassessActionsAsync($remainingActions : Collection; $appliedLabel : Te
 
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
-	This._chat:=This._createChat($system; $schemaReassess; "reassess_actions"; Formula($self._onChatDone($1; $cb; "schema_reassess_actions.json")))
+	This._logPrompts("reassessActions"; $system; $user)
+	This._chat:=This._createChat($system; $schemaReassess; "reassess_actions"; Formula($self._onChatDone($1; $cb; "schema_reassess_actions.json")); False)
 	This._chat.prompt($user)
 
 // ─── Shared chat completion handler ──────────────────────────────────────────
@@ -330,62 +355,58 @@ Function _onChatDone($chatResult : Object; $callback : 4D.Function; $schemaFile 
 	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))
 	$result.summary:=String($parsed.summary)
 	$result.actions:=$parsed.actions
+	This._logResponse($schemaFile; $chatResult)
 	$callback.call(Null; $result)
 
 // ─── Step 2: Execution with tool calling (ChatHelper + registerTools) ───────────
 // $callback receives {success; proposedLines; summary; error}
 Function executeActionAsync($hiddenPrompt : Text; $context : Object; $callback : 4D.Function)
-	var $system : Text:="You are an event service execution assistant for Event Pulse.\n"
-	$system:=$system+"Delta rules:\n"
-	$system:=$system+"- 'add': a new service found via search_services tool\n"
-	$system:=$system+"- 'remove': an EXISTING service — take serviceID directly from the existing services list, do NOT search\n"
-	$system:=$system+"- 'update': change the quantity of an existing service — take serviceID from existing list, do NOT search\n\n"
-	$system:=$system+"IMPORTANT action type rules:\n"
-	$system:=$system+"- For 'remove_services' tasks: do NOT call search_services. Find the matching service(s) in the existing services list by label, emit 'remove' delta lines. Do not return empty — if client asked to remove something, find it in the list.\n"
-	$system:=$system+"- For 'add_services' tasks: use search_services to find the service, then emit 'add' lines.\n"
-	$system:=$system+"- For 'replace_services' tasks: emit BOTH 'remove' lines (from REMOVE: section, no search needed) AND 'add' lines (from SEARCH: section via search_services).\n"
-	$system:=$system+"- For quantity adjustments on an EXISTING service (e.g. 'update Prestige brunch to 30 guests'): emit a single 'update' delta line with the serviceID and new quantity. Do NOT remove+add the same service.\n"
-	$system:=$system+"NEVER add a service that is already in the existing list with the same label or serviceID.\n"
-	$system:=$system+"MEAL RULE: if adding an upgraded meal and an existing meal service is already booked, emit a 'remove' for the existing one first.\n"
-	$system:=$system+"If search_services returns no results for an 'add' task: return empty proposedLines.\n"
-	$system:=$system+"For 'remove' lines: the serviceID MUST be the [ID:xxx] value from the existing services list.\n"
-	$system:=$system+"Summary: 1-2 sentences, use 'We propose...' — not past tense.\n"
-	$system:=$system+"Do NOT include label, category, unitPrice — resolved server-side.\n"
+	var $system : Text:="Event service execution assistant for Event Pulse.\n"
+	$system:=$system+"Delta rules: 'add' = call search_services; 'remove'/'update' = use [ID:xxx] from existing list, no search.\n"
+	$system:=$system+"Never duplicate an existing service. If upgrading a meal, remove the existing one first.\n"
+	$system:=$system+"Summary: 1-2 sentences, 'We propose...'. Do NOT output label/category/unitPrice.\n"
+
+	// Build user message: event context + existing services (event-specific) + action prompt
+	var $userMsg : Text:=""
 	If ($context.eventDate#Null)
-		$system:=$system+"\nEvent: "+$context.eventDate
+		$userMsg:=$userMsg+"Event: "+$context.eventDate
 		If ($context.guestCount#Null)
-			$system:=$system+", "+String($context.guestCount)+" guests"
+			$userMsg:=$userMsg+", "+String($context.guestCount)+" guests"
 		End if 
 		If ($context.venueName#Null)
-			$system:=$system+", "+$context.venueName
+			$userMsg:=$userMsg+", "+$context.venueName
 		End if 
-		$system:=$system+"\n"
+		$userMsg:=$userMsg+"\n"
 	End if 
 	If (($context.existingLines#Null) && ($context.existingLines.length>0))
-		$system:=$system+"Existing services:\n"
+		$userMsg:=$userMsg+"Existing services:\n"
 		var $el : Object
 		For each ($el; $context.existingLines)
-			$system:=$system+"- [ID:"+String($el.serviceID)+"] "+$el.serviceLabel+" × "+String($el.quantity)+" @ "+String($el.unitPrice)+"€\n"
+			$userMsg:=$userMsg+"- [ID:"+String($el.serviceID)+"] "+$el.serviceLabel+" × "+String($el.quantity)+" @ "+String($el.unitPrice)+"€\n"
 		End for each 
+		$userMsg:=$userMsg+"\n"
 	End if 
+	$userMsg:=$userMsg+$hiddenPrompt
 
 	var $execSchema : Object:=This._loadSchema("schema_action_execution.json")
 	var $self : Object:=This
 	var $cb : 4D.Function:=$callback
 	This._windowID:=($context.windowID#Null) ? $context.windowID : 0
-	This._chat:=This._createChat($system; $execSchema; "action_execution"; Formula($self._onExecutionChatDone($1; $cb)))
-	var $searchTool : cs.Tool_SearchServices:=cs.Tool_SearchServices.new()
+	This._chat:=This._createChat($system; $execSchema; "action_execution"; Formula($self._onExecutionChatDone($1; $cb)); False)
+	var $searchTool : cs.Tool_SearchServices:=cs.Tool_SearchServices.new(This._contractRef)
 	var $td : Object
 	For each ($td; $searchTool.tools)
 		$td.handler:=$searchTool
 	End for each 
 	This._chat.registerTools($searchTool.tools)
-	This._chat.prompt($hiddenPrompt)
+	This._logPrompts("executeAction"; $system; $userMsg)
+	This._chat.prompt($userMsg)
 
 Function _onExecutionChatDone($chatResult : Object; $callback : 4D.Function)
 	If (($chatResult#Null) && (Not($chatResult.terminated)))
 		return 
 	End if 
+	This._logResponse("executeAction"; $chatResult)
 	var $result : Object:={success: False; proposedLines: Null; summary: ""; error: ""; validation: Null}
 	var $parsed : Object:=This._extractParsedResponse($chatResult)
 
@@ -507,41 +528,21 @@ Function _loadSchema($filename : Text) : Object
 // ─── Prompt builders (called from FC_EventDetail before tool-calling dispatch) ──
 
 // Builds the switch_venue execution prompt for _executeSwitchVenue
-Function switchVenuePrompt($event : cs.EventEntity) : Text
-	var $venue : cs.VenueEntity:=$event.venue
-	var $indoorName : Text:=($venue#Null) && ($venue.indoorOption#Null) ? String($venue.indoorOption.name) : "indoor option"
-	var $indoorRental : Real:=($venue#Null) && ($venue.indoorOption#Null) ? Num($venue.indoorOption.rentalPrice) : 0
-	var $guestCount : Integer:=$event.guestCount
-	
-	var $allServices : Text:=""
-	var $removedTotal : Real:=0
-	var $line : cs.EventLineEntity
-	For each ($line; $event.lines)
-		$allServices:=$allServices+"- [ID:"+String($line.serviceID)+"] "+$line.serviceLabel+" x"+String($line.quantity)+" @ "+String($line.unitPrice)+"€\n"
-		$removedTotal:=$removedTotal+($line.quantity*$line.unitPrice)
-	End for each 
-	
-	var $maxBudget : Real:=($removedTotal-$indoorRental)*1.10
-	
-	var $prompt : Text:="Switch this outdoor event to the indoor venue '"+$indoorName+"' (rental: "+String($indoorRental)+"€).\n\n"
-	$prompt:=$prompt+"Current booked services:\n"+$allServices+"\n"
-	$prompt:=$prompt+"Step 1 — REMOVE: Identify and remove all outdoor-specific services (tents, outdoor structures, outdoor sound/lighting, rain gear, patio heaters, outdoor venue rental, outdoor power/generators, etc.). Use [ID:xxx] from the list above.\n\n"
-	$prompt:=$prompt+"Step 2 — Indoor rental: The indoor venue rental ("+String($indoorRental)+"€) will be added automatically. Do NOT search for it.\n\n"
-	$prompt:=$prompt+"Step 3 — COMPUTE: Calculate freed_budget = SUM(removed services cost) - "+String($indoorRental)+"€ (indoor rental).\n\n"
-	$prompt:=$prompt+"Step 4 — ADD indoor services (ONLY if freed_budget > 0):\n"
-	$prompt:=$prompt+"  Search for indoor-compatible services (sound system, lighting, decor, comfort) appropriate for "+String($guestCount)+" guests.\n"
-	$prompt:=$prompt+"  STRICT BUDGET: total cost of ADD lines must NOT exceed freed_budget × 1.10 (max budget: "+String($maxBudget)+"€).\n"
-	$prompt:=$prompt+"  Stop searching once budget is reached. Only add what is genuinely useful.\n"
-	$prompt:=$prompt+"  If freed_budget <= 0: skip this step entirely.\n"
-	return $prompt
+// Builds the switch_venue prompt — bidirectional (outdoor→indoor or indoor→outdoor)
+// $venueBalance = newRentalPrice - oldRentalPrice (handled server-side, not in existing services list)
+Function switchVenuePrompt($isToIndoor : Boolean; $newVenueName : Text; $venueBalance : Real; $guestCount : Integer) : Text
+	var $direction : Text:=$isToIndoor ? "indoor" : "outdoor"
+	var $removeHints : Text:=$isToIndoor ? "tents, outdoor structures, outdoor AV/sound/lighting, patio heaters, generators, outdoor venue rental" : "indoor AV, room draping, indoor lighting, lounge furniture, indoor comfort equipment"
+	var $addHints : Text:=$isToIndoor ? "indoor AV/sound, stage lighting, room decor/draping, entertainment, catering upgrades" : "outdoor tents/structures, outdoor sound/AV, outdoor lighting, patio heaters, outdoor comfort"
 
-// Builds the fill services prompt for the second round of switch_venue
-Function fillServicesPrompt($event : cs.EventEntity; $budget : Real) : Text
-	var $venue : cs.VenueEntity:=$event.venue
-	var $indoorName : Text:=($venue#Null) && ($venue.indoorOption#Null) ? String($venue.indoorOption.name) : "indoor venue"
-	var $prompt : Text:="Find indoor-compatible services to add for an event with "+String($event.guestCount)+" guests at '"+$indoorName+"'.\n"
-	$prompt:=$prompt+"STRICT BUDGET: total cost of ADD lines must NOT exceed "+String($budget)+"€.\n"
-	$prompt:=$prompt+"Search for services like: indoor sound, lighting/decor, comfort, entertainment. Stop once budget is reached.\n"
-	$prompt:=$prompt+"Do NOT add venue rental. Do NOT add services already being removed or already in the existing services list."
+	var $prompt : Text:="Switch to '"+$newVenueName+"' ("+$direction+"). Venue rental change: "
+	If ($venueBalance>=0)
+		$prompt:=$prompt+"+"+String(Round($venueBalance; 0))+"€ (handled server-side).\n\n"
+	Else 
+		$prompt:=$prompt+String(Round($venueBalance; 0))+"€ (handled server-side).\n\n"
+	End if 
+	$prompt:=$prompt+"1. REMOVE all "+($isToIndoor ? "outdoor" : "indoor")+"-specific services from the list above: "/*+$removeHints*/+".\n"
+	$prompt:=$prompt+"2. SEARCH "+$direction+" replacements: "+$addHints+".\n"
+	$prompt:=$prompt+"   Budget for adds ≈ freed cost from removes − "+String(Round($venueBalance; 0))+"€.\n"
+	$prompt:=$prompt+"   Use quantity=1 for fixed-price services; "+String($guestCount)+" guests only for per-guest services."
 	return $prompt
-

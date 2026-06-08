@@ -6,10 +6,12 @@
 
 property _actionsJson : Object
 property _linesJson : Object
+property _contractRefs : Object
 
 session singleton Class constructor()
 	This._actionsJson:=New shared object()
 	This._linesJson:=New shared object()
+	This._contractRefs:=New shared object()
 
 Function storeAction($windowID : Integer; $action : Object)
 	Use (This._actionsJson)
@@ -36,3 +38,11 @@ Function clearAction($windowID : Integer)
 	Use (This._linesJson)
 		OB REMOVE(This._linesJson; String($windowID))
 	End use 
+
+Function storeContractRef($windowID : Integer; $contractRef : Text)
+	Use (This._contractRefs)
+		This._contractRefs[String($windowID)]:=$contractRef
+	End use 
+
+Function getContractRef($windowID : Integer) : Text
+	return String(This._contractRefs[String($windowID)])

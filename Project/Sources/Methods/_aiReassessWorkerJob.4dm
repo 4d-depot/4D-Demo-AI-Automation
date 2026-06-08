@@ -5,6 +5,7 @@ var $remaining : Collection:=JSON Parse($remainingJson)
 var $event : cs.EventEntity:=ds.Event.query("ID = :1"; $eventID).first()
 
 var $advisor : cs.AIAdvisor:=cs.AIAdvisor.new()
+$advisor._contractRef:=cs.AIWorkerContext.me.getContractRef($window)
 var $w : Integer:=$window
 
 $advisor.reassessActionsAsync($remaining; $appliedLabel; $event; \

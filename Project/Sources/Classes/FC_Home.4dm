@@ -62,9 +62,10 @@ Function _onLoad()
 	This._refreshAiStatus()
 
 Function _refreshAiStatus()
-	var $chatOk : Boolean:=cs.UIHelpers.me.isAliasConfigured("chat")
+	var $reasoningOk : Boolean:=cs.UIHelpers.me.isAliasConfigured("chat-reasoning")
+	var $simpleOk : Boolean:=cs.UIHelpers.me.isAliasConfigured("chat-simple")
 	var $embedOk : Boolean:=cs.UIHelpers.me.isAliasConfigured("embedding")
-	var $allOk : Boolean:=$chatOk && $embedOk
+	var $allOk : Boolean:=$reasoningOk && $simpleOk && $embedOk
 	
 	If ($allOk)
 		OBJECT SET VISIBLE(*; "btn_ai_connected"; True)
@@ -74,8 +75,11 @@ Function _refreshAiStatus()
 		OBJECT SET VISIBLE(*; "btn_ai_connected"; False)
 		OBJECT SET VISIBLE(*; "btn_ai_setup"; True)
 		var $missing : Collection:=New collection
-		If (Not($chatOk))
-			$missing.push("'chat'")
+		If (Not($reasoningOk))
+			$missing.push("'chat-reasoning'")
+		End if 
+		If (Not($simpleOk))
+			$missing.push("'chat-simple'")
 		End if 
 		If (Not($embedOk))
 			$missing.push("'embedding'")
@@ -89,11 +93,13 @@ Function _refreshAiStatus()
 	
 	var $providers : Object:=cs.AIKit.OpenAIProviders.new()
 	var $aliases : Collection:=$providers.modelAliases()
-	var $chatEntry : Object:=$aliases.query("name = :1"; "chat").first()
+	var $reasoningEntry : Object:=$aliases.query("name = :1"; "chat-reasoning").first()
+	var $simpleEntry : Object:=$aliases.query("name = :1"; "chat-simple").first()
 	var $embeddingEntry : Object:=$aliases.query("name = :1"; "embedding").first()
-	var $chatLabel : Text:=$chatOk ? $chatEntry.model : "not configured"
+	var $reasoningLabel : Text:=$reasoningOk ? $reasoningEntry.model : "not configured"
+	var $simpleLabel : Text:=$simpleOk ? $simpleEntry.model : "not configured"
 	var $embedLabel : Text:=$embedOk ? $embeddingEntry.model : "not configured"
-	OBJECT SET TITLE(*; "text_footer"; "Powered by "+$chatLabel+" (chat) · "+$embedLabel+" (embedding) · Open-Meteo")
+	OBJECT SET TITLE(*; "text_footer"; "Reasoning: "+$reasoningLabel+" · Simple: "+$simpleLabel+" · Embed: "+$embedLabel+" · Open-Meteo")
 
 Function _openEvents()
 	var $w : Integer:=Open form window("EventList"; Plain form window)

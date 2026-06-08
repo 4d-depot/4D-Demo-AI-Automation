@@ -50,6 +50,15 @@ Function resetAll()
 	// Recalculate embeddings (forced because services are new)
 	This._buildServiceEmbeddings()
 
+	// Clear event logs
+	var $logsFolder : 4D.Folder:=Folder(fk logs folder)
+	If ($logsFolder.exists)
+		var $logFile : 4D.File
+		For each ($logFile; $logsFolder.files())
+			$logFile.delete()
+		End for each 
+	End if 
+
 // ─── Clear only: empties everything without re-importing ────────────────────────
 Function clearAll()
 	ds.EventLine.all().drop()

@@ -1,379 +1,379 @@
 {
-  "rightMargin": 0,
-  "bottomMargin": 0,
-  "windowSizingX": "fixed",
-  "windowSizingY": "fixed",
-  "windowMinWidth": 1280,
-  "windowMinHeight": 640,
-  "pages": [
-    null,
-    {
-      "objects": {
-        "rect_bg": {
-          "type": "rectangle",
-          "left": 0,
-          "top": 0,
-          "width": 1280,
-          "height": 640,
-          "class": "bgForm"
-        },
-        "rect_header": {
-          "type": "rectangle",
-          "left": 0,
-          "top": 0,
-          "width": 1280,
-          "height": 64,
-          "class": "bgHeader"
-        },
-        "text_title": {
-          "type": "text",
-          "left": 24,
-          "top": 18,
-          "width": 200,
-          "height": 28,
-          "text": "📅 Events",
-          "class": "textTitle"
-        },
-        "rect_filter_bar": {
-          "type": "rectangle",
-          "left": 0,
-          "top": 64,
-          "width": 1280,
-          "height": 52,
-          "class": "bgToolbar"
-        },
-        "text_event_count": {
-          "type": "text",
-          "left": 1080,
-          "top": 80,
-          "width": 180,
-          "height": 20,
-          "text": "150 events",
-          "textAlign": "right",
-          "class": "textMuted"
-        },
-        "listbox_events": {
-          "type": "listbox",
-          "left": 0,
-          "top": 116,
-          "width": 1280,
-          "height": 524,
-          "listboxType": "collection",
-          "dataSource": "Form:C1466.events",
-          "headerHeight": "30px",
-          "showHeaders": true,
-          "rowHeight": "52px",
-          "events": [
-            "onClick",
-            "onDoubleClick"
-          ],
-          "currentItemSource": "Form:C1466.currentEvent",
-          "verticalAlign": "middle",
-          "class": "listbox",
-          "columns": [
-            {
-              "header": {
-                "text": "",
-                "name": "Entête1"
-              },
-              "name": "col_weather",
-              "width": 30,
-              "fontSize": 16,
-              "textAlign": "center",
-              "verticalAlign": "middle",
-              "footer": {
-                "name": "Pied1"
-              },
-              "dataSource": "This.weatherIcon"
-            },
-            {
-              "header": {
-                "text": "",
-                "name": "Entête2"
-              },
-              "name": "col_venue_option",
-              "width": 28,
-              "fontSize": 14,
-              "textAlign": "center",
-              "verticalAlign": "middle",
-              "footer": {
-                "name": "Pied2"
-              },
-              "dataSource": "This.venueOptionIcon"
-            },
-            {
-              "header": {
-                "text": "",
-                "name": "Entête3"
-              },
-              "name": "col_email",
-              "width": 28,
-              "fontSize": 14,
-              "textAlign": "center",
-              "verticalAlign": "middle",
-              "footer": {
-                "name": "Pied3"
-              },
-              "dataSource": "This.emailIcon"
-            },
-            {
-              "header": {
-                "text": "DATE",
-                "name": "Entête4"
-              },
-              "name": "col_date",
-              "width": 95,
-              "fontSize": 12,
-              "verticalAlign": "middle",
-              "class": "colDefault",
-              "footer": {
-                "name": "Pied4"
-              },
-              "dataSource": "This.eventDateStr"
-            },
-            {
-              "header": {
-                "text": "CLIENT",
-                "name": "Entête5"
-              },
-              "name": "col_client",
-              "width": 210,
-              "fontSize": 13,
-              "verticalAlign": "middle",
-              "class": "colPrimary",
-              "footer": {
-                "name": "Pied5"
-              },
-              "dataSource": "This.clientName"
-            },
-            {
-              "header": {
-                "text": "VENUE",
-                "name": "Entête6"
-              },
-              "name": "col_venue",
-              "width": 300,
-              "fontSize": 12,
-              "verticalAlign": "middle",
-              "class": "colDefault",
-              "footer": {
-                "name": "Pied6"
-              },
-              "dataSource": "This.venueName"
-            },
-            {
-              "header": {
-                "text": "CITY",
-                "name": "Entête7"
-              },
-              "name": "col_city",
-              "width": 110,
-              "fontSize": 12,
-              "verticalAlign": "middle",
-              "class": "colMuted",
-              "footer": {
-                "name": "Pied7"
-              },
-              "dataSource": "This.venueCity"
-            },
-            {
-              "header": {
-                "text": "GUESTS",
-                "name": "Entête8"
-              },
-              "name": "col_guests",
-              "width": 65,
-              "fontSize": 12,
-              "textAlign": "right",
-              "verticalAlign": "middle",
-              "class": "colDefault",
-              "footer": {
-                "name": "Pied8"
-              },
-              "dataSource": "This.guestCountStr"
-            },
-            {
-              "header": {
-                "text": "PLANNED",
-                "name": "Entête9"
-              },
-              "name": "col_planned",
-              "width": 80,
-              "fontSize": 13,
-              "textAlign": "center",
-              "verticalAlign": "middle",
-              "class": "colDefault",
-              "footer": {
-                "name": "Pied9"
-              },
-              "dataSource": "This.plannedWeather"
-            },
-            {
-              "header": {
-                "text": "FORECAST",
-                "name": "Entête10"
-              },
-              "name": "col_forecast",
-              "width": 90,
-              "fontSize": 13,
-              "textAlign": "center",
-              "verticalAlign": "middle",
-              "class": "colDefault",
-              "footer": {
-                "name": "Pied10"
-              },
-              "dataSource": "This.forecastWeather"
-            },
-            {
-              "header": {
-                "text": "STATUS",
-                "name": "Entête11"
-              },
-              "name": "col_status",
-              "width": 90,
-              "fontSize": 12,
-              "textAlign": "center",
-              "verticalAlign": "middle",
-              "class": "colPrimary",
-              "footer": {
-                "name": "Pied11"
-              },
-              "dataSource": "This.statusBadge"
-            },
-            {
-              "header": {
-                "text": "CONTRACT",
-                "name": "Entête12"
-              },
-              "name": "col_ref",
-              "width": 130,
-              "fontSize": 11,
-              "verticalAlign": "middle",
-              "class": "colMuted",
-              "footer": {
-                "name": "Pied12"
-              },
-              "dataSource": "This.contractRef"
-            }
-          ]
-        },
-        "btn_refresh": {
-          "type": "button",
-          "left": 1080,
-          "top": 16,
-          "width": 160,
-          "height": 34,
-          "text": "🌤 Refresh Weather",
-          "events": [
-            "onClick"
-          ],
-          "focusable": true,
-          "method": "objbtn_refresh.4dm",
-          "class": "btnRefresh",
-          "style": "flat"
-        },
-        "btn_filter_all": {
-          "type": "button",
-          "left": 24,
-          "top": 76,
-          "width": 100,
-          "height": 28,
-          "text": "All",
-          "events": [
-            "onClick"
-          ],
-          "focusable": true,
-          "method": "objbtn_filter_all.4dm",
-          "class": "btnFilterActive",
-          "style": "flat"
-        },
-        "btn_filter_confirmed": {
-          "type": "button",
-          "left": 132,
-          "top": 76,
-          "width": 130,
-          "height": 28,
-          "text": "Confirmed",
-          "events": [
-            "onClick"
-          ],
-          "focusable": true,
-          "method": "objbtn_filter_confirmed.4dm",
-          "class": "btnFilterInactive",
-          "style": "flat"
-        },
-        "btn_filter_quote": {
-          "type": "button",
-          "left": 270,
-          "top": 76,
-          "width": 110,
-          "height": 28,
-          "text": "Quotes",
-          "events": [
-            "onClick"
-          ],
-          "focusable": true,
-          "method": "objbtn_filter_quote.4dm",
-          "class": "btnFilterInactive",
-          "style": "flat"
-        },
-        "btn_filter_weather": {
-          "type": "button",
-          "left": 388,
-          "top": 76,
-          "width": 150,
-          "height": 28,
-          "text": "⚠ Weather Alerts",
-          "events": [
-            "onClick"
-          ],
-          "focusable": true,
-          "method": "objbtn_filter_weather.4dm",
-          "class": "btnFilterInactive",
-          "style": "flat"
-        },
-        "btn_filter_email": {
-          "type": "button",
-          "left": 546,
-          "top": 76,
-          "width": 130,
-          "height": 28,
-          "text": "📧 Email",
-          "events": [
-            "onClick"
-          ],
-          "focusable": true,
-          "method": "objbtn_filter_email.4dm",
-          "class": "btnFilterInactive",
-          "style": "flat"
-        },
-        "btn_toggle_past": {
-          "type": "button",
-          "left": 684,
-          "top": 76,
-          "width": 110,
-          "height": 28,
-          "text": "Show Past",
-          "events": [
-            "onClick"
-          ],
-          "focusable": true,
-          "method": "objbtn_toggle_past.4dm",
-          "class": "btnFilterInactive",
-          "style": "flat"
-        }
-      }
-    }
-  ],
-  "events": [
-    "onLoad",
-    "onClick",
-    "onDoubleClick"
-  ],
-  "formClass": "FC_EventList",
-  "method": "method.4dm",
-  "$4d": {
-    "version": "1",
-    "kind": "form"
-  }
+	"rightMargin": 0,
+	"bottomMargin": 0,
+	"windowSizingX": "fixed",
+	"windowSizingY": "fixed",
+	"windowMinWidth": 1280,
+	"windowMinHeight": 640,
+	"pages": [
+		null,
+		{
+			"objects": {
+				"rect_bg": {
+					"type": "rectangle",
+					"left": 0,
+					"top": 0,
+					"width": 1280,
+					"height": 640,
+					"class": "bgForm"
+				},
+				"rect_header": {
+					"type": "rectangle",
+					"left": 0,
+					"top": 0,
+					"width": 1280,
+					"height": 64,
+					"class": "bgHeader"
+				},
+				"text_title": {
+					"type": "text",
+					"left": 24,
+					"top": 18,
+					"width": 200,
+					"height": 28,
+					"text": "📅 Events",
+					"class": "textTitle"
+				},
+				"rect_filter_bar": {
+					"type": "rectangle",
+					"left": 0,
+					"top": 64,
+					"width": 1280,
+					"height": 52,
+					"class": "bgToolbar"
+				},
+				"text_event_count": {
+					"type": "text",
+					"left": 1080,
+					"top": 80,
+					"width": 180,
+					"height": 20,
+					"text": "150 events",
+					"textAlign": "right",
+					"class": "textMuted"
+				},
+				"listbox_events": {
+					"type": "listbox",
+					"left": 0,
+					"top": 116,
+					"width": 1280,
+					"height": 524,
+					"listboxType": "collection",
+					"dataSource": "Form:C1466.events",
+					"headerHeight": "30px",
+					"showHeaders": true,
+					"rowHeight": "52px",
+					"events": [
+						"onClick",
+						"onDoubleClick"
+					],
+					"currentItemSource": "Form:C1466.currentEvent",
+					"verticalAlign": "middle",
+					"class": "listbox",
+					"columns": [
+						{
+							"header": {
+								"text": "",
+								"name": "Entête1"
+							},
+							"name": "col_weather",
+							"width": 30,
+							"fontSize": 16,
+							"textAlign": "center",
+							"verticalAlign": "middle",
+							"footer": {
+								"name": "Pied1"
+							},
+							"dataSource": "This.weatherIcon"
+						},
+						{
+							"header": {
+								"text": "",
+								"name": "Entête3"
+							},
+							"name": "col_email",
+							"width": 28,
+							"fontSize": 14,
+							"textAlign": "center",
+							"verticalAlign": "middle",
+							"footer": {
+								"name": "Pied3"
+							},
+							"dataSource": "This.emailIcon"
+						},
+						{
+							"header": {
+								"text": "DATE",
+								"name": "Entête4"
+							},
+							"name": "col_date",
+							"width": 95,
+							"fontSize": 12,
+							"verticalAlign": "middle",
+							"class": "colDefault",
+							"footer": {
+								"name": "Pied4"
+							},
+							"dataSource": "This:C1470.eventDateStr"
+						},
+						{
+							"header": {
+								"text": "CLIENT",
+								"name": "Entête5"
+							},
+							"name": "col_client",
+							"width": 210,
+							"fontSize": 13,
+							"verticalAlign": "middle",
+							"class": "colPrimary",
+							"footer": {
+								"name": "Pied5"
+							},
+							"dataSource": "This:C1470.clientName"
+						},
+						{
+							"header": {
+								"text": "VENUE",
+								"name": "Entête6"
+							},
+							"name": "col_venue",
+							"width": 300,
+							"fontSize": 12,
+							"verticalAlign": "middle",
+							"class": "colDefault",
+							"footer": {
+								"name": "Pied6"
+							},
+							"dataSource": "This:C1470.venueName"
+						},
+						{
+							"header": {
+								"text": "CITY",
+								"name": "Entête7"
+							},
+							"name": "col_city",
+							"width": 110,
+							"fontSize": 12,
+							"verticalAlign": "middle",
+							"class": "colMuted",
+							"footer": {
+								"name": "Pied7"
+							},
+							"dataSource": "This:C1470.venueCity"
+						},
+						{
+							"header": {
+								"text": "GUESTS",
+								"name": "Entête8"
+							},
+							"name": "col_guests",
+							"width": 65,
+							"fontSize": 12,
+							"textAlign": "right",
+							"verticalAlign": "middle",
+							"class": "colDefault",
+							"footer": {
+								"name": "Pied8"
+							},
+							"dataSource": "This:C1470.guestCountStr"
+						},
+						{
+							"header": {
+								"text": "",
+								"name": "Entête2"
+							},
+							"name": "col_venue_option",
+							"width": 28,
+							"fontSize": 14,
+							"textAlign": "center",
+							"verticalAlign": "middle",
+							"footer": {
+								"name": "Pied2"
+							},
+							"dataSource": "This.venueOptionIcon"
+						},
+						{
+							"header": {
+								"text": "PLANNED",
+								"name": "Entête9"
+							},
+							"name": "col_planned",
+							"width": 80,
+							"fontSize": 13,
+							"textAlign": "center",
+							"verticalAlign": "middle",
+							"class": "colDefault",
+							"footer": {
+								"name": "Pied9"
+							},
+							"dataSource": "This:C1470.plannedWeather"
+						},
+						{
+							"header": {
+								"text": "FORECAST",
+								"name": "Entête10"
+							},
+							"name": "col_forecast",
+							"width": 90,
+							"fontSize": 13,
+							"textAlign": "center",
+							"verticalAlign": "middle",
+							"class": "colDefault",
+							"footer": {
+								"name": "Pied10"
+							},
+							"dataSource": "This:C1470.forecastWeather"
+						},
+						{
+							"header": {
+								"text": "STATUS",
+								"name": "Entête11"
+							},
+							"name": "col_status",
+							"width": 90,
+							"fontSize": 12,
+							"textAlign": "center",
+							"verticalAlign": "middle",
+							"class": "colPrimary",
+							"footer": {
+								"name": "Pied11"
+							},
+							"dataSource": "This:C1470.statusBadge"
+						},
+						{
+							"header": {
+								"text": "CONTRACT",
+								"name": "Entête12"
+							},
+							"name": "col_ref",
+							"width": 130,
+							"fontSize": 11,
+							"verticalAlign": "middle",
+							"class": "colMuted",
+							"footer": {
+								"name": "Pied12"
+							},
+							"dataSource": "This:C1470.contractRef"
+						}
+					]
+				},
+				"btn_refresh": {
+					"type": "button",
+					"left": 1080,
+					"top": 16,
+					"width": 160,
+					"height": 34,
+					"text": "🌤 Refresh Weather",
+					"events": [
+						"onClick"
+					],
+					"focusable": true,
+					"method": "objbtn_refresh.4dm",
+					"class": "btnRefresh",
+					"style": "flat"
+				},
+				"btn_filter_all": {
+					"type": "button",
+					"left": 24,
+					"top": 76,
+					"width": 100,
+					"height": 28,
+					"text": "All",
+					"events": [
+						"onClick"
+					],
+					"focusable": true,
+					"method": "objbtn_filter_all.4dm",
+					"class": "btnFilterActive",
+					"style": "flat"
+				},
+				"btn_filter_confirmed": {
+					"type": "button",
+					"left": 132,
+					"top": 76,
+					"width": 130,
+					"height": 28,
+					"text": "Confirmed",
+					"events": [
+						"onClick"
+					],
+					"focusable": true,
+					"method": "objbtn_filter_confirmed.4dm",
+					"class": "btnFilterInactive",
+					"style": "flat"
+				},
+				"btn_filter_quote": {
+					"type": "button",
+					"left": 270,
+					"top": 76,
+					"width": 110,
+					"height": 28,
+					"text": "Quotes",
+					"events": [
+						"onClick"
+					],
+					"focusable": true,
+					"method": "objbtn_filter_quote.4dm",
+					"class": "btnFilterInactive",
+					"style": "flat"
+				},
+				"btn_filter_weather": {
+					"type": "button",
+					"left": 388,
+					"top": 76,
+					"width": 150,
+					"height": 28,
+					"text": "⚠ Weather Alerts",
+					"events": [
+						"onClick"
+					],
+					"focusable": true,
+					"method": "objbtn_filter_weather.4dm",
+					"class": "btnFilterInactive",
+					"style": "flat"
+				},
+				"btn_filter_email": {
+					"type": "button",
+					"left": 546,
+					"top": 76,
+					"width": 130,
+					"height": 28,
+					"text": "📧 Email",
+					"events": [
+						"onClick"
+					],
+					"focusable": true,
+					"method": "objbtn_filter_email.4dm",
+					"class": "btnFilterInactive",
+					"style": "flat"
+				},
+				"btn_toggle_past": {
+					"type": "button",
+					"left": 684,
+					"top": 76,
+					"width": 110,
+					"height": 28,
+					"text": "Show Past",
+					"events": [
+						"onClick"
+					],
+					"focusable": true,
+					"method": "objbtn_toggle_past.4dm",
+					"class": "btnFilterInactive",
+					"style": "flat"
+				}
+			}
+		}
+	],
+	"events": [
+		"onLoad",
+		"onClick",
+		"onDoubleClick"
+	],
+	"formClass": "FC_EventList",
+	"method": "method.4dm",
+	"$4d": {
+		"version": "1",
+		"kind": "form"
+	}
 }
