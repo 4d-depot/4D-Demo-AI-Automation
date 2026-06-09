@@ -45,11 +45,6 @@ Function search_services($params : Object) : Text
 	// Strip any Venue-category items that may have slipped through semantic search
 	$results:=$results.query("category != :1"; "Venue")
 
-	// Debug log — include returned service labels for diagnosability
-	var $labels : Collection:=$results.extract("label")
-	var $logEntry : Text:=String(Current time)+" query="+String($params.query)+" category="+$category+" results="+String($results.length)+($results.length>0 ? " ["+$labels.join(", ")+"]" : "")+"\n"
-	var $logFile : 4D.File:=Folder(fk logs folder).file("search_services.log")
-	$logFile.setText($logFile.exists ? ($logFile.getText()+$logEntry) : $logEntry)
 	// Per-event log
 	If (This._contractRef#"")
 		var $callDetail : Text:="query: "+String($params.query)+(($category#"") ? " | category: "+$category : "")

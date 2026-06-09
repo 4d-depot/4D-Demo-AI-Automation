@@ -265,11 +265,14 @@
 					"height": 30,
 					"text": "● AI Connected",
 					"visible": true,
-					"events": [],
+					"events": [
+						"onClick"
+					],
 					"focusable": false,
 					"class": "btnStatusGreen",
 					"style": "flat",
-					"borderRadius": 15
+					"borderRadius": 15,
+					"method": "objbtn_ai_setup_link.4dm"
 				},
 				"btn_ai_setup": {
 					"type": "button",
@@ -309,5 +312,9 @@
 		"onActivate"
 	],
 	"formClass": "FC_Home",
-	"method": "method.4dm"
+	"method": "method.4dm",
+	"$4d": {
+		"version": "1",
+		"kind": "form"
+	}
 }
