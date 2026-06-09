@@ -622,7 +622,7 @@
 					"top": 736,
 					"width": 114,
 					"height": 48,
-					"text": "✓ Confirmer",
+					"text": "✓ Confirm",
 					"style": "flat",
 					"class": "btnPrimary",
 					"events": [

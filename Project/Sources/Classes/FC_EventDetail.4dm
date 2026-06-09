@@ -162,21 +162,12 @@ Function _onLoad()
 Function _loadEventLines()
 	This.event.reload()  // ensure relation cache is fresh
 	
-	// Compute total (lines + venue rental)
+	// Compute total from all event lines (venue rental is already an EventLine)
 	var $total : Real:=0
 	var $line : cs.EventLineEntity
 	For each ($line; This.event.lines)
 		$total:=$total+$line.lineTotal
 	End for each 
-	
-	// Add venue rental cost
-	var $rentalPrice : Real:=This.event.venueRentalPrice
-	If ($rentalPrice>0)
-		$total:=$total+$rentalPrice
-		OBJECT SET TITLE(*; "text_rental_val"; "Venue rental: "+String($rentalPrice; "### ### ##0 €"))
-	Else 
-		OBJECT SET TITLE(*; "text_rental_val"; "")
-	End if 
 	OBJECT SET TITLE(*; "text_total_val"; String($total; "### ### ##0 €"))
 	
 Function _clearAIPanel()
@@ -575,17 +566,12 @@ Function _showConfirmPanel($action : Object; $execResult : Object)
 	End for each 
 	This.confirmLines:=$lines
 	
-	// Compute new total from current event lines + impact + venue rental
+	// Compute new total from current event lines + impact (venue rental is already an EventLine)
 	var $currentTotal : Real:=0
 	var $tl : cs.EventLineEntity
 	For each ($tl; This.event.lines)
 		$currentTotal:=$currentTotal+$tl.lineTotal
 	End for each 
-	// Include venue rental cost (same as displayed in event total)
-	var $rentalPrice : Real:=This.event.venueRentalPrice
-	If ($rentalPrice>0)
-		$currentTotal:=$currentTotal+$rentalPrice
-	End if 
 	var $newTotal : Real:=$currentTotal+$totalImpact
 	
 	var $impactStr : Text
