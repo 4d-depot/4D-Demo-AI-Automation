@@ -1,5 +1,5 @@
 // FC_Progress.4dm
-// Progress form controller — displays a spinner during worker processing
+// Progress form controller displays a spinner during worker processing
 // Usage : var $p := cs.FC_Progress.new("Message…"; Formula(...))
 //         DIALOG("Progress"; $p)
 

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Event Pulse — Design System CSS
+   Event Pulse Design System CSS
    Supports light/dark themes following OS preference.
    ========================================================================== */
 
@@ -18,7 +18,7 @@
     textAlign: center;
 }
 
-/* Filter button — active state */
+/* Filter button active state */
 .btnFilterActive {
     fill: #3B5FCC;
     stroke: #FFFFFF;
@@ -28,7 +28,7 @@
     textAlign: center;
 }
 
-/* Filter button — inactive state */
+/* Filter button inactive state */
 .btnFilterInactive {
     fill: #2D2D2D;
     stroke: #AAAAAA;
@@ -58,7 +58,7 @@
     textAlign: center;
 }
 
-/* Template/scenario button — green tint */
+/* Template/scenario button green tint */
 .btnTemplateGreen {
     fill: #1F2D1F;
     stroke: #FFFFFF;
@@ -68,7 +68,7 @@
     textAlign: center;
 }
 
-/* Template/scenario button — red tint */
+/* Template/scenario button red tint */
 .btnTemplateRed {
     fill: #2D1F1F;
     stroke: #FFFFFF;
@@ -78,7 +78,7 @@
     textAlign: center;
 }
 
-/* Template/scenario button — blue tint */
+/* Template/scenario button blue tint */
 .btnTemplateBlue {
     fill: #1F1F2D;
     stroke: #FFFFFF;
@@ -88,7 +88,7 @@
     textAlign: center;
 }
 
-/* Template/scenario button — amber tint */
+/* Template/scenario button amber tint */
 .btnTemplateAmber {
     fill: #2D2A1F;
     stroke: #FFFFFF;
@@ -98,7 +98,7 @@
     textAlign: center;
 }
 
-/* JSON validation badge button — invisible, white text only */
+/* JSON validation badge button invisible, white text only */
 .btnValidationBadge {
     fill: #111111;
     stroke: #FFFFFF;
@@ -274,18 +274,18 @@
     verticalAlign: middle;
 }
 
-/* Listbox column — primary text (bold, high contrast) */
+/* Listbox column primary text (bold, high contrast) */
 .colPrimary {
     stroke: #FFFFFF;
     fontWeight: bold;
 }
 
-/* Listbox column — default text */
+/* Listbox column default text */
 .colDefault {
     stroke: #CCCCCC;
 }
 
-/* Listbox column — muted text */
+/* Listbox column muted text */
 .colMuted {
     stroke: #888888;
 }

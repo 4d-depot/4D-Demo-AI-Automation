@@ -1,11 +1,11 @@
 // EventLogger.4dm
-// Session singleton — writes per-event per-day log files.
+// Session singleton writes per-event per-day log files.
 // File naming: YYYY-MM-DD-Event-{contractRef}.log (e.g. 2026-06-08-Event-CTR-2026-203.log)
 // All activity on the same event within the same day is appended to the same file.
 // Covers: user actions, AI system prompts, user prompts, tool calls, tool results, AI responses.
 
 session singleton Class constructor()
-	// No state needed — files are opened on demand
+	// No state needed files are opened on demand
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -40,10 +40,10 @@ Function logEventHeader($event : cs.EventEntity)
 	var $client : cs.ClientEntity:=$event.client
 	var $line1 : Text:="════════════════════════════════════════════════════════════════════════"+$nl
 	var $header : Text:=$line1
-	$header:=$header+"  EVENT LOG — "+$event.contractRef+$nl
+	$header:=$header+"  EVENT LOG "+$event.contractRef+$nl
 	$header:=$header+"  Date:    "+String($event.eventDate; "yyyy-MM-dd")+$nl
-	$header:=$header+"  Client:  "+($client ? $client.companyName : "—")+$nl
-	$header:=$header+"  Venue:   "+($venue ? $venue.name+" – "+$venue.city+", "+$venue.country : "—")+$nl
+	$header:=$header+"  Client:  "+($client ? $client.companyName : "")+$nl
+	$header:=$header+"  Venue:   "+($venue ? $venue.name+" – "+$venue.city+", "+$venue.country : "")+$nl
 	$header:=$header+"  Guests:  "+String($event.guestCount)+$nl
 	$header:=$header+"  Option:  "+$event.venueOption+$nl
 	$header:=$header+"  Log day: "+String(Current date; "yyyy-MM-dd")+$nl

@@ -1,5 +1,5 @@
 #DECLARE($window : Integer; $emailID : Text; $eventID : Text)
-// Runs in a worker — calls AI email modification analysis then notifies the EventDetail form
+// Runs in a worker calls AI email modification analysis then notifies the EventDetail form
 // Email is always linked to a known event (no disambiguation needed)
 
 var $email : cs.EmailEntity:=ds.Email.query("ID = :1"; $emailID).first()

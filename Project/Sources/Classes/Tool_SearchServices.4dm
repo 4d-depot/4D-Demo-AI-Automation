@@ -48,9 +48,9 @@ Function search_services($params : Object) : Text
 	// Per-event log
 	If (This._contractRef#"")
 		var $callDetail : Text:="query: "+String($params.query)+(($category#"") ? " | category: "+$category : "")
-		cs.EventLogger.me.logBlock(This._contractRef; "AI TOOL"; "search_services — CALL"; $callDetail)
+		cs.EventLogger.me.logBlock(This._contractRef; "AI TOOL"; "search_services CALL"; $callDetail)
 		var $labels : Collection:=$results.extract("label")
-		cs.EventLogger.me.logBlock(This._contractRef; "AI TOOL"; "search_services — RESULT ("+String($results.length)+" items)"; ($results.length>0 ? $labels.join(Char(10)) : "(no results)"))
+		cs.EventLogger.me.logBlock(This._contractRef; "AI TOOL"; "search_services RESULT ("+String($results.length)+" items)"; ($results.length>0 ? $labels.join(Char(10)) : "(no results)"))
 	End if 
 
 	If ($results.length=0)

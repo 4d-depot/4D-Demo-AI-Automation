@@ -1,5 +1,5 @@
 #DECLARE($window : Integer)
-// Runs in "weatherWorker" — fetches weather for upcoming events, then notifies the form
+// Runs in "weatherWorker" fetches weather for upcoming events, then notifies the form
 
 var $weather : cs.WeatherService:=cs.WeatherService.me
 $weather.refreshUpcomingEvents(Null)

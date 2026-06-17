@@ -36,7 +36,7 @@ Function search($query : Text; $category : Text; $limit : Integer) : Collection
 		$limit:=5
 	End if 
 	
-	// Create the query embedding — prepend category to steer the vector
+	// Create the query embedding prepend category to steer the vector
 	var $searchText : Text:=($category#"") ? ($category+" | "+$query) : $query
 	var $result : Object:=This._client.embeddings.create($searchText; This._model)
 	If ($result.vector=Null)
@@ -46,7 +46,7 @@ Function search($query : Text; $category : Text; $limit : Integer) : Collection
 	
 	var $vec : 4D.Vector:=$result.vector
 	
-	// Semantic vector search — strict threshold; sort by similarity so best matches come first
+	// Semantic vector search strict threshold; sort by similarity so best matches come first
 	var $found : cs.ServiceSelection
 	var $comparisonVector : Object:={vector: $vec; metric: mk cosine; threshold: 0.3}
 	If ($category#"")

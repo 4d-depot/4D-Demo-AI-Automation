@@ -1,5 +1,5 @@
 // AIWorkerContext.4dm
-// Session singleton — stores pending AI data per form window, keyed by window ID.
+// Session singleton stores pending AI data per form window, keyed by window ID.
 // Shared across all processes in the same session (form process + workers).
 // Data is stored as JSON text because session singletons are shared objects
 // and cannot hold regular (non-shared) objects/collections directly.

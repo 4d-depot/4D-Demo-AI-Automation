@@ -1,14 +1,14 @@
-// EventLineEntity.4dm — Computed attributes for the EventLine entity
+// EventLineEntity.4dm Computed attributes for the EventLine entity
 
 Class extends Entity
 
 Function get serviceLabel() : Text
 	var $s : cs.ServiceEntity:=This.service
-	return $s ? $s.label : "—"
+	return $s ? $s.label : ""
 
 Function get serviceCategory() : Text
 	var $s : cs.ServiceEntity:=This.service
-	return $s ? $s.category : "—"
+	return $s ? $s.category : ""
 
 Function get quantityStr() : Text
 	return String(This.quantity)

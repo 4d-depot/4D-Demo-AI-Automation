@@ -1,5 +1,5 @@
 // Tool_CalculateCost.4dm
-// AIKit tool — computes exact total cost for a list of service IDs + quantities.
+// AIKit tool computes exact total cost for a list of service IDs + quantities.
 // Prevents AI arithmetic errors when verifying removed/added service budgets.
 
 property tools : Collection
@@ -53,7 +53,7 @@ Function calculate_cost($params : Object) : Text
 	// Per-event log
 	If (This._contractRef#"")
 		var $detail : Text:="total: "+String($total)+"€ for "+String($breakdown.length)+" lines"
-		cs.EventLogger.me.logBlock(This._contractRef; "AI TOOL"; "calculate_cost — RESULT"; $detail)
+		cs.EventLogger.me.logBlock(This._contractRef; "AI TOOL"; "calculate_cost RESULT"; $detail)
 	End if 
 
 	return JSON Stringify({total: $total; breakdown: $breakdown})

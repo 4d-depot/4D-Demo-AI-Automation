@@ -289,7 +289,7 @@ Function _addLineWithPrice($evt : cs.EventEntity; $svc : Object; $qty : Integer;
 // ─── Emails ───────────────────────────────────────────────────────────────────
 // Only modification emails, all linked to a specific confirmed event
 Function _seedEmails()
-	// Always clear first to stay idempotent — prevents duplicates if called multiple times
+	// Always clear first to stay idempotent prevents duplicates if called multiple times
 	ds.Email.all().drop()
 	
 	var $file : 4D.File:=Folder(fk resources folder).file("data/emails.json")
@@ -330,7 +330,7 @@ Function regenerateEvents()
 	var $templates : Collection:=JSON Parse($file.getText())
 	var $total : Integer:=$templates.length
 
-	// Load references from database — no ordering needed, lookup by seedIndex
+	// Load references from database no ordering needed, lookup by seedIndex
 	var $services : cs.ServiceSelection:=ds.Service.all()
 
 	// Cache services by category
@@ -439,7 +439,7 @@ Function regenerateEvents()
 		// Weather alerts will be calculated by the WeatherService
 		$evt.weatherAlertLevel:="none"
 		$evt.seedIndex:=$item.seedIndex
-		$evt.weatherForecast:=Null  // explicit NULL — avoids empty-string Object field on catalog migration
+		$evt.weatherForecast:=Null  // explicit NULL avoids empty-string Object field on catalog migration
 		$evt.weatherAlertJson:=Null
 
 		$evt.save()

@@ -146,7 +146,7 @@ Function _openAiSetupDocs()
 	cs.UIHelpers.me.openAiSetup()
 
 Function _clearData()
-	CONFIRM("Clear ALL data?\n\nThis will delete all records without re-importing.\nThe database will be empty — use 'Reset & Rebuild All' to re-seed.")
+	CONFIRM("Clear ALL data?\n\nThis will delete all records without re-importing.\nThe database will be empty use 'Reset & Rebuild All' to re-seed.")
 	If (OK=1)
 		cs.DataSeeder.me.clearAll()
 		ALERT("All data cleared. The database is now empty.")

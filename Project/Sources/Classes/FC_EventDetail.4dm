@@ -325,7 +325,7 @@ Function _runEmailAnalysis()
 	If (Undefined($pendingEmail) || ($pendingEmail=Null))
 		return 
 	End if 
-	This._logUserAction("Email Analysis"; "User pressed Analyze Email — subject: "+String($pendingEmail.subject))
+	This._logUserAction("Email Analysis"; "User pressed Analyze Email subject: "+String($pendingEmail.subject))
 	This.running:=True
 	This._startSpinner()
 	This._startAnalyzeSpinner("btn_email_analyze"; "📧 Analyze Email with AI")
@@ -363,7 +363,7 @@ Function _onEmailAnalysisDone($result : Object)
 	If (($result.actions#Null) && ($result.actions.length>0))
 		This._actionMap:=cs.UIHelpers.me.showActionButtons($result.actions)
 		This.aiActions:=$result.actions
-		// Hide analyze button once actions are proposed — user cannot re-trigger analysis
+		// Hide analyze button once actions are proposed user cannot re-trigger analysis
 		OBJECT SET VISIBLE(*; "btn_email_analyze"; False)
 	Else 
 		This._setAiStatus("✓ No service changes required")
@@ -379,7 +379,7 @@ Function _executeAction($slot : Integer)
 	This._logUserAction("Action Pressed"; String($action.label)+" ["+$type+"]")
 	This._hideConfirmPanel()
 	
-	// switch_venue: update venueOption and rental price directly — no AI tool call needed
+	// switch_venue: update venueOption and rental price directly no AI tool call needed
 	If ($type="switch_venue")
 		This._startButtonSpinner($slot; $action.label)
 		This._executeSwitchVenue($action)
@@ -403,12 +403,12 @@ Function _executeAction($slot : Integer)
 	End case 
 	
 	// ─── Step 2: Execution with tool calling + confirmation dialog ──────────────────
-	// $promptOverride: optional — if provided, replaces the action's hiddenPrompt
+	// $promptOverride: optional if provided, replaces the action's hiddenPrompt
 Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 	This._startSpinner()
 	This._setAiStatus("Searching services...")
 	
-	// Event context — filter out Venue-category services (venue rental handled server-side)
+	// Event context filter out Venue-category services (venue rental handled server-side)
 	var $w : Integer:=Current form window
 	var $lines : Collection:=This._linesAsCollection().query("serviceCategory != :1"; "Venue")
 	var $context : Object:={\
@@ -421,7 +421,7 @@ Function _executeWithToolCalling($action : Object; $promptOverride : Text)
 		}
 	
 	var $hiddenPrompt : Text:=$promptOverride || String($action.hiddenPrompt)
-	// Store in session singleton — shared with worker process, no JSON round-trip
+	// Store in session singleton shared with worker process, no JSON round-trip
 	cs.AIWorkerContext.me.storeAction($w; $action)
 	cs.AIWorkerContext.me.storeExistingLines($w; $lines)
 	cs.AIWorkerContext.me.storeContractRef($w; This.event.contractRef)
@@ -453,7 +453,7 @@ Function _executeSwitchVenue($action : Object)
 	$action._venueBalance:=$newRentalPrice-$oldRentalPrice
 	
 	var $prompt : Text:=cs.AIAdvisor.new().switchVenuePrompt($isToIndoor; $newVenueName; $action._venueBalance; $evt.guestCount)
-	This._setAiStatus("Switching venue — calculating changes...")
+	This._setAiStatus("Switching venue calculating changes...")
 	This._executeWithToolCalling($action; $prompt)
 	
 Function _onExecutionDone($execResult : Object)
@@ -464,7 +464,7 @@ Function _onExecutionDone($execResult : Object)
 	This._stopButtonSpinner()
 	This._stopSpinner()
 	
-	// Retrieve and clear the stored action — no JSON round-trip needed
+	// Retrieve and clear the stored action no JSON round-trip needed
 	var $action : Object:=cs.AIWorkerContext.me.getAction(Current form window)
 	cs.AIWorkerContext.me.clearAction(Current form window)
 	
@@ -484,7 +484,7 @@ Function _onExecutionDone($execResult : Object)
 	
 	// For switch_venue: server-side venue rental swap
 	If ($action._switchVenue=True)
-		// Venue rental swap handled below — no server-side budget cap, AI manages the target
+		// Venue rental swap handled below no server-side budget cap, AI manages the target
 		
 		// Inject server-side venue rental: remove old, add new
 		var $oldVenueLine : cs.EventLineEntity:=This.event.lines.query("serviceCategory = :1"; "Venue").first()
@@ -554,7 +554,7 @@ Function _showConfirmPanel($action : Object; $execResult : Object)
 			If ($impact<0)
 				$costStr:="−"+String(-$impact; "### ### ##0")+" €"
 			Else 
-				$costStr:="—"
+				$costStr:=""
 			End if 
 		End if 
 		$lines.push({\

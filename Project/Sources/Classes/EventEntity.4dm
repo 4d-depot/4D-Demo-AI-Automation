@@ -1,4 +1,4 @@
-// EventEntity.4dm — Computed attributes for the Event entity
+// EventEntity.4dm Computed attributes for the Event entity
 // Used by the EventList entity-selection listbox and EventDetail display
 
 Class extends Entity
@@ -10,15 +10,15 @@ Function get eventDateStr() : Text
 
 Function get clientName() : Text
 	var $c : cs.ClientEntity:=This.client
-	return $c ? $c.companyName : "—"
+	return $c ? $c.companyName : ""
 
 Function get venueName() : Text
 	var $v : cs.VenueEntity:=This.venue
-	return $v ? $v.name : "—"
+	return $v ? $v.name : ""
 
 Function get venueCity() : Text
 	var $v : cs.VenueEntity:=This.venue
-	return $v ? $v.city : "—"
+	return $v ? $v.city : ""
 
 Function get guestCountStr() : Text
 	return String(This.guestCount)
@@ -35,7 +35,7 @@ Function get contactInfo() : Text
 
 Function get venueLabel() : Text
 	var $v : cs.VenueEntity:=This.venue
-	return $v ? $v.name+" – "+$v.city+", "+$v.country : "—"
+	return $v ? $v.name+" – "+$v.city+", "+$v.country : ""
 
 // ─── Status labels ────────────────────────────────────────────────────────────
 
@@ -95,7 +95,7 @@ Function get riskLabel() : Text
 			return "☀ No significant weather risk"
 	End case 
 
-// venueOption is a real field ("indoor"/"outdoor") — use venueOptionIcon for the emoji column
+// venueOption is a real field ("indoor"/"outdoor") use venueOptionIcon for the emoji column
 Function get venueOptionIcon() : Text
 	return This.venueOption="indoor" ? "🏢" : "🌳"
 
@@ -121,7 +121,7 @@ Function get forecastWeather() : Text
 Function get setupLabel() : Text
 	var $setup : Object:=This.weatherSetup
 	If ($setup=Null)
-		return "—"
+		return ""
 	End if 
 	var $cond : Text
 	Case of 
@@ -148,7 +148,7 @@ Function get setupLabel() : Text
 Function get forecastLabel() : Text
 	var $forecast : Object:=This.weatherForecast
 	If ($forecast=Null)
-		return "—"
+		return ""
 	End if 
 	var $cond : Text
 	Case of 
@@ -176,7 +176,7 @@ Function get forecastLabel() : Text
 
 Function _weatherLabel($setup : Object) : Text
 	If ($setup=Null)
-		return "—"
+		return ""
 	End if 
 	If ($setup.conditions="indifferent")
 		return "🏢 Indoor"

@@ -1,6 +1,6 @@
-# Event Pulse — 4D AI Demo
+# Event Pulse - 4D AI Demo
 
-An event management application built with [4D](https://www.4d.com/) that demonstrates how to integrate AI capabilities (OpenAI) into a business workflow. The app manages corporate event planning — weather contingency and client modification handling — powered by LLM reasoning, semantic search, and tool calling.
+An event management application built with [4D](https://www.4d.com/) that demonstrates how to integrate AI capabilities (OpenAI) into a business workflow. The app manages corporate event planning (weather contingency and client modification handling) powered by LLM reasoning, semantic search, and tool calling.
 
 ## Getting Started
 
@@ -8,7 +8,7 @@ An event management application built with [4D](https://www.4d.com/) that demons
 
 - **4D v21 R3** or later
 - An **OpenAI API key** (for AI features)
-- **macOS** — this application has been tested on macOS only
+- **macOS** - this application has been tested on macOS only
 
 ### Tested AI Models
 
@@ -27,10 +27,10 @@ An event management application built with [4D](https://www.4d.com/) that demons
 
 2. **Open** the project in 4D by selecting `Project/4D-Demo-AI-Automation.4DProject`.
 
-3. **Configure your OpenAI API key** — the `AIProviders.json` file is gitignored, so you need to set up your credentials. Use one of these options:
+3. **Configure your OpenAI API key** - the `AIProviders.json` file is gitignored, so you need to set up your credentials. Use one of these options:
 
-   - **4D Settings** (recommended) — accessible from the Home screen UI, or via **Settings > AI** in 4D. Configure the OpenAI provider from there.
-   - **Manual file** — create `Project/Sources/AIProviders.json`:
+   - **4D Settings** (recommended) - accessible from the Home screen UI, or via **Settings > AI** in 4D. Configure the OpenAI provider from there.
+   - **Manual file** - create `Project/Sources/AIProviders.json`:
      ```json
      {
        "providers": {
@@ -49,7 +49,7 @@ An event management application built with [4D](https://www.4d.com/) that demons
 
 4. **Run** the project. The **Home** form opens automatically.
 
-5. **Seed the database** — click the **Init** button on the Home screen to load demo data (clients, venues, services, events, and emails). From there you can navigate to Events, Services, and Venues.
+5. **Seed the database** - click the **Init** button on the Home screen to load demo data (clients, venues, services, events, and emails). From there you can navigate to Events, Services, and Venues.
 
 ### Demo Data
 
@@ -83,9 +83,9 @@ Six tables with UUID primary keys manage the relationships between clients, venu
 
 The application showcases two concrete AI-driven scenarios:
 
-1. **Weather Contingency** — For upcoming outdoor events, the app fetches weather forecasts via [Open-Meteo](https://open-meteo.com/) and asks the AI to propose contingency actions (move indoors, add tenting).
+1. **Weather Contingency** - For upcoming outdoor events, the app fetches weather forecasts via [Open-Meteo](https://open-meteo.com/) and asks the AI to propose contingency actions (move indoors, add tenting).
 
-2. **Modification Handling** — When a client sends a change request, the AI identifies the target event (handling ambiguity), evaluates cost impacts, and suggests adjustments.
+2. **Modification Handling** - When a client sends a change request, the AI identifies the target event (handling ambiguity), evaluates cost impacts, and suggests adjustments.
 
 ### AI Architecture
 
@@ -93,12 +93,12 @@ The application showcases two concrete AI-driven scenarios:
 |-----------|------|
 | **AIAdvisor** | Orchestrates LLM calls (reasoning via o4-mini, lightweight via GPT-4o) with JSON Schema validation |
 | **ServiceMatcher** | Semantic search over the service catalog using `text-embedding-3-small` vector embeddings |
-| **Tool_SearchServices** | AI tool — finds matching services for an event brief |
-| **Tool_CalculateCost** | AI tool — computes exact costs (prevents LLM arithmetic errors) |
+| **Tool_SearchServices** | AI tool - finds matching services for an event brief |
+| **Tool_CalculateCost** | AI tool - computes exact costs (prevents LLM arithmetic errors) |
 | **EventLogger** | Logs all AI interactions (prompts, responses, tool calls) per event per day |
 
 AI integration is provided by [**4D AIKit**](https://github.com/4d/4D-AIKit) component, declared as a dependency in `dependencies.json` and fetched automatically by the 4D dependency manager.
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

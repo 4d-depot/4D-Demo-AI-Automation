@@ -38,8 +38,8 @@ Function _createChat($systemPrompt : Text; $schema : Object; $schemaName : Text;
 Function _logPrompts($callType : Text; $system : Text; $user : Text)
 	If (This._contractRef#"")
 		var $logger : cs.EventLogger:=cs.EventLogger.me
-		$logger.logBlock(This._contractRef; "AI SYS"; $callType+" — SYSTEM PROMPT"; $system)
-		$logger.logBlock(This._contractRef; "AI USER"; $callType+" — USER PROMPT"; $user)
+		$logger.logBlock(This._contractRef; "AI SYS"; $callType+" SYSTEM PROMPT"; $system)
+		$logger.logBlock(This._contractRef; "AI USER"; $callType+" USER PROMPT"; $user)
 	End if 
 
 Function _logResponse($callType : Text; $chatResult : Object)
@@ -77,7 +77,7 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $callback : 4D.Functio
 	If ($venue#Null)
 		$venueInfo:=$venue.name+" - "+$venue.city+", "+$venue.country+" ("+$venue.venueType+")"
 		$venueInfo:=$venueInfo+" | Event option: "+$event.venueOption
-	// Mention indoor alternative if available — explicitly state absence otherwise
+	// Mention indoor alternative if available explicitly state absence otherwise
 	If ($event.venueOption="outdoor")
 		If ($venue.indoorOption#Null)
 			$venueInfo:=$venueInfo+"\nIndoor alternative available at same venue: "+$venue.indoorOption.name+" (capacity: "+String($venue.indoorOption.capacity)+", rental: "+String($venue.indoorOption.rentalPrice)+"€)"
@@ -112,7 +112,7 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $callback : 4D.Functio
 	$system:=$system+"   - NEVER propose 'switch_venue' if the venue info says 'No indoor alternative at this venue'.\n"
 	$system:=$system+"   - NEVER propose 'switch_venue' if the event venueOption is already 'indoor'.\n"
 	$system:=$system+"   - When proposing switch_venue for rain/storm: it is MANDATORY to include it when an indoor alternative IS available.\n"
-	$system:=$system+"   - When 'switch_venue' is proposed: do NOT also propose a 'replace_services' for outdoor-to-indoor substitution — switch_venue already handles all service replacement.\n"
+	$system:=$system+"   - When 'switch_venue' is proposed: do NOT also propose a 'replace_services' for outdoor-to-indoor substitution switch_venue already handles all service replacement.\n"
 	$system:=$system+"8) Propose 2 to 4 distinct actions covering different strategies (e.g., add rain protection AND switch to indoor). Do NOT merge everything into a single action.\n\n"
 	$system:=$system+"For each action, include a 'hiddenPrompt' describing what contingency services to search for, quantities needed, and weather-specific requirements. "
 	$system:=$system+"Example hiddenPrompt: 'Search for weather protection structures: large tent or pagoda for 150 guests, waterproof flooring, portable heating units x2.'\n"
@@ -149,7 +149,7 @@ Function analyzeWeatherRiskAsync($event : cs.EventEntity; $callback : 4D.Functio
 	This._chat.prompt($user)
 
 // ─── Scenario 3: Client modification email linked to a known event ──────────
-// The event is already identified — no need to disambiguate.
+// The event is already identified no need to disambiguate.
 // $callback receives {success; impacts; validationError}
 Function analyzeLinkedEmailAsync($email : cs.EmailEntity; $event : cs.EventEntity; $callback : 4D.Function)
 	var $schemaImpacts : Object:=This._loadSchema("schema_modification_impacts.json")
@@ -231,11 +231,11 @@ Function generateDraftEmailAsync($event : cs.EventEntity; $action : Object; $pro
 	$system:=$system+"Write a clear, professional email in the language typically used with the client. "
 	$system:=$system+"Address the client by first name. Be concise and positive. "
 	$system:=$system+"IMPORTANT: these are PROPOSED changes, NOT yet applied. Use conditional language: 'we would like to propose', 'we recommend', 'subject to your approval', 'pending your confirmation'. Do NOT write as if changes are already done. "
-	$system:=$system+"Do NOT include subject line or headers — just the email body text. "
+	$system:=$system+"Do NOT include subject line or headers just the email body text. "
 	$system:=$system+"Respond ONLY with a valid JSON object matching the schema: {\"emailText\": \"...\"}."
 
 	var $user : Text:="Client: "+$clientName+"\n"
-	$user:=$user+"Event: "+$event.contractRef+" — "+String($event.eventDate; "yyyy-MM-dd")+" at "+$venueInfo+" ("+String($event.guestCount)+" guests)\n\n"
+	$user:=$user+"Event: "+$event.contractRef+" "+String($event.eventDate; "yyyy-MM-dd")+" at "+$venueInfo+" ("+String($event.guestCount)+" guests)\n\n"
 	If (($context#Null) && ($context.clientEmail#Null))
 		$user:=$user+"=== ORIGINAL CLIENT EMAIL ===\n"
 		$user:=$user+"From: "+String($context.clientEmail.sender)+"\n"
@@ -424,7 +424,7 @@ Function _onExecutionChatDone($chatResult : Object; $callback : 4D.Function)
 		$callback.call(Null; $result)
 		return 
 	End if 
-	// JSON Validate on the 4D side — post-AI safety net (blog pattern)
+	// JSON Validate on the 4D side post-AI safety net (blog pattern)
 	$result.validation:=This._validateResponse($parsed; "schema_action_execution.json")
 	If (Not($result.validation.success))
 		$result.error:="schema_action_execution: "+JSON Stringify($result.validation.errors)
@@ -432,7 +432,7 @@ Function _onExecutionChatDone($chatResult : Object; $callback : 4D.Function)
 		return 
 	End if 
 	$result.success:=True
-	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))  // snapshot before enrichment — used by debug display
+	$result.rawAiResponse:=JSON Parse(JSON Stringify($parsed))  // snapshot before enrichment used by debug display
 	$result.proposedLines:=This._enrichProposedLines($parsed.proposedLines)
 	$result.summary:=$parsed.summary
 	$callback.call(Null; $result)
@@ -533,7 +533,7 @@ Function _loadSchema($filename : Text) : Object
 // ─── Prompt builders (called from FC_EventDetail before tool-calling dispatch) ──
 
 // Builds the switch_venue execution prompt for _executeSwitchVenue
-// Builds the switch_venue prompt — bidirectional (outdoor→indoor or indoor→outdoor)
+// Builds the switch_venue prompt bidirectional (outdoor→indoor or indoor→outdoor)
 // $venueBalance = newRentalPrice - oldRentalPrice (handled server-side, not in existing services list)
 Function switchVenuePrompt($isToIndoor : Boolean; $newVenueName : Text; $venueBalance : Real; $guestCount : Integer) : Text
 	var $direction : Text:=$isToIndoor ? "indoor" : "outdoor"
@@ -541,8 +541,8 @@ Function switchVenuePrompt($isToIndoor : Boolean; $newVenueName : Text; $venueBa
 	var $venueBalanceStr : Text:=($venueBalance>=0 ? "+"+String(Round($venueBalance; 0)) : String(Round($venueBalance; 0)))+"€"
 	
 	var $prompt : Text:="Switch to '"+$newVenueName+"' ("+$direction+"). Venue switch balance (A): "+$venueBalanceStr+".\n"
-	$prompt:=$prompt+"IMPORTANT: The venue rental itself is already handled server-side. Do NOT search for venue rental — it is not in the catalog.\n\n"
-	$prompt:=$prompt+"WORKFLOW — follow these steps in order:\n"
+	$prompt:=$prompt+"IMPORTANT: The venue rental itself is already handled server-side. Do NOT search for venue rental it is not in the catalog.\n\n"
+	$prompt:=$prompt+"WORKFLOW follow these steps in order:\n"
 	$prompt:=$prompt+"1. REMOVE all "+$opposite+"-specific services from the existing list. Call calculate_cost on your remove lines → this gives you B.\n"
 	$prompt:=$prompt+"2. Your add target is C = (B − ("+$venueBalanceStr+")) × 1.1. Compute once. Do not recalculate.\n"
 	$prompt:=$prompt+"3. Search for "+$direction+" replacement services. Up to 5 searches if needed. Do not repeat a similar query.\n"

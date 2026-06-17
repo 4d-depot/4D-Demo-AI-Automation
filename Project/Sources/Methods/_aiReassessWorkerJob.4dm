@@ -1,5 +1,5 @@
 #DECLARE($window : Integer; $remainingJson : Text; $appliedLabel : Text; $eventID : Text)
-// Runs in a worker — reassesses remaining AI actions then notifies the EventDetail form
+// Runs in a worker reassesses remaining AI actions then notifies the EventDetail form
 
 var $remaining : Collection:=JSON Parse($remainingJson)
 var $event : cs.EventEntity:=ds.Event.query("ID = :1"; $eventID).first()

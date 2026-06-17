@@ -1,5 +1,5 @@
 #DECLARE($window : Integer; $eventID : Text)
-// Runs in a worker — calls AI weather risk analysis then notifies the EventDetail form
+// Runs in a worker calls AI weather risk analysis then notifies the EventDetail form
 
 var $event : cs.EventEntity:=ds.Event.query("ID = :1"; $eventID).first()
 
