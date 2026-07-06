@@ -1,0 +1,778 @@
+[
+  {
+    "companyName": "Nexora Group",
+    "contactName": "Laura Chen",
+    "email": "laura.chen@nexora.com",
+    "phone": "+33 1 40 00 01 01",
+    "country": "France",
+    "seedIndex": 0
+  },
+  {
+    "companyName": "Brightline Events",
+    "contactName": "James Miller",
+    "email": "j.miller@brightline.co.uk",
+    "phone": "+44 20 7946 0100",
+    "country": "United Kingdom",
+    "seedIndex": 1
+  },
+  {
+    "companyName": "Vega Consulting",
+    "contactName": "Sofia Moretti",
+    "email": "s.moretti@vega.it",
+    "phone": "+39 02 1234 5678",
+    "country": "Italy",
+    "seedIndex": 2
+  },
+  {
+    "companyName": "Apex Dynamics",
+    "contactName": "Carlos Ruiz",
+    "email": "carlos.ruiz@apex.es",
+    "phone": "+34 91 123 45 67",
+    "country": "Spain",
+    "seedIndex": 3
+  },
+  {
+    "companyName": "Horizon Capital",
+    "contactName": "Marie Dupont",
+    "email": "m.dupont@horizon-cap.fr",
+    "phone": "+33 1 41 00 02 02",
+    "country": "France",
+    "seedIndex": 4
+  },
+  {
+    "companyName": "Stellartech",
+    "contactName": "Yuki Tanaka",
+    "email": "y.tanaka@stellartech.jp",
+    "phone": "+81 3-1234-5678",
+    "country": "Japan",
+    "seedIndex": 5
+  },
+  {
+    "companyName": "Nordic Ventures",
+    "contactName": "Erik Lindqvist",
+    "email": "e.lindqvist@nordic.se",
+    "phone": "+46 8 123 456 78",
+    "country": "Sweden",
+    "seedIndex": 6
+  },
+  {
+    "companyName": "Meridian Bank",
+    "contactName": "Amara Osei",
+    "email": "a.osei@meridian.gh",
+    "phone": "+233 30 123 4567",
+    "country": "Ghana",
+    "seedIndex": 7
+  },
+  {
+    "companyName": "Dune Properties",
+    "contactName": "Farrukh Tashkentov",
+    "email": "f.tashkentov@dune.ae",
+    "phone": "+971 4 123 4567",
+    "country": "United Arab Emirates",
+    "seedIndex": 8
+  },
+  {
+    "companyName": "Crestwood Corp",
+    "contactName": "Emily Thompson",
+    "email": "e.thompson@crestwood.us",
+    "phone": "+1 212 555 0100",
+    "country": "United States",
+    "seedIndex": 9
+  },
+  {
+    "companyName": "Luminar Health",
+    "contactName": "Ana Paula Costa",
+    "email": "ana.costa@luminar.br",
+    "phone": "+55 11 3456-7890",
+    "country": "Brazil",
+    "seedIndex": 10
+  },
+  {
+    "companyName": "Blackrock Events",
+    "contactName": "Thomas Müller",
+    "email": "t.mueller@blackrock-e.de",
+    "phone": "+49 30 1234 5678",
+    "country": "Germany",
+    "seedIndex": 11
+  },
+  {
+    "companyName": "Sapphire Hotels",
+    "contactName": "Priya Sharma",
+    "email": "p.sharma@sapphire.in",
+    "phone": "+91 22 1234 5678",
+    "country": "India",
+    "seedIndex": 12
+  },
+  {
+    "companyName": "Pacific Rim Assoc.",
+    "contactName": "Kevin Zhang",
+    "email": "k.zhang@pacificrim.sg",
+    "phone": "+65 6123 4567",
+    "country": "Singapore",
+    "seedIndex": 13
+  },
+  {
+    "companyName": "Atlas Pharma",
+    "contactName": "Nadia Benali",
+    "email": "n.benali@atlas-pharma.ma",
+    "phone": "+212 522 123456",
+    "country": "Morocco",
+    "seedIndex": 14
+  },
+  {
+    "companyName": "Crimson Capital",
+    "contactName": "Anna Kowalski",
+    "email": "a.kowalski@crimson.pl",
+    "phone": "+48 22 123 45 67",
+    "country": "Poland",
+    "seedIndex": 15
+  },
+  {
+    "companyName": "Zenith Aerospace",
+    "contactName": "David Park",
+    "email": "d.park@zenith-aero.kr",
+    "phone": "+82 2 1234 5678",
+    "country": "South Korea",
+    "seedIndex": 16
+  },
+  {
+    "companyName": "Verde Agri",
+    "contactName": "Paulo Mendes",
+    "email": "p.mendes@verde.br",
+    "phone": "+55 21 2345-6789",
+    "country": "Brazil",
+    "seedIndex": 17
+  },
+  {
+    "companyName": "Aurum Finance",
+    "contactName": "Isabelle Fontaine",
+    "email": "i.fontaine@aurum.ch",
+    "phone": "+41 22 123 45 67",
+    "country": "Switzerland",
+    "seedIndex": 18
+  },
+  {
+    "companyName": "Polaris Logistics",
+    "contactName": "Mikhail Petrov",
+    "email": "m.petrov@polaris.ru",
+    "phone": "+7 495 123-45-67",
+    "country": "Russia",
+    "seedIndex": 19
+  },
+  {
+    "companyName": "Solstice Media",
+    "contactName": "Claire Beaumont",
+    "email": "c.beaumont@solstice.ca",
+    "phone": "+1 416 555 0123",
+    "country": "Canada",
+    "seedIndex": 20
+  },
+  {
+    "companyName": "Titanium Works",
+    "contactName": "Hector Vasquez",
+    "email": "h.vasquez@titanium.mx",
+    "phone": "+52 55 1234 5678",
+    "country": "Mexico",
+    "seedIndex": 21
+  },
+  {
+    "companyName": "Opal Retail",
+    "contactName": "Fatima Al-Hassan",
+    "email": "f.alhassan@opal.sa",
+    "phone": "+966 11 123 4567",
+    "country": "Saudi Arabia",
+    "seedIndex": 22
+  },
+  {
+    "companyName": "Cobalt Tech",
+    "contactName": "Riku Mäkinen",
+    "email": "r.makinen@cobalt.fi",
+    "phone": "+358 9 1234567",
+    "country": "Finland",
+    "seedIndex": 23
+  },
+  {
+    "companyName": "Ivory Coast Events",
+    "contactName": "Kouame Brou",
+    "email": "k.brou@ice-events.ci",
+    "phone": "+225 27 12 34 56 78",
+    "country": "Ivory Coast",
+    "seedIndex": 24
+  },
+  {
+    "companyName": "Summit Pharma",
+    "contactName": "Helen Walsh",
+    "email": "h.walsh@summit.ie",
+    "phone": "+353 1 234 5678",
+    "country": "Ireland",
+    "seedIndex": 25
+  },
+  {
+    "companyName": "Cascade Wines",
+    "contactName": "Pierre Lefebvre",
+    "email": "p.lefebvre@cascade.fr",
+    "phone": "+33 5 56 00 03 03",
+    "country": "France",
+    "seedIndex": 26
+  },
+  {
+    "companyName": "Foxglove Hospitality",
+    "contactName": "Sarah O'Brien",
+    "email": "s.obrien@foxglove.au",
+    "phone": "+61 2 1234 5678",
+    "country": "Australia",
+    "seedIndex": 27
+  },
+  {
+    "companyName": "Mirage Entertainment",
+    "contactName": "Lena Petersen",
+    "email": "l.petersen@mirage.dk",
+    "phone": "+45 33 12 34 56",
+    "country": "Denmark",
+    "seedIndex": 28
+  },
+  {
+    "companyName": "Quartz Financial",
+    "contactName": "Roberto Esposito",
+    "email": "r.esposito@quartz.it",
+    "phone": "+39 06 1234 5678",
+    "country": "Italy",
+    "seedIndex": 29
+  },
+  {
+    "companyName": "Ember Fashion",
+    "contactName": "Camille Martin",
+    "email": "c.martin@ember-fashion.fr",
+    "phone": "+33 1 42 00 04 04",
+    "country": "France",
+    "seedIndex": 30
+  },
+  {
+    "companyName": "Ironclad Security",
+    "contactName": "Marcus Johnson",
+    "email": "m.johnson@ironclad.us",
+    "phone": "+1 312 555 0145",
+    "country": "United States",
+    "seedIndex": 31
+  },
+  {
+    "companyName": "Papyrus Publishing",
+    "contactName": "Julie Bernard",
+    "email": "j.bernard@papyrus.be",
+    "phone": "+32 2 123 45 67",
+    "country": "Belgium",
+    "seedIndex": 32
+  },
+  {
+    "companyName": "Sandstone Ventures",
+    "contactName": "Ali Al-Farsi",
+    "email": "a.alfarsi@sandstone.om",
+    "phone": "+968 24 123456",
+    "country": "Oman",
+    "seedIndex": 33
+  },
+  {
+    "companyName": "Tidal Energy",
+    "contactName": "Nuno Ferreira",
+    "email": "n.ferreira@tidal.pt",
+    "phone": "+351 21 123 45 67",
+    "country": "Portugal",
+    "seedIndex": 34
+  },
+  {
+    "companyName": "Glacier Insurance",
+    "contactName": "Katrin Hofer",
+    "email": "k.hofer@glacier.at",
+    "phone": "+43 1 123 45 67",
+    "country": "Austria",
+    "seedIndex": 35
+  },
+  {
+    "companyName": "Mosaic Design",
+    "contactName": "Zeynep Kaya",
+    "email": "z.kaya@mosaic.tr",
+    "phone": "+90 212 123 45 67",
+    "country": "Turkey",
+    "seedIndex": 36
+  },
+  {
+    "companyName": "Rainforest Biotech",
+    "contactName": "Lucas Oliveira",
+    "email": "l.oliveira@rainforest.br",
+    "phone": "+55 61 3456-7890",
+    "country": "Brazil",
+    "seedIndex": 37
+  },
+  {
+    "companyName": "Crescent Investments",
+    "contactName": "Khalid Mansour",
+    "email": "k.mansour@crescent.kw",
+    "phone": "+965 2234 5678",
+    "country": "Kuwait",
+    "seedIndex": 38
+  },
+  {
+    "companyName": "Polar Bear Events",
+    "contactName": "Sigrid Hansen",
+    "email": "s.hansen@polarbear.no",
+    "phone": "+47 22 12 34 56",
+    "country": "Norway",
+    "seedIndex": 39
+  },
+  {
+    "companyName": "Amber Consulting",
+    "contactName": "Vanessa Richter",
+    "email": "v.richter@amber.de",
+    "phone": "+49 89 1234 5678",
+    "country": "Germany",
+    "seedIndex": 40
+  },
+  {
+    "companyName": "Jade Dynasty Corp",
+    "contactName": "Wei Liu",
+    "email": "w.liu@jadedynasty.hk",
+    "phone": "+852 2123 4567",
+    "country": "Hong Kong",
+    "seedIndex": 41
+  },
+  {
+    "companyName": "Burgundy Events",
+    "contactName": "Alexandre Girard",
+    "email": "a.girard@burgundy-events.fr",
+    "phone": "+33 3 80 00 05 05",
+    "country": "France",
+    "seedIndex": 42
+  },
+  {
+    "companyName": "Desert Rose Events",
+    "contactName": "Layla Hassan",
+    "email": "l.hassan@desertrose.eg",
+    "phone": "+20 2 1234 5678",
+    "country": "Egypt",
+    "seedIndex": 43
+  },
+  {
+    "companyName": "Spectrum Analytics",
+    "contactName": "Isabella Rossi",
+    "email": "i.rossi@spectrum.it",
+    "phone": "+39 011 123 4567",
+    "country": "Italy",
+    "seedIndex": 44
+  },
+  {
+    "companyName": "Mahogany Corp",
+    "contactName": "Chidi Okafor",
+    "email": "c.okafor@mahogany.ng",
+    "phone": "+234 1 234 5678",
+    "country": "Nigeria",
+    "seedIndex": 45
+  },
+  {
+    "companyName": "Moonbeam Festivals",
+    "contactName": "Olivia Harris",
+    "email": "o.harris@moonbeam.us",
+    "phone": "+1 323 555 0167",
+    "country": "United States",
+    "seedIndex": 46
+  },
+  {
+    "companyName": "Turquoise Events",
+    "contactName": "Deniz Arslan",
+    "email": "d.arslan@turquoise.tr",
+    "phone": "+90 216 123 45 67",
+    "country": "Turkey",
+    "seedIndex": 47
+  },
+  {
+    "companyName": "Cerulean Pharma",
+    "contactName": "Jean-Claude Lambert",
+    "email": "jc.lambert@cerulean.fr",
+    "phone": "+33 1 43 00 06 06",
+    "country": "France",
+    "seedIndex": 48
+  },
+  {
+    "companyName": "Willow Group",
+    "contactName": "Mei Yamamoto",
+    "email": "m.yamamoto@willow.jp",
+    "phone": "+81 6-1234-5678",
+    "country": "Japan",
+    "seedIndex": 49
+  },
+  {
+    "companyName": "Flint Industrial",
+    "contactName": "Bart Willems",
+    "email": "b.willems@flint.nl",
+    "phone": "+31 20 123 45 67",
+    "country": "Netherlands",
+    "seedIndex": 50
+  },
+  {
+    "companyName": "Prism Events",
+    "contactName": "Annelise Müller",
+    "email": "a.mueller@prism.ch",
+    "phone": "+41 44 123 45 67",
+    "country": "Switzerland",
+    "seedIndex": 51
+  },
+  {
+    "companyName": "Terracotta Media",
+    "contactName": "Diego Fernández",
+    "email": "d.fernandez@terracotta.es",
+    "phone": "+34 93 123 45 67",
+    "country": "Spain",
+    "seedIndex": 52
+  },
+  {
+    "companyName": "Oasis Hospitality",
+    "contactName": "Rania Suleiman",
+    "email": "r.suleiman@oasis.qa",
+    "phone": "+974 4412 3456",
+    "country": "Qatar",
+    "seedIndex": 53
+  },
+  {
+    "companyName": "Thundercloud Tech",
+    "contactName": "Patrick Kelly",
+    "email": "p.kelly@thundercloud.us",
+    "phone": "+1 415 555 0189",
+    "country": "United States",
+    "seedIndex": 54
+  },
+  {
+    "companyName": "Equinox Events",
+    "contactName": "Nathalie Blanc",
+    "email": "n.blanc@equinox.fr",
+    "phone": "+33 4 90 00 07 07",
+    "country": "France",
+    "seedIndex": 55
+  },
+  {
+    "companyName": "Phoenix Rising",
+    "contactName": "Aiden Murphy",
+    "email": "a.murphy@phoenix.ie",
+    "phone": "+353 21 234 5678",
+    "country": "Ireland",
+    "seedIndex": 56
+  },
+  {
+    "companyName": "Crystal Events",
+    "contactName": "Soo-Jin Park",
+    "email": "soojin.park@crystal.kr",
+    "phone": "+82 51 1234 5678",
+    "country": "South Korea",
+    "seedIndex": 57
+  },
+  {
+    "companyName": "Obsidian Group",
+    "contactName": "Valentina López",
+    "email": "v.lopez@obsidian.ar",
+    "phone": "+54 11 1234-5678",
+    "country": "Argentina",
+    "seedIndex": 58
+  },
+  {
+    "companyName": "Sage Advisory",
+    "contactName": "Rashida Conteh",
+    "email": "r.conteh@sage.za",
+    "phone": "+27 11 123 4567",
+    "country": "South Africa",
+    "seedIndex": 59
+  },
+  {
+    "companyName": "Jasper Productions",
+    "contactName": "Étienne Morel",
+    "email": "e.morel@jasper.fr",
+    "phone": "+33 2 99 00 08 08",
+    "country": "France",
+    "seedIndex": 60
+  },
+  {
+    "companyName": "Sterling Banquet",
+    "contactName": "Charlotte Davies",
+    "email": "c.davies@sterling.co.uk",
+    "phone": "+44 121 123 4567",
+    "country": "United Kingdom",
+    "seedIndex": 61
+  },
+  {
+    "companyName": "Topaz Retreats",
+    "contactName": "Ananya Patel",
+    "email": "a.patel@topaz.in",
+    "phone": "+91 80 1234 5678",
+    "country": "India",
+    "seedIndex": 62
+  },
+  {
+    "companyName": "Lapis Events",
+    "contactName": "Joaquín Torres",
+    "email": "j.torres@lapis.mx",
+    "phone": "+52 33 1234 5678",
+    "country": "Mexico",
+    "seedIndex": 63
+  },
+  {
+    "companyName": "Alabaster Hotels",
+    "contactName": "Fiona Campbell",
+    "email": "f.campbell@alabaster.au",
+    "phone": "+61 3 1234 5678",
+    "country": "Australia",
+    "seedIndex": 64
+  },
+  {
+    "companyName": "Indigo Creative",
+    "contactName": "Trần Minh Tú",
+    "email": "minh.tu@indigo.vn",
+    "phone": "+84 28 1234 5678",
+    "country": "Vietnam",
+    "seedIndex": 65
+  },
+  {
+    "companyName": "Citrine Financial",
+    "contactName": "René Dubois",
+    "email": "r.dubois@citrine.lu",
+    "phone": "+352 26 12 34 56",
+    "country": "Luxembourg",
+    "seedIndex": 66
+  },
+  {
+    "companyName": "Coral Reef Events",
+    "contactName": "Aroha Ngata",
+    "email": "a.ngata@coralreef.nz",
+    "phone": "+64 9 123 4567",
+    "country": "New Zealand",
+    "seedIndex": 67
+  },
+  {
+    "companyName": "Malachite Corp",
+    "contactName": "Amina Diallo",
+    "email": "a.diallo@malachite.sn",
+    "phone": "+221 33 123 45 67",
+    "country": "Senegal",
+    "seedIndex": 68
+  },
+  {
+    "companyName": "Pewter & Partners",
+    "contactName": "Lars Eriksson",
+    "email": "l.eriksson@pewter.se",
+    "phone": "+46 31 123 456 78",
+    "country": "Sweden",
+    "seedIndex": 69
+  },
+  {
+    "companyName": "Garnet Global",
+    "contactName": "Aiko Nakamura",
+    "email": "a.nakamura@garnet.jp",
+    "phone": "+81 52-1234-5678",
+    "country": "Japan",
+    "seedIndex": 70
+  },
+  {
+    "companyName": "Chalcedony Events",
+    "contactName": "Mohamed Amine",
+    "email": "m.amine@chalcedony.tn",
+    "phone": "+216 71 123 456",
+    "country": "Tunisia",
+    "seedIndex": 71
+  },
+  {
+    "companyName": "Obsidian Finance",
+    "contactName": "Hans-Peter Braun",
+    "email": "hp.braun@obsidian.de",
+    "phone": "+49 40 1234 5678",
+    "country": "Germany",
+    "seedIndex": 72
+  },
+  {
+    "companyName": "Moonstone Media",
+    "contactName": "Cécile Renard",
+    "email": "c.renard@moonstone.fr",
+    "phone": "+33 5 61 00 09 09",
+    "country": "France",
+    "seedIndex": 73
+  },
+  {
+    "companyName": "Sunstone Events",
+    "contactName": "Tariq Al-Rashid",
+    "email": "t.alrashid@sunstone.ae",
+    "phone": "+971 2 123 4567",
+    "country": "United Arab Emirates",
+    "seedIndex": 74
+  },
+  {
+    "companyName": "Ruby Red Events",
+    "contactName": "Siobhán Murphy",
+    "email": "s.murphy@rubyred.ie",
+    "phone": "+353 91 123 456",
+    "country": "Ireland",
+    "seedIndex": 75
+  },
+  {
+    "companyName": "Pearl Harbor Corp",
+    "contactName": "Hana Kawamoto",
+    "email": "h.kawamoto@pearl.jp",
+    "phone": "+81 45-1234-5678",
+    "country": "Japan",
+    "seedIndex": 76
+  },
+  {
+    "companyName": "Onyx Productions",
+    "contactName": "Bernard Leclerc",
+    "email": "b.leclerc@onyx.fr",
+    "phone": "+33 3 20 00 10 10",
+    "country": "France",
+    "seedIndex": 77
+  },
+  {
+    "companyName": "Zircon Tech",
+    "contactName": "Sipho Ndlovu",
+    "email": "s.ndlovu@zircon.za",
+    "phone": "+27 21 123 4567",
+    "country": "South Africa",
+    "seedIndex": 78
+  },
+  {
+    "companyName": "Feldspar Events",
+    "contactName": "Maria Theresa Becker",
+    "email": "mt.becker@feldspar.de",
+    "phone": "+49 221 1234 5678",
+    "country": "Germany",
+    "seedIndex": 79
+  },
+  {
+    "companyName": "Dolomite Group",
+    "contactName": "Chiara Ferrari",
+    "email": "c.ferrari@dolomite.it",
+    "phone": "+39 049 123 4567",
+    "country": "Italy",
+    "seedIndex": 80
+  },
+  {
+    "companyName": "Slate & Stone",
+    "contactName": "Hamish MacDonald",
+    "email": "h.macdonald@slate.co.uk",
+    "phone": "+44 141 123 4567",
+    "country": "United Kingdom",
+    "seedIndex": 81
+  },
+  {
+    "companyName": "Pumice Events",
+    "contactName": "Gloria Okafor",
+    "email": "g.okafor@pumice.ke",
+    "phone": "+254 20 123 4567",
+    "country": "Kenya",
+    "seedIndex": 82
+  },
+  {
+    "companyName": "Basalt Conferences",
+    "contactName": "Jan Novak",
+    "email": "j.novak@basalt.cz",
+    "phone": "+420 2 1234 5678",
+    "country": "Czech Republic",
+    "seedIndex": 83
+  },
+  {
+    "companyName": "Quartz Arena",
+    "contactName": "Ioana Popescu",
+    "email": "i.popescu@quartz-arena.ro",
+    "phone": "+40 21 123 45 67",
+    "country": "Romania",
+    "seedIndex": 84
+  },
+  {
+    "companyName": "Limestone Events",
+    "contactName": "Elif Şahin",
+    "email": "e.sahin@limestone.tr",
+    "phone": "+90 312 123 45 67",
+    "country": "Turkey",
+    "seedIndex": 85
+  },
+  {
+    "companyName": "Sandstone Media",
+    "contactName": "Bogdan Kovač",
+    "email": "b.kovac@sandstone.hr",
+    "phone": "+385 1 123 4567",
+    "country": "Croatia",
+    "seedIndex": 86
+  },
+  {
+    "companyName": "Granite Peak",
+    "contactName": "Brigitte Haas",
+    "email": "b.haas@granite.ch",
+    "phone": "+41 31 123 45 67",
+    "country": "Switzerland",
+    "seedIndex": 87
+  },
+  {
+    "companyName": "Shale & Co.",
+    "contactName": "Julien Perrin",
+    "email": "j.perrin@shale.fr",
+    "phone": "+33 1 44 00 11 11",
+    "country": "France",
+    "seedIndex": 88
+  },
+  {
+    "companyName": "Flintstone Events",
+    "contactName": "Nkechi Adeyemi",
+    "email": "n.adeyemi@flintstone.ng",
+    "phone": "+234 9 1234 5678",
+    "country": "Nigeria",
+    "seedIndex": 89
+  },
+  {
+    "companyName": "Marl Events",
+    "contactName": "Sven Andersen",
+    "email": "s.andersen@marl.dk",
+    "phone": "+45 86 12 34 56",
+    "country": "Denmark",
+    "seedIndex": 90
+  },
+  {
+    "companyName": "Gypsum Group",
+    "contactName": "Katarzyna Wójcik",
+    "email": "k.wojcik@gypsum.pl",
+    "phone": "+48 61 123 45 67",
+    "country": "Poland",
+    "seedIndex": 91
+  },
+  {
+    "companyName": "Chalk & Cheese Events",
+    "contactName": "Declan O'Reilly",
+    "email": "d.oreilly@chalkcheese.ie",
+    "phone": "+353 1 234 5680",
+    "country": "Ireland",
+    "seedIndex": 92
+  },
+  {
+    "companyName": "Tuff Events",
+    "contactName": "Agnieszka Kowalczyk",
+    "email": "a.kowalczyk@tuff.pl",
+    "phone": "+48 12 123 45 67",
+    "country": "Poland",
+    "seedIndex": 93
+  },
+  {
+    "companyName": "Schist & Sons",
+    "contactName": "Henri Rousseau",
+    "email": "h.rousseau@schist.fr",
+    "phone": "+33 4 72 00 12 12",
+    "country": "France",
+    "seedIndex": 94
+  },
+  {
+    "companyName": "Obsidian Isle",
+    "contactName": "Björn Sigurdsson",
+    "email": "b.sigurdsson@obsidian.is",
+    "phone": "+354 5 1234567",
+    "country": "Iceland",
+    "seedIndex": 95
+  },
+  {
+    "companyName": "Hornfels Events",
+    "contactName": "Chibuzo Eze",
+    "email": "c.eze@hornfels.ng",
+    "phone": "+234 8 1234 5678",
+    "country": "Nigeria",
+    "seedIndex": 96
+  }
+]

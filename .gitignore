@@ -1,5 +1,5 @@
-# Data folder
-[dD][aA][tT][aA]/
+# Data folder (4D database — root only)
+/[dD][aA][tT][aA]/
 
 # Derived data
 DerivedData/
