@@ -19,4 +19,6 @@ ehthumbs.db
 Thumbs.db
 
 
+# AI provider settings (contains API keys)
 Project/Sources/AIProviders.json
+Settings/AIProviders.json
