@@ -49,7 +49,12 @@ Function btnFilterDecorEventHandler($formEventCode : Integer)
 
 Function inputSearchEventHandler($formEventCode : Integer)
 	Case of 
-		: ($formEventCode=On Data Change) | ($formEventCode=On After Keystroke)
+		: ($formEventCode=On After Keystroke)
+			// During editing the value is not committed yet: read the text being typed
+			This.searchText:=Get edited text
+			This._loadServices()
+		: ($formEventCode=On Data Change)
+			// Value committed (paste, clear, focus loss): read the data source
 			This.searchText:=OBJECT Get value("input_search")
 			This._loadServices()
 	End case 
